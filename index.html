@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Validator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style type="text/css">
+      button.btn-submit{
+        background-color: chocolate; color:aliceblue;
+        font-weight: bolder;
+        font-family: cursive;
+
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="app-input">
+      <div class="form-group">
+        <form class="form">
+          <label for="fullname_test">Fullname</label><br/>
+          <input type="text" class="form-control"
+          placeholder="Eg:AGBOKOUDJO Hounha Franck" id="fullname_test" name="fullname_test"/><br/>
+           <label for="email_test">Email</label><br/>
+          <input type="email" class="email form-control" 
+          placeholder="Eg:franckagbokoudjo301@gmail.com" id="email_test" name="email_test"/><br/>
+          <label for="tel_test">Phone:</label>
+            <input type="tel" class="tel form-control" 
+          placeholder="Eg:+22967251886" id="tel_test" name="tel_test"/><br/>
+          <label for="message_test">Message:</label>
+          <textarea id="message_test" placeholder="write the message here"></textarea>
+          <button type="submit" class="btn-submit btn">Valid</button>
+        </form>
+      </div>
+    </div>
+    <div class="container" id="app">
+      <div id="app-header"></div>
+      <div class="form-group">
+        <form class="form">
+          <label for="image_test">Uploader des images</label><br/>
+          <input type="file" class="images form-control" multiple 
+          placeholder="choose images many or one" id="img_test" name="images_test"/><br/>
+           <label for="pdf_test">Uploader des documents pdf</label><br/>
+          <input type="file" class="pdf form-control" multiple 
+          placeholder="choose pdf many or one" id="pdf_test" name="pdf_test"/><br/>
+          
+          <button type="submit" class="btn-submit btn ">Valider</button>
+        </form>
+      </div>
+    </div>
+    <script type="module" src="src/main.ts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  </body>
+</html>

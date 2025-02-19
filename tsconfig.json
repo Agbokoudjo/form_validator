@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable","esnext"],
+    "skipLibCheck": true,
+   "outDir": "./dist",
+    "rootDir": "./src",  
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+     "noEmit": false,  // Autorise la génération des fichiers compilés
+    "strict": true,
+    "moduleResolution": "bundler",    // Permet de résoudre les modules comme Node.js
+    "declaration": true,     
+    "allowJs":true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+     "allowSyntheticDefaultImports": true,
+    "types": ["jquery"]
+  },
+  "include": ["src/**/*", "global.d.ts","pdfjs-dist.d.ts", "public/workers", "src/workers/pdf.worker.min.js"],
+  "exclude": ["node_modules","dist","main.ts"]
+}
