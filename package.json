@@ -1,6 +1,5 @@
 {
-  "name": "form_validator",
-  "packageManager": "yarn@4.6.0",
+  "name": "@wlindabla/form_validator",
   "author": "AGABOKOUJO Franck",
   "license": "MIT",
   "main": "dist/index.js",
@@ -27,6 +26,9 @@
   "files": [
     "dist/"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/jquery": "^3.5.32",
     "@types/lodash.debounce": "^4",
@@ -44,5 +46,6 @@
     "papaparse": "^5.5.2",
     "pdfjs-dist": "^4.10.38",
     "xlsx": "^0.18.5"
-  }
+  },
+  "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"
 }
