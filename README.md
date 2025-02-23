@@ -330,46 +330,11 @@ jQuery(function documentLoad() {
 
 ---
 
-## 📌 Installation et Utilisation  
-
-1. **Cloner le projet**  
-   ```bash
-   git clone https://github.com/ton-repo.git
-   cd ton-repo
-   ```
-
-2. **Installer les dépendances**  
-   ```bash
-   npm install
-   ```
-
-3. **Lancer le projet**  
-   ```bash
-   npm start
-   ```
 
 ---
 
-## 🛠 Technologies Utilisées  
-
-- **HTML / CSS** 🎨  
-- **JavaScript (jQuery, Lodash)** ⚡  
-- **TypeScript** 🔹  
-- **Node.js / NPM** 📦  
 
 ---
-
-## 📧 Contact  
-✉️ Email : [franckagbokoudjo301@gmail.com](mailto:franckagbokoudjo301@gmail.com)  
-📞 Téléphone : +229 67 25 18 86  
-
-Si tu veux que j'ajoute des précisions ou un autre format, dis-moi ! 🚀
-🔧 Configuration
-Délais pour la validation
-
-Vous pouvez modifier le délai pour les fonctions de validation avec le paramètre debounce :
-
-debounce(validateImage, 300); // Défaut : 300 ms
 
 import { httpFetchHandler } from "./module_fonction/http";
 # httpFetchHandler
