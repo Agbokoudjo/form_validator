@@ -166,7 +166,7 @@ jQuery(function validateInput() {
 
 1. Clonez ce projet :
    ```sh
-   git clone https://github.com/votre-repo/votre-projet.git
+   git clone https://github.com/Agbokoudjo/form_validator.git
    cd votre-projet
    ```
 
@@ -399,6 +399,176 @@ Délais pour la validation
 Vous pouvez modifier le délai pour les fonctions de validation avec le paramètre debounce :
 
 debounce(validateImage, 300); // Défaut : 300 ms
+
+import { httpFetchHandler } from "./module_fonction/http";
+# httpFetchHandler
+
+## 📄 Overview
+The `httpFetchHandler` function is an asynchronous utility for making HTTP requests with built-in timeout handling, retry attempts, and automatic response parsing.
+
+---
+
+## 📋 Parameters
+
+| Parameter       | Type                                  | Default Value    | Description |
+|----------------|--------------------------------------|-----------------|-------------|
+| `url`          | `string | URL`                      | **Required**     | The API endpoint to send the request to. |
+| `methodSend`   | `string`                             | `"GET"`          | The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.). |
+| `data`         | `any`                                | `null`           | The data to send in the request body (supports JSON and FormData). |
+| `optionsheaders` | `HeadersInit`                     | `{ 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }` | Custom headers for the request. |
+| `timeout`      | `number`                             | `5000` (5 sec)   | The maximum time (in milliseconds) before the request is aborted. |
+| `retryCount`   | `number`                             | `3`              | Number of times to retry the request if it fails. |
+| `responseType` | `'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | 'stream'` | `'json'`          | The expected response format. |
+
+---
+
+## 🔄 Function Workflow
+
+### 1. **FormData Handling**  
+- If `data` is an instance of `FormData`, it automatically manages headers.
+- The `"Content-Type"` header is **removed** to let the browser set it correctly.
+
+### 2. **Headers Handling**  
+- If the headers are a `HeadersInit` object, they are converted to a mutable object using:
+  ```ts
+  Object.fromEntries(new Headers(optionsheaders).entries());
+  ```
+- This avoids `TypeScript` errors when modifying headers.
+
+### 3. **Data Handling with `JSON.stringify`**  
+- When sending `JSON` data, the function **automatically converts it** using `JSON.stringify(data)`.
+- **Important:** Do not manually stringify the data before passing it, to avoid double encoding.
+- Example:
+  ```ts
+  httpFetchHandler({ url: "/api", methodSend: "POST", data: { name: "John" } });
+  ```
+  ✅ The function internally does:
+  ```ts
+  JSON.stringify({ name: "John" });
+  ```
+
+### 4. **Request Timeout Handling**  
+- Uses `AbortController` to automatically cancel requests after `timeout` milliseconds.
+
+### 5. **Retry Mechanism**  
+- If the request fails, the function retries up to `retryCount` times before throwing an error.
+
+---
+
+Here’s a well-formatted English documentation that you can include in your `README.md` before publishing your package on GitHub and NPM.
+
+---
+
+# 📖 `@wlindabla/form_validator` - Documentation  
+
+## 🚀 Introduction  
+This package provides useful tools for form validation, URL manipulation, and HTTP request handling in JavaScript/TypeScript.
+
+---
+
+## 📌 Installation  
+Ensure you have installed the package via `npm`:  
+```sh
+npm install @wlindabla/form_validator
+```
+
+---
+
+## 📡 `httpFetchHandler` - Advanced HTTP Request Handling  
+This function simplifies HTTP requests using `fetch`, handling errors, timeouts, and retries automatically.
+
+### ✅ **Usage**  
+```ts
+import { httpFetchHandler } from "@wlindabla/form_validator";
+
+async function fetchData() {
+    try {
+        const response = await httpFetchHandler({
+            url: "https://api.example.com/data",
+            methodSend: "POST",
+            data: JSON.stringify({ key: "value" }),
+            responseType: "json"
+        });
+
+        console.log("Response received:", response);
+    } catch (error) {
+        console.error("Request error:", error);
+    }
+}
+
+fetchData();
+```
+
+### 🛠 **Parameters**  
+| Parameter         | Type                        | Description |
+|------------------|---------------------------|-------------|
+| `url`           | `string | URL`             | The request URL |
+| `methodSend`    | `string` (optional)       | HTTP method (GET, POST, PUT, DELETE, etc.) |
+| `data`          | `any` (optional)          | Data sent in the request body |
+| `optionsheaders`| `HeadersInit` (optional)  | Custom HTTP headers |
+| `timeout`       | `number` (optional)       | Maximum wait time in milliseconds before canceling the request |
+| `retryCount`    | `number` (optional)       | Number of retry attempts in case of failure |
+| `responseType`  | `'json' | 'text' | 'blob'` (optional) | Response format |
+
+---
+
+## 🔗 `addParamToUrl` - Add Parameters to a URL  
+This function allows you to modify a URL by dynamically adding query parameters.
+
+### ✅ **Usage**  
+```ts
+import { addParamToUrl } from "@wlindabla/form_validator/http";
+
+const newUrl = addParamToUrl(
+    "https://example.com",
+    { lang: "en", theme: "dark" }
+);
+
+console.log(newUrl); // "https://example.com?lang=en&theme=dark"
+```
+
+### 🛠 **Parameters**  
+| Parameter                | Type                         | Description |
+|--------------------------|------------------------------|-------------|
+| `urlparam`               | `string`                     | The base URL |
+| `addparamUrlDependencie` | `Record<string, any>` (optional) | Key-value pairs of parameters to add |
+| `returnUrl`              | `boolean` (optional, `true` by default) | Returns a string (`true`) or a `URL` instance (`false`) |
+| `baseUrl`                | `string | URL` (optional) | Base URL (used for relative URLs) |
+
+---
+
+## 📝 `buildUrlFromForm` - Construct a URL from a Form  
+This function generates a URL with dynamic parameters based on an HTML form.
+
+### ✅ **Usage**  
+```ts
+import { buildUrlFromForm } from "@wlindabla/form_validator/http";
+
+const formElement = document.querySelector("form");
+
+if (formElement) {
+    const updatedUrl = buildUrlFromForm(formElement, { debug: "true" });
+    console.log(updatedUrl);
+}
+```
+
+### 🛠 **Parameters**  
+| Parameter                | Type                         | Description |
+|--------------------------|------------------------------|-------------|
+| `formElement`            | `HTMLFormElement`           | The `<form>` element whose values will be extracted |
+| `addparamUrlDependencie` | `Record<string, any>` (optional) | Additional parameters to add |
+| `returnUrl`              | `boolean` (optional, `true` by default) | Returns a string (`true`) or a `URL` instance (`false`) |
+| `baseUrl`                | `string | URL` (optional) | Base URL (used if the form’s `action` is empty) |
+
+---
+
+## 🎯 Conclusion  
+With these tools, you can efficiently handle HTTP requests, manage URLs, and process form data in your JavaScript/TypeScript projects.
+
+---
+
+💡 **Need Help?** Open an issue on [GitHub](https://github.com/wlindabla/form_validator) 🚀
+
 👥 Contributeurs
 
     AGBOKOUDJO Franck - Créateur principal
