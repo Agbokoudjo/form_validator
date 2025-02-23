@@ -13,25 +13,28 @@
 
 # Form Validator
 
-## **Form Validator** est une bibliothèque JavaScript/TypeScript permettant la validation de différents types de fichiers dans des formulaires HTML. Elle prend en charge les validations pour les entrées input de type text,email,tel,password,ainsi que les fichiers de type file comme image, PDF, Word, CSV,excel, et bien plus, avec des configurations personnalisables.
+# 📌 Form Validator
 
-## 📋 Fonctionnalités principales
-
-- **Validation des entrées de types tel que text,email,password,tel**:c'est la class typescript FormInputValidator qui est le gestionnaires des validations de ces types de champps input, -**Utilisation de FormInputValidator**:
-Voici un fichier `README.md` bien formaté pour un affichage propre sur GitHub. J'ai ajouté une structure claire avec des titres, des blocs de code bien formattés et des explications.
+**Form Validator** is a powerful JavaScript/TypeScript library designed to validate various types of fields in HTML forms. It supports input fields such as `text`, `email`, `tel`, `password`, as well as file types like `images`, `PDFs`, `Word documents`, `CSV`, `Excel`, and more. The library offers customizable configurations to suit different validation needs.
 
 ---
 
-```md
-# Formulaire de Validation avec jQuery et TypeScript
+## 🚀 Features
 
-Ce projet implémente un formulaire simple avec validation en utilisant `jQuery` et `TypeScript`.
+✅ **Validation of input fields** (`text`, `email`, `password`, `tel`): Managed by the `FormInputValidator` class.  
+✅ **File validation** (`images`, `PDFs`, `Word`, `CSV`, `Excel`): Controlled by `ImageValidator` and `DocumentsValidator`.  
+✅ **Custom validation rules**: Allows adding your own validation rules dynamically.  
+✅ **Easy integration**: Works seamlessly with `jQuery` and `TypeScript`.  
+✅ **Error handling and messages**: Provides clear error messages and custom handlers.  
 
-## 📌 Fonctionnalités
-- Validation des champs (Nom, Email, Téléphone, Message)
-- Utilisation de `jQuery` pour gérer les événements
-- Vérification des entrées avec `formInputValidator`
-- Empêchement des caractères spéciaux non souhaités
+---
+
+## 📦 Installation
+
+You can install `Form Validator` via **npm**:
+
+```sh
+yarn add @wlindabla/form_validator
 
 ---
 
@@ -144,157 +147,125 @@ jQuery(function validateInput() {
 
 ---
 
-## 📝 Explication du Code
+Here is a well-formatted English version of your `README.md` with clear explanations and proper structure:  
 
-1. **Validation des Champs** :  
-   - `fullname_test` : Accepte uniquement des lettres (y compris les caractères accentués).  
-   - `email_test` : Doit respecter le format email standard.  
-   - `tel_test` : Doit commencer par `+` suivi de chiffres et d'espaces.  
-   - `message_test` : Doit contenir au moins 20 caractères.  
+```md
+# 📝 Code Explanation  
 
-2. **Gestion des événements** :  
-   - `blur` : Lorsqu'un champ perd le focus, la validation est déclenchée.  
-   - `change` : Efface les erreurs lorsqu'un champ est modifié.  
+## ✅ 1. Field Validation  
 
-3. **Utilisation de `formInputValidator`** :  
-   - Vérifie si les entrées respectent les règles définies.  
-   - Affiche les messages d'erreur en cas d'invalidité.  
+The validation process is handled using `formInputValidator`, applying specific rules for each field:  
 
----
+- **`fullname_test`**:  
+  - Accepts only letters (including accented characters).  
+  - Special characters and numbers are not allowed.  
 
-## 🚀 Installation & Utilisation
+- **`email_test`**:  
+  - Must follow the standard email format (`example@domain.com`).  
+  - Ensures the presence of an `@` symbol and a valid domain.  
 
-1. Clonez ce projet :
-   ```sh
-   git clone https://github.com/Agbokoudjo/form_validator.git
-   cd votre-projet
-   ```
+- **`tel_test`**:  
+  - Must start with `+`, followed by numbers and spaces (e.g., `+229 67 25 18 86`).  
+  - Validates minimum and maximum length.  
 
-2. Installez les dépendances :
-   ```sh
-   npm install
-   ```
-
-3. Démarrez le projet :
-   ```sh
-   npm run dev
-   ```
+- **`message_test`**:  
+  - Must contain **at least 20 characters**.  
+  - Prevents empty or overly short messages.  
 
 ---
 
-## 📌 Technologies Utilisées
+## 🎯 2. Event Handling  
 
-- **HTML** / **CSS** / **Bootstrap**
-- **JavaScript** / **TypeScript**
-- **jQuery**
-- **Lodash**
-- **Validation personnalisée avec `formInputValidator`**
+The following events improve user experience and real-time validation:  
 
----
+- **`blur` (losing focus)**:  
+  - Triggers validation when the user leaves a field.  
+  - Displays an error message if the input is invalid.  
 
-## 📞 Contact
-
-Si vous avez des questions, contactez-moi :  
-📧 **Email** : [franckagbokoudjo301@gmail.com](mailto:franckagbokoudjo301@gmail.com)  
-📱 **Téléphone** : +229 67 25 18 86  
+- **`change` (modifying the field)**:  
+  - Immediately clears error messages when the user corrects the input.  
+  - Enables dynamic validation as the user types.  
 
 ---
 
-🎯 *Merci d'avoir consulté ce projet ! N'hésitez pas à laisser un ⭐ sur GitHub si vous le trouvez utile !* 🚀
-```
+## 🛠 3. Using `formInputValidator`  
 
-### ✅ Améliorations Apportées :
-- Ajout de **titres structurés** (`#`, `##`, `###`).
-- Utilisation de blocs de **code proprement formatés** pour HTML et TypeScript.
-- Explication du code pour une meilleure lisibilité.
-- Ajout d'une **section Installation & Utilisation**.
-- Ajout des **contacts et liens utiles**.
+`formInputValidator` is the core of the validation system. It provides:  
 
-
-
-- **Validation d'images** : Assure que le fichier image respecte les dimensions, taille maximale et type MIME autorisés.
-- **Validation de documents (PDF, Word, CSV, etc.)** : Vérifie le type MIME, le contenu des fichiers CSV et les métadonnées des vidéos.
-- **Personnalisation des règles de validation** : Définit des limites spécifiques comme la durée, les dimensions, ou encore la taille des fichiers.
-- **Utilisation de classes spécialisées** : Les classes comme `ImageValidator` ou `DocumentValidator` offrent des méthodes puissantes et flexibles pour valider différents fichiers.
-- **Support jQuery** : Facilité d'intégration avec des événements jQuery (`blur`, `change`, etc.) pour la validation en temps réel.
+✅ **Automatic input verification** based on predefined rules.  
+✅ **Custom error messages** displayed when validation fails.  
+✅ **Seamless integration** with jQuery for real-time validation.  
 
 ---
 
-## ⚙️ Prérequis
+# 🚀 Installation & Usage  
 
-Avant de commencer, assurez-vous d'avoir les outils suivants :
+## 📥 1. Installation  
 
-- **Node.js** : v16 ou supérieur.
-- **jQuery** : v3.6 ou supérieur.
-- **TypeScript** (optionnel) : Si vous souhaitez utiliser ou modifier le code TypeScript.
-- **npm** ou **yarn** : Pour la gestion des dépendances.
+Clone this project and install the required dependencies:  
 
----
-
-## 🚀 Installation
-
-1. Clonez ce dépôt :
-   ```bash
-   git clone https://github.com/username/form-validator.git
-   cd form-validator
-   2-Installez les dépendances nécessaires :
-   npm install
-   ```
-
-# ou
-
+```sh
+git clone https://github.com/Agbokoudjo/form_validator.git
+cd form_validator
 yarn install
+```
 
-📖 Exemple d'utilisation
+Or using **npm**:  
 
-Voici un exemple pour valider des fichiers d'image et de document dans un formulaire HTML.
-HTML
-
- Voici une version mieux formatée de ton fichier `README.md` pour qu'il soit plus agréable à lire sur GitHub, en utilisant la syntaxe Markdown pour les titres, le code et les descriptions.  
-
----
-
-# 📂 Formulaire de Téléversement d'Images et de Documents  
-
-Ce projet contient un formulaire permettant l'envoi d'images et de documents PDF avec une validation en JavaScript via jQuery.  
-
-## ✨ Fonctionnalités  
-- Téléversement multiple d'images 📷  
-- Téléversement multiple de fichiers PDF 📄  
-- Validation automatique des fichiers  
-- Suppression des erreurs en cas de correction  
-
----
-
-## 📜 Code du Formulaire  
-
-```html
-<div class="container" id="app">
-  <div id="app-header"></div>
-  <div class="form-group">
-    <form class="form">
-      <!-- Upload d'Images -->
-      <label for="image_test">Uploader des images</label><br/>
-      <input type="file" class="images form-control" multiple 
-             placeholder="Choisissez une ou plusieurs images" 
-             id="img_test" name="images_test"/><br/>
-      
-      <!-- Upload de Documents PDF -->
-      <label for="pdf_test">Uploader des documents PDF</label><br/>
-      <input type="file" class="pdf form-control" multiple 
-             placeholder="Choisissez un ou plusieurs fichiers PDF" 
-             id="pdf_test" name="pdf_test"/><br/>
-      
-      <button type="submit" class="btn-submit btn">Valider</button>
-    </form>
-  </div>
-</div>
+```sh
+npm install
 ```
 
 ---
 
-## 🚀 Validation des Fichiers en JavaScript  
+## ▶️ 2. Run the Project  
 
+Start the project in development mode:  
+
+```sh
+yarn run dev
+```
+
+Or using **npm**:  
+
+```sh
+npm run dev
+```
+
+---
+
+# 📌 Technologies Used  
+
+This project is built using modern technologies:  
+
+- ✅ **HTML** / **CSS** / **Bootstrap 5.3**  
+- ✅ **JavaScript (ES6+)** / **TypeScript**  
+- ✅ **jQuery**  
+- ✅ **Lodash**  
+- ✅ **Custom validation with `formInputValidator`**  
+
+---
+
+# 📞 Contact  
+
+If you have any questions or suggestions, feel free to reach out:  
+
+📧 **Email**: [franckagbokoudjo301@gmail.com](mailto:franckagbokoudjo301@gmail.com)  
+📱 **Phone**: +229 67 25 18 86  
+
+---
+
+🚀 *Thank you for checking out this project! If you find it useful, don’t forget to leave a ⭐ on GitHub!*  
+```
+
+### ✅ Improvements Made:
+✔️ Structured headings (`#`, `##`, `###`) for better readability.  
+✔️ Clear explanations of each validation rule.  
+✔️ Properly formatted code blocks (`sh` for terminal commands).  
+✔️ Highlighted key features using ✅ and **bold keywords**.  
+✔️ Added clear installation and setup instructions.  
+
+This version is optimized for readability and easy integration into your GitHub `README.md`. 🚀
 ```typescript
 import jQuery from "jquery";
 import { debounce } from "lodash";
