@@ -1,10 +1,10 @@
-import { ErrorMessageHandle } from "../validators/ErrorMessageHandle";
+import {FormErrorInterface } from "../validators/FormError";
 
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
  *
  * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
- * Phone: +229 67 25 18 86
+ * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
  * Company: INTERNATIONALES WEB SERVICES
  *
@@ -13,13 +13,7 @@ import { ErrorMessageHandle } from "../validators/ErrorMessageHandle";
 if (typeof window.jQuery === 'undefined') {
     throw new Error("jQuery is required for usage of these functions");
 }
-
 /**
- * Cette fonction traite les messages d'erreurs du champ en cours de saisie, 
- * et affiche les messages d'erreurs liés aux erreurs de saisie. 
- * Elle désactive le bouton de soumission lorsque le contenu du champ est invalide 
- * et active le bouton lorsqu'il est valide.
- * 
  * This function handles error messages for the current input field, 
  * displaying error messages related to input errors. 
  * It disables the submit button when the field content is invalid 
@@ -28,12 +22,12 @@ if (typeof window.jQuery === 'undefined') {
  * @param input_field - Champ input (JQuery<HTMLInputElement|HTMLTextAreaElement>)
  * @param Errorhandle - Le type de validator héritant la classe ErrorMessageFormHandle par défaut
  */
-export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>, Errorhandle: ErrorMessageHandle): void {
+export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>, errorhandle:FormErrorInterface): void {
     const btnsubmited = jQuery('button[type="submit"]', input_field.closest('form'));
-    if (Errorhandle.getIsValidFieldWithKey(input_field.attr('name') as string) === false) {
+    if (!errorhandle.hasErrorsField(input_field.attr('name') as string)) {
         btnsubmited.attr('disabled', 'disabled');
         btnsubmited.css({ display: 'none' });
-        addErrorMessageFieldDom(input_field.attr('id') as string, Errorhandle);
+        addErrorMessageFieldDom(input_field.attr('id') as string,errorhandle);
     } else {
         btnsubmited.css({ display: 'block' });
         if (btnsubmited.attr('disabled')) { btnsubmited.removeAttr('disabled'); }
@@ -51,9 +45,9 @@ export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTe
  * adds the 'is-invalid' class if not present, creates small error message elements, 
  * and appends them to the field.
  */
-export function addErrorMessageFieldDom(fieldId: string, Errorhandle: ErrorMessageHandle): void {
+export function addErrorMessageFieldDom(fieldId: string,errorhandle: FormErrorInterface): void {
     const elmtfield = jQuery(`#${fieldId}`);
-    const errormessagefield = Errorhandle.getErrorMessageFieldWithKey(elmtfield.attr('name') as string); 
+    const errormessagefield = errorhandle.getErrorMessageField(elmtfield.attr('name') as string); 
     if (errormessagefield && errormessagefield.length > 0) {
         const containerDivErrorMessage = jQuery('<div class="border border-3 border-light"></div>');
         if (!elmtfield.hasClass('is-invalid')) { 
@@ -125,7 +119,6 @@ export function createSmallErrorMessage(
         .text(errorMessage)
         .after('<br/>')
         .after('<hr/>');
-
     return small;
 }
 /**
@@ -144,29 +137,12 @@ export function createSmallErrorMessage(
  *   and removes them from the DOM.
  * - Clears errors related to the field using the provided ErrorMessageHandle instance.
  */
-/**
- * Cette fonction efface les messages d'erreurs associés à un champ input.
- * 
- * @param inputFieldJQuery - Un élément jQuery représentant le champ input dont les erreurs doivent être effacées.
- * @param Errorhandle - Une instance de la classe ErrorMessageHandle utilisée pour gérer les messages d'erreur.
- * 
- * @returns {void} - Ne retourne rien.
- * 
- * Cette fonction vérifie si le champ input possède la classe CSS 'is-invalid'.
- * Si c'est le cas, elle :
- * - Supprime la classe 'is-invalid' du champ.
- * - Réinitialise le style CSS de la bordure du champ à l'état par défaut.
- * - Parcourt tous les éléments d'erreurs associés au champ (ayant une classe au format `.error-item-ID` où ID est l'identifiant du champ), 
- *   et les supprime du DOM.
- * - Efface les erreurs liées au champ via l'objet ErrorMessageHandle fourni.
- */
-export function clearErrorInput(inputFieldJQuery: JQuery, Errorhandle: ErrorMessageHandle): void {
-    if (inputFieldJQuery.hasClass('is-invalid')) {
+export function clearErrorInput(inputFieldJQuery: JQuery, errorhandle: FormErrorInterface): void {
+    if (!inputFieldJQuery.hasClass('is-invalid')) {return;}
         inputFieldJQuery.removeClass('is-invalid');
         inputFieldJQuery.css({ border: 'medium none blue' });
         jQuery(`.error-item-${inputFieldJQuery.attr('id')}`).each(function (index, elmtError) {
             jQuery<HTMLElement>(elmtError).empty().remove();
         });
-        Errorhandle.clearError(inputFieldJQuery.attr('name') as string);
-    }
+        errorhandle.clearError(inputFieldJQuery.attr('name') as string);
 }

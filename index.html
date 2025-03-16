@@ -16,35 +16,50 @@
     </style>
   </head>
   <body>
-    <div class="container" id="app-input">
-      <div class="form-group">
-        <form class="form">
-          <label for="fullname_test">Fullname</label><br/>
-          <input type="text" class="form-control"
-          placeholder="Eg:AGBOKOUDJO Hounha Franck" id="fullname_test" name="fullname_test"/><br/>
-           <label for="email_test">Email</label><br/>
-          <input type="email" class="email form-control" 
-          placeholder="Eg:franckagbokoudjo301@gmail.com" id="email_test" name="email_test"/><br/>
-          <label for="tel_test">Phone:</label>
-            <input type="tel" class="tel form-control" 
-          placeholder="Eg:+22967251886" id="tel_test" name="tel_test"/><br/>
-          <label for="message_test">Message:</label>
-          <textarea id="message_test" placeholder="write the message here"></textarea>
-          <button type="submit" class="btn-submit btn">Valid</button>
-        </form>
-      </div>
-    </div>
     <div class="container" id="app">
-      <div id="app-header"></div>
-      <div class="form-group">
+       <div id="app-header"></div>
+       <hr/><br/>
+      <div class="form-group text-center">
+        <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
         <form class="form">
-          <label for="image_test">Uploader des images</label><br/>
+          <label for="lastname">Lastname</label><br/>
+          <input type="text" class="form-control lastname"
+          placeholder="Eg:AGBOKOUDJO" id="lastname" name="lastname"/><br/>
+           <label for="firstname">Firstnames</label><br/>
+          <input type="text" class="form-control firstname"
+          placeholder="Eg:Franck Empedocle Hounha" id="firstname" name="firstname"/><br/>
+          <label for="username">Fullname</label><br/>
+          <input type="text" class="form-control username"
+          placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
+          id="username" name="username"
+          position-lastname="right"
+          /><br/>
+          <hr/><br/>
+           <label for="email">Email</label><br/>
+          <input type="email" class="email form-control" 
+          placeholder="Eg:franckagbokoudjo301@gmail.com" id="email" name="email"/><br/>
+          <label for="tel">Phone:</label>
+            <input type="tel" class="tel form-control" 
+          placeholder="Eg:+22967251886" id="tel" name="tel"/><br/>
+          <label for="message" class="form-label">Message:</label>
+          <textarea id="message"
+          class="form-control" 
+           placeholder="write the message here" rows="10" cols="5">
+
+          </textarea>
+          <hr/><br/>
+          <strong class="text-center fw-bolder">File Validation</strong><br/>
+          <label for="img">Uploader des images</label><br/>
           <input type="file" class="images form-control" multiple 
-          placeholder="choose images many or one" id="img_test" name="images_test"/><br/>
-           <label for="pdf_test">Uploader des documents pdf</label><br/>
+          placeholder="choose images many or one" id="img" 
+          accept="image/*"
+          name="images"/><br/>
+           <label for="pdf">Uploader des documents pdf</label><br/>
           <input type="file" class="pdf form-control" multiple 
-          placeholder="choose pdf many or one" id="pdf_test" name="pdf_test"/><br/>
-          
+          placeholder="choose pdf many or one" id="pdf" name="pdf"/><br/>
+           <label for="video">Uploader des medias video</label><br/>
+          <input type="file" class="video form-control" multiple 
+          placeholder="choose video many or one" id="video" name="video"/><br/>
           <button type="submit" class="btn-submit btn ">Valider</button>
         </form>
       </div>

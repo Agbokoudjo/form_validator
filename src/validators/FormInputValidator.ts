@@ -2,28 +2,28 @@
  * This file is part of the project by AGBOKOUDJO Franck.
  *
  * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
- * Phone: +229 67 25 18 86
+ * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
  * Company: INTERNATIONALES WEB SERVICES
  *
  * For more information, please feel free to contact the author.
  */
 
-import { OptionsInputField } from "../interfaces";
-import { escapeHtmlBalise } from "../module_fonction/function";
-import { ErrorMessageHandle } from "./ErrorMessageHandle";
+import { escapeHtmlBalise } from "../_fonction/string";
+import { FormError, FormErrorInterface } from "./FormError";
+import { ValidatorInterface,OptionsInputField,URLOptions,DateOptions,SelectOptions,PassworkRuleOptions } from "./ValidatorFormInterface";
+const emailErrorMessage = "Please enter a valid email address";
+const phoneErrorMessage = 'This phone number seems to be invalid';
+const textErrormMessage = "The content of this field must contain only alphabetical letters and must not null";
+const emailRegex =
+	/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const phoneRegex = /^(\+|00|0)[0-9]{1,3}[0-9]{1,4}[0-9]{6,13}$/s    
+const  urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
 
-class FormInputValidator extends ErrorMessageHandle{
+
+class FormInputValidator extends FormError  implements  ValidatorInterface{
 	private static m_instance_validator: FormInputValidator;
-	private m_messagetextinput = "The content of this field must contain only alphabetical letters    " +
-        "and must not null Eg:AGBOKOUDJO Hounha Franck";
-    private throwmessage = "The first two arguments passed to the 'validatorInputTypeText' function must not be empty or undefined." +
-        " Please ensure that the field value argument is provided and valid."
-    private m_emailRegex = /^([a-zA-ZÀ-ÿ0-9._-]{2,})+(@[a-zA-ZÀ-ÿ0-9._-]{2,})+(\.[a-z]{2,6})+$/i;
-    private m_phoneRegex = /^([\+]{1})([0-9\s]{1,})+$/i;
-    private m_messageInputErrorTel = 'The content of this field must contain only number ,one symbol +,of spaces and must not null ,Eg: +229 67 25 18 86';
 	private constructor() { super() }
-	
 	/**
      * Méthode statique pour récupérer ou créer l'instance unique de la classe.
      * @returns L'instance unique de TextInputValidator.
@@ -34,186 +34,277 @@ class FormInputValidator extends ErrorMessageHandle{
 		}
 		return FormInputValidator.m_instance_validator;
 	}
-	/**  
-	 * Validates a text input field.  
-	 * Checks if the entered value adheres to a specific format, minimum and maximum length, and if the field is required.  
-	 * Optionally removes HTML and PHP tags if needed.  
-	 * Updates the state and error messages associated with the field in case of validation failure.  
-	 *  
-	 * @param datainput (string) : The input value to validate.  
-	 * @param targetInputname (string) : The identifier or key associated with the input field in the form.  
-	 * @param optionsinputtext (OptionsInputField) : Object containing validation options.  
-	 * - typeInput (string) : Type of field, for example "text" or "textarea".  
-	 * - regexValidator (RegExp) : Custom regular expression to validate the text format.  
-	 * - requiredInput (boolean) : Indicates if the field is mandatory.  
-	 * - escapestripHtmlAndPhpTags (boolean) : Removes HTML and PHP tags if necessary.  
-	 * - minLength (number) : Minimum allowed length for the value.  
-	 * - maxLength (number) : Maximum allowed length for the value.  
-	 * - errorMessageInput (string) : Custom error message if validation fails.  
-	 * @returns this : The current class instance, allowing method chaining.  
-	 *  
-	 * @throws Error : Throws an error if `datainput` or `targetInputname` is empty.  
-	 */
-	/**  
-	 * Valide un champ de type texte.  
-	 * Vérifie si la valeur saisie respecte un format spécifique, la longueur minimale et maximale, et si le champ est obligatoire.  
-	 * Optionnellement, retire les balises HTML et PHP en cas de besoin.  
-	 * Met à jour l'état et les messages d'erreur associés au champ en cas d'échec de validation.  
-	 *  
-	 * @param datainput (string) : La valeur saisie à valider.  
-	 * @param targetInputname (string) : L'identifiant ou clé associé au champ dans le formulaire.  
-	 * @param optionsinputtext (OptionsInputField) : Objet contenant les options pour la validation.  
-	 * - typeInput (string) : Type du champ, par exemple "text" ou "textarea".  
-	 * - regexValidator (RegExp) : Expression régulière personnalisée pour valider le format du texte.  
-	 * - requiredInput (boolean) : Indique si le champ est obligatoire.  
-	 * - escapestripHtmlAndPhpTags (boolean) : Supprime les balises HTML et PHP si nécessaire.  
-	 * - minLength (number) : Longueur minimale autorisée pour la valeur.  
-	 * - maxLength (number) : Longueur maximale autorisée pour la valeur.  
-	 * - errorMessageInput (string) : Message d'erreur personnalisé en cas de validation échouée.  
-	 * @returns this : L'instance actuelle de la classe, permettant un chaînage des appels.  
-	 *  
-	 * @throws Error : Lance une erreur si `datainput` ou `targetInputname` est vide.  
-	 */
-	public validatorInputTypeText=(datainput: string, targetInputname: string,
+
+	public allTypesValidator = (
+    datainput: string,
+    targetInputname: string,
+    type_field:"email" | "password" | "text" | "url" | "date" | "tel" | "select",
+    options_validator: OptionsInputField | URLOptions | DateOptions | PassworkRuleOptions | SelectOptions
+): this => {
+    switch (type_field) {
+        case 'email':
+            if (this.isOptionsInputField(options_validator)) {
+                this.emailValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'password':
+            if (this.isPassworkRuleOptions(options_validator)) {
+                this.passwordValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'text':
+            if (this.isOptionsInputField(options_validator)) {
+                this.textValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'url':
+            if (this.isURLOptions(options_validator)) {
+                this.urlValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'date':
+            if (this.isDateOptions(options_validator)) {
+                this.dateValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'tel':
+            if (this.isOptionsInputField(options_validator)) {
+                this.telValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        case 'select':
+            if (this.isSelectOptions(options_validator)) {
+                this.selectValidator(datainput, targetInputname, options_validator);
+            } else {
+                throw new TypeError(`Invalid options for ${type_field} validator.`);
+            }
+            break;
+        default:
+            throw new ReferenceError(`The validation function for ${type_field} is not implemented.`);
+    }
+    return this;
+};
+
+	public textValidator=(datainput: string, targetInputname: string,
         optionsinputtext: OptionsInputField = {
-            typeInput: 'text', regexValidator: /^[a-zA-ZÀ-ÿ\s]+$/i,
+			typeInput: 'text',
+			regexValidator: /^[a-zA-ZÀ-ÿ\s]+$/i,
             requiredInput: true,
              escapestripHtmlAndPhpTags:true
         }): this => {
-        const messageerror = optionsinputtext.errorMessageInput || this.m_messagetextinput;
-        const regexName = optionsinputtext.regexValidator || /^[a-zA-ZÀ-ÿ\s]+$/i;
+        let messageerror = optionsinputtext.errorMessageInput || textErrormMessage;
+        const regexName = optionsinputtext.regexValidator || /^[\p{L}\s]+$/u;
         let datavalue = datainput.trim();
-        if (!targetInputname || !datainput) { throw Error(this.throwmessage); }
         if (optionsinputtext.escapestripHtmlAndPhpTags && optionsinputtext.escapestripHtmlAndPhpTags === true) {
             datavalue = escapeHtmlBalise(datainput) as string;  
         }
-        if (optionsinputtext.typeInput && optionsinputtext.typeInput === "textarea") { datavalue = datainput.trim(); }
-        if (this.checkRegexInput(datavalue, regexName) === false) {
-            this.setIsValidFieldWithKey(targetInputname, false)
-            this.setErrorMessageFieldWithKey(targetInputname, messageerror);
+		if (optionsinputtext.typeInput && optionsinputtext.typeInput === "text") {
+			messageerror=`${messageerror} eg:${optionsinputtext.egAwait ?? "WLINDABLA Franck Empedocle"}`
+		}
+        if (regexName.test(datavalue)=== false) {
+			this.setValidatorStatus(false, messageerror, targetInputname);
         }
         this.validatorLength(datavalue, targetInputname, optionsinputtext.minLength, optionsinputtext.maxLength);
         this.validatorRequired(datavalue, targetInputname, optionsinputtext.requiredInput || true);
         return this;
     }
-	/**  
-	 * Validates an email input field.  
-	 * Checks if the entered value adheres to a specific format, minimum and maximum length, and if the field is required.  
-	 * Updates the state and error messages associated with the field in case of validation failure.  
-	 *  
-	 * @param datainputemail (string) : The input value to validate.  
-	 * @param targetInputnameemail (string) : The identifier or key associated with the input field in the form.  
-	 * @param optionsinputemail (OptionsInputText) : Object containing validation options.  
-	 * - errorMessageInput (string) : Custom error message if validation fails.  
-	 * - regexValidator (RegExp) : Custom regular expression to validate the email format.  
-	 * - minLength (number) : Minimum allowed length for the input.  
-	 * - maxLength (number) : Maximum allowed length for the input.  
-	 * - requiredInput (boolean) : Indicates if the field is mandatory.  
-	 * @returns this : The current class instance, allowing method chaining.  
-	 *  
-	 * @throws Error : Throws an error if `datainputemail` or `targetInputnameemail` is empty.  
-	 */
-	/**  
-	 * Valide un champ de type email.  
-	 * Vérifie si la valeur saisie respecte un certain format, la longueur minimale et maximale, et si le champ est obligatoire.  
-	 * Met à jour l'état et les messages d'erreur associés au champ en cas d'échec de validation.  
-	 *  
-	 * @param datainputemail (string) : La valeur saisie à valider.  
-	 * @param targetInputnameemail (string) : L'identifiant ou clé associé au champ dans le formulaire.  
-	 * @param optionsinputemail (OptionsInputText) : Objet contenant les options pour la validation.  
-	 * - errorMessageInput (string) : Message d'erreur personnalisé en cas de validation échouée.  
-	 * - regexValidator (RegExp) : Expression régulière personnalisée pour valider le format de l'email.  
-	 * - minLength (number) : Longueur minimale autorisée pour la valeur.  
-	 * - maxLength (number) : Longueur maximale autorisée pour la valeur.  
-	 * - requiredInput (boolean) : Indique si le champ est obligatoire.  
-	 * @returns this : L'instance actuelle de la classe, permettant un chaînage des appels.  
-	 *  
-	 * @throws Error : Lance une erreur si `datainputemail` ou `targetInputnameemail` est vide.  
-	 */
-	public validatorInputEmail = (datainputemail: string, targetInputnameemail: string, optionsinputemail: OptionsInputField={minLength:6,maxLength:180}): this => { 
-		const messageerrorEmail = optionsinputemail.errorMessageInput || "email is invalid  Eg:franckagbokoudjo301@gmail.com"; 
-		const regexNameEmail = optionsinputemail.regexValidator || this.m_emailRegex; 
-		if (!targetInputnameemail || !datainputemail) { throw Error(this.throwmessage); } 
-		const datavalueemail = datainputemail.trim(); 
-		if (this.checkRegexInput(datavalueemail, regexNameEmail) ===false) { 
-			this.setIsValidFieldWithKey(targetInputnameemail, false); 
-			this.setErrorMessageFieldWithKey(targetInputnameemail, messageerrorEmail); 
-		} 
-		this.validatorLength(datavalueemail, targetInputnameemail, optionsinputemail.minLength || 6, optionsinputemail.maxLength || 180); 
-		this.validatorRequired(datavalueemail, targetInputnameemail, optionsinputemail.requiredInput || true); 
-		return this; 
+	public emailValidator = (datavalueemail: string, targetInputnameemail: string, optionsinputemail: OptionsInputField={minLength:6,maxLength:180}): this => { 
+		return this.textValidator(datavalueemail, targetInputnameemail, {
+			errorMessageInput: `${optionsinputemail.errorMessageInput || emailErrorMessage} eg:${optionsinputemail.egAwait ?? "franckagbokoudjo301@gmail.com"}`,
+			regexValidator: optionsinputemail.regexValidator || emailRegex,
+			minLength: optionsinputemail.minLength || 6,
+			maxLength: optionsinputemail.maxLength || 180,
+			requiredInput: optionsinputemail.requiredInput || true,
+			typeInput:'email'
+		}); 
 	};  
+	public telValidator = (data_tel: string, targetInputname: string, optionsinputTel: OptionsInputField): this => {
+		return this.textValidator(data_tel, targetInputname, {
+			regexValidator: optionsinputTel.regexValidator || phoneRegex,
+			errorMessageInput: `${optionsinputTel.errorMessageInput || phoneErrorMessage} eg:${optionsinputTel.egAwait ?? '+229016725186'}`, 
+			minLength: optionsinputTel.minLength || 8,
+			maxLength: optionsinputTel.maxLength || 80,
+			requiredInput: optionsinputTel.requiredInput || true,
+			typeInput:'tel'
+		})
+	}
+	public passwordValidator = (datainput: string, targetInputname: string, optionsinputtext: PassworkRuleOptions = {
+		minLength: 16,
+		maxLength: 256,
+		upperCaseAllow: true,
+		lowerCaseAllow: true,
+		numberAllow: true,
+		specialChar: true,
+	}): this => {
+		datainput = datainput.trim();
+		if (optionsinputtext.upperCaseAllow && !/[A-Z]/.test(datainput)) {
+			this.setValidatorStatus(false,"Password must contain at least one uppercase letter.",targetInputname);
+		}
+	   if (optionsinputtext.lowerCaseAllow && !/[a-z]/.test(datainput)) {
+			this.setValidatorStatus(false,"Password must contain at least one lowercase letter.",targetInputname);
+		}
+		if (optionsinputtext.numberAllow && !/[0-9]/.test(datainput)) {
+			this.setValidatorStatus(false,"Password must contain at least one numeric digit.",targetInputname);
+		}
+		if (optionsinputtext.specialChar && !/[!@#$%^&*(),.?":{}|<>[\]\\]/.test(datainput)) {
+			 this.setValidatorStatus(false,"Password must contain at least one special character.",targetInputname);
+		}
+		if (optionsinputtext.regexValidator && !optionsinputtext.regexValidator.test(datainput)) {
+				this.setValidatorStatus(false,"Password does not match the required pattern.",targetInputname);
+		}
+		this.validatorLength(datainput, targetInputname, optionsinputtext.minLength, optionsinputtext.maxLength)
+		this.validatorRequired(datainput, targetInputname,optionsinputtext.requiredInput || true)
+   		 return this; // Enables method chaining
+	}
+	public urlValidator = (urlData: string,targetInputname: string,url_options: URLOptions = {
+																				allowedProtocols: ["ftp", "https", "http"],
+																				allowLocalhost: false,
+																				requireTLD: true,
+																				allowIP: false,
+																				allowHash: false,
+																				allowQueryParams: true,
+																			}): this => {
+    	const regexToUse = url_options.regexValidator || urlRegex;
+		if (!regexToUse.test(urlData)) {
+			this.setValidatorStatus(
+				false,
+				`${urlData.trim()} is invalid. Expected format: ${url_options.egAwait ?? 'https://example.com'}`,
+				targetInputname
+			);
+		}
+    	const parsedURL = new URL(urlData.trim());
+		// Vérifie si le protocole est autorisé
+		if (url_options.allowedProtocols && !url_options.allowedProtocols.includes(parsedURL.protocol.replace(':', ''))) {
+			this.setValidatorStatus(false,
+				`The protocol ${parsedURL.protocol} is not allowed. Allowed protocols: ${url_options.allowedProtocols.join(", ")}`,
+				targetInputname
+			);
+		}
+		// Vérifie si un TLD est requis
+		if (url_options.requireTLD && !/\.[a-z]{2,}$/i.test(parsedURL.hostname)) {
+			this.setValidatorStatus(false,`The hostname ${parsedURL.hostname} does not contain a required TLD.`,targetInputname);
+		}
+		// Vérifie si localhost est autorisé
+		if (!url_options.allowLocalhost && (parsedURL.hostname === 'localhost' || parsedURL.hostname === '127.0.0.1')) {
+			this.setValidatorStatus(false,`The hostname ${parsedURL.hostname} is not allowed.`,targetInputname);
+		}
+		// Vérifie si les IPs sont autorisées
+		if (!url_options.allowIP && /^[\d.]+$/.test(parsedURL.hostname)) {
+			this.setValidatorStatus(false,`IP addresses are not allowed in URLs.`,targetInputname);}
+		// Vérifie si les paramètres de requête sont autorisés
+		if (!url_options.allowQueryParams && parsedURL.search) {
+			this.setValidatorStatus(false,`Query parameters ${parsedURL.search} are not allowed in the URL.`,targetInputname);
+		}
+		// Vérifie si les fragments (#) sont autorisés
+		if (!url_options.allowHash && parsedURL.hash) {
+			this.setValidatorStatus(false,`URL fragments ${parsedURL.hash} are not allowed.`,targetInputname);
+		}
+    	return this;
+};
 
-	/**  
-	 * Validates a phone number input field.  
-	 * Checks if the entered value adheres to a specific format, minimum and maximum length, and if the field is required.  
-	 * Updates the state and error messages associated with the field in case of validation failure.  
-	 *  
-	 * @param dataInputTel (string) : The input value to validate.  
-	 * @param targetInputTel (string) : The identifier or key associated with the input field in the form.  
-	 * @param optionsinputTel (OptionsInputField) : Object containing validation options.  
-	 * - errorMessageInput (string) : Custom error message if validation fails.  
-	 * - regexValidator (RegExp) : Custom regular expression to validate the phone number format.  
-	 * - minLength (number) : Minimum allowed length for the input.  
-	 * - maxLength (number) : Maximum allowed length for the input.  
-	 * - requiredInput (boolean) : Indicates if the field is mandatory.  
-	 * @returns this : The current class instance, allowing method chaining.  
-	 *  
-	 * @throws Error : Throws an error if `dataInputTel` or `targetInputTel` is empty.  
-	 */
-	/**  
-	 * Valide un champ de type numéro de téléphone.  
-	 * Vérifie si la valeur saisie respecte un certain format, la longueur minimale et maximale, et si le champ est obligatoire.  
-	 * Met à jour l'état et les messages d'erreur associés au champ en cas d'échec de validation.
-	 *  
-	 * @param dataInputTel (string) : La valeur saisie à valider.  
-	 * @param targetInputTel (string) : L'identifiant ou clé associé au champ dans le formulaire.  
-	 * @param optionsinputTel (OptionsInputField) : Objet contenant les options pour la validation.  
-	 * - errorMessageInput (string) : Message d'erreur personnalisé en cas de validation échouée.  
-	 * - regexValidator (RegExp) : Expression régulière personnalisée pour valider le format du numéro.  
-	 * - minLength (number) : Longueur minimale autorisée pour la valeur.  
-	 * - maxLength (number) : Longueur maximale autorisée pour la valeur.  
-	 * - requiredInput (boolean) : Indique si le champ est obligatoire.  
-	 * @returns this : L'instance actuelle de la classe, permettant un chaînage des appels.  
-	 *  
-	 * @throws Error : Lance une erreur si `dataInputTel` ou `targetInputTel` est vide.  
-	 */
-	public validatorInputTel = (dataInputTel: string, targetInputTel: string, optionsinputTel: OptionsInputField): this => {
-        const messageerrorTel = optionsinputTel.errorMessageInput || this.m_messageInputErrorTel;
-        const regexPhone = optionsinputTel.regexValidator || this.m_phoneRegex;
-        if (!targetInputTel || !dataInputTel) { throw Error(this.throwmessage); }
-        const datavaluetel = dataInputTel.trim();
-        if (this.checkRegexInput(datavaluetel, regexPhone) ===false) {
-            this.setIsValidFieldWithKey(targetInputTel, false);
-            this.setErrorMessageFieldWithKey(targetInputTel, messageerrorTel);
-        }
-        this.validatorLength(datavaluetel, targetInputTel, optionsinputTel.minLength || 8, optionsinputTel.maxLength || 80);
-        this.validatorRequired(datavaluetel, targetInputTel, optionsinputTel.requiredInput || true);
-        return this;
-    }
-	private checkRegexInput(inputvaluetext: string, nameRegexInputText: RegExp): boolean{
-        return nameRegexInputText.test(inputvaluetext)
-    }
+	public dateValidator = (date_input: string, targetInputname: string, date_options: DateOptions): this => {
+		// Vérification si la date est obligatoire et vide
+		if (date_options.requiredInput && !date_input.trim()) {
+			this.setValidatorStatus(false, `The field "${targetInputname}" is required.`, targetInputname);
+			return this;
+		}
+		// Vérification du format de la date avec une regex personnalisée si fournie
+		const regexToUse = date_options.regexValidator || /^\d{4}-\d{2}-\d{2}$/; // Format YYYY-MM-DD
+		if (!regexToUse.test(date_input)) {
+			this.setValidatorStatus(false, `The value "${date_input}" is not a valid date format. Expected format: YYYY-MM-DD.`, targetInputname);
+			return this;
+		}
+		// Conversion en objet Date
+		const dateValue = new Date(date_input);
+		if (isNaN(dateValue.getTime())) {
+			this.setValidatorStatus(false, `The provided date "${date_input}" is invalid.`, targetInputname);
+			return this;
+		}
+    	const now = new Date();
+		// Vérification de la date minimale
+		if (date_options.minDate) {
+			const minDate = new Date(date_options.minDate);
+			if (dateValue < minDate) {
+				this.setValidatorStatus(false, `The date must be after ${date_options.minDate}.`, targetInputname);
+				return this;
+			}
+		}
+		// Vérification de la date maximale
+		if (date_options.maxDate) {
+			const maxDate = new Date(date_options.maxDate);
+			if (dateValue > maxDate) {
+				this.setValidatorStatus(false, `The date must be before ${date_options.maxDate}.`, targetInputname);
+				return this;
+			}
+		}
+		// Vérification si les dates futures sont autorisées
+		if (date_options.allowFuture === false && dateValue > now) {
+			this.setValidatorStatus(false, `The date "${dateValue.toISOString().split('T')[0]}" cannot be in the future.`, targetInputname);
+			return this;
+		}
+		// Vérification si les dates passées sont autorisées
+		if (date_options.allowPast === false && dateValue < now) {
+			this.setValidatorStatus(false, `The date "${dateValue.toISOString().split('T')[0]}" cannot be in the past.`, targetInputname);
+			return this;
+		}
+   		 return this;
+		};
+
+	public selectValidator = (value_index: string,targetInputname: string,options_select: SelectOptions): this => {
+		if (!options_select.optionsChoices.includes(value_index)) {
+			this.setValidatorStatus(
+				false,
+				`The selected value "${value_index}" is not included in the available options: ${options_select.optionsChoices.join(" | ")}`,
+				targetInputname
+			);
+		}
+    	return this.textValidator(value_index, targetInputname, options_select);
+};
+
     protected validatorRequired = (datainput: string, targetInputname: string, required: boolean = true): this => {
         if (required === true && !datainput) {
-            this.setIsValidFieldWithKey(targetInputname, false)
-            this.setErrorMessageFieldWithKey(targetInputname, "this input field is mandatory");
+            this.setValidatorStatus(false,"this input field is mandatory", targetInputname)
         }
         return this;
     }
-    protected validatorLength = (datainput: string, targetInputname: string, minlength: number | undefined, maxlength: number | undefined): this => {
-        if (datainput) {
-            const datavaluelength = datainput.trim();
+    private validatorLength = (datavaluelength: string, targetInputname: string, minlength: number | undefined, maxlength: number | undefined): this => {
+        if (datavaluelength) {
             if (minlength && datavaluelength.length < minlength) {
-                this.setIsValidFieldWithKey(targetInputname, false)
-                this.setErrorMessageFieldWithKey(targetInputname, "please enter at least" + " " + minlength + "  " + "characters ");
+				this.setValidatorStatus(false, `please enter at least ${minlength} characters`, targetInputname);
             }
             if (maxlength && datavaluelength.length > maxlength) {
-                this.setIsValidFieldWithKey(targetInputname, false)
-                this.setErrorMessageFieldWithKey(targetInputname, "please enter at less than" + "  " + maxlength + " " + "characters");
+                this.setValidatorStatus(false,`please enter at less than ${maxlength} characters `,targetInputname)
             }
         }
         return this;
-    }
+	}
+	private isOptionsInputField(obj: unknown): obj is OptionsInputField {
+    	return obj !== null && typeof obj === "object" && "regexValidator" in obj;
+	}
+	private isPassworkRuleOptions(obj: unknown): obj is PassworkRuleOptions {
+		return obj !== null && typeof obj === "object" && "minLength" in obj;
+	}
+	private isURLOptions(obj: unknown): obj is URLOptions {
+		return obj !== null && typeof obj === "object" && "protocols" in obj;
+	}
+	private isDateOptions(obj: unknown): obj is DateOptions {
+		return obj !== null && typeof obj === "object" && "minDate" in obj;
+	}
+	private isSelectOptions(obj: unknown): obj is SelectOptions {
+		return obj !== null && typeof obj === "object" && "optionsChoices" in obj;
+	}
+
 }
 export default FormInputValidator.getInstance();

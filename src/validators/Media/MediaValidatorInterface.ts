@@ -9,16 +9,60 @@
  * For more information, please feel free to contact the author.
  */
 
-import { OptionsFile } from '../../interfaces';
-
-export interface MediaValidatorInterface{
-    detecteMimetype?: (id_or_filename: string, hexasignatureFile: string, uint8Array: Uint8Array) => this;
-    getExtensions?: (allowedMimeTypes: string[]) => string[];
-    validatorExtension: (targetInputname: string, filename: string, allowedExtensions: string[]) => string;
-    validatorFile?: (
-        media: File | FileList,
-        targetInputname: string,
-       optionsfile:OptionsFile
-    ) => Promise<this>;
-    setAllowedExtension: (allowedExtension: string[]) => this;
+export interface OptionsFile{
+    allowedMimeTypeAccept?: string[];
+     maxsizeFile?: number;
+    unityMaxSizeFile?: string;
+    extensions?: string[];
+    unityDimensions?: string;
 }
+export interface OptionsImage extends OptionsFile {
+    minWidth?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    maxHeight?: number;
+}
+export interface OptionsMediaVideo extends OptionsFile{
+    duration?: number;
+    minWidth?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    maxHeight?: number;
+    unityDurationMedia?: string;
+}
+export interface MediaValidatorInterface{
+    fileValidator?: ( media: File | FileList,targetInputname: string,optionsfile:OptionsFile) => Promise<this>;
+}
+/**
+ * Représente les métadonnées d'un fichier multimédia (stocké dans IndexedDB ou sur un serveur distant).
+ * Cette interface est utilisée pour la gestion des fichiers vidéo, audio ou autres médias dans l'application.
+ */
+export interface MediaMetadataProperty {
+    /** URL du fichier multimédia (peut être local ou distant). */
+    mediaFileUrl: string;
+
+    /** ID renvoyé par le serveur après l'enregistrement des métadonnées. */
+    mediaId?: number;
+
+    /** Nom du fichier multimédia. */
+    mediaFileName: string;
+
+    /** Taille du fichier en octets. */
+    mediaFileSize: number;
+
+    /** Type MIME du fichier (ex. : video/mp4). */
+    mediaFileMimeType: string;
+
+    /** Timestamp indiquant la dernière modification du fichier. */
+    mediaFileLastModified?: number;
+
+    /** Objet File représentant le fichier multimédia. */
+    mediaFile: File;
+
+    /** ID généré dans la base de données IndexedDB. */
+    id?: number;
+    mediaFileDuration?: number; // Durée en secondes
+    mediaFileResolution?: string; // Résolution, ex : "1920x1080"
+    mediaFileThumbnailUrl?: string; // URL d'une miniature générée
+}
+

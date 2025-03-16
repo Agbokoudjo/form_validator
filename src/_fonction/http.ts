@@ -2,7 +2,7 @@
  * This file is part of the project by AGBOKOUDJO Franck.
  *
  * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
- * Phone: +229 67 25 18 86
+ * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
  * Company: INTERNATIONALES WEB SERVICES
  *
@@ -22,14 +22,14 @@ export interface addParamToUrlConfig {
    * @param baseUrl 
    * @returns string |URL
    */
-  export const addParamToUrl = (urlparam: string, 
-                                addparamUrlDependencie: addParamToUrlConfig|null=null,
+  export function addParamToUrl(urlparam: string|URL, 
+                                addparamUrlDependencie: Record<string,any>|null=null,
                                 returnUrl:boolean=true,
-                                baseUrl: string | URL = window.location.origin): string|URL => {
+                                baseUrl: string | URL |undefined= window.location.origin): string|URL {
     const url = new URL(urlparam, baseUrl);
     if (addparamUrlDependencie) {
         for (const [keyparam, valueparam] of Object.entries(addparamUrlDependencie)) {
-      url.searchParams.set(keyparam, valueparam);
+           url.searchParams.set(keyparam, valueparam);
     }
     }
       return returnUrl ? url.toString() :url;
@@ -42,26 +42,24 @@ export interface addParamToUrlConfig {
    * @param returnUrl - Si vrai, retourne une chaîne de caractères représentant l'URL, sinon retourne une instance de URL.
    * @returns Une chaîne de caractères ou une instance de URL avec les paramètres ajoutés.
    */
-  export const buildUrlFromForm = (
-      formElement: HTMLFormElement,
-      addparamUrlDependencie: addParamToUrlConfig|null,
+  export function buildUrlFromForm(
+    formElement: HTMLFormElement,
+    form_action:string|null=null,
+      addparamUrlDependencie: Record<string,any>|null,
        returnUrl: boolean = true,
-      baseUrl: string | URL = window.location.origin
-  ): string | URL => {
+      baseUrl: string | URL|undefined = window.location.origin
+  ): string | URL{
       const formData = new FormData(formElement);
       const searchParamsInstance = new URLSearchParams();
-  
       formData.forEach((value, key) => {
           searchParamsInstance.append(key, value.toString());
       });
-  
-      const url = new URL(formElement.action || baseUrl.toString(), baseUrl);
-  
+      const url = new URL(formElement.action || form_action || baseUrl, baseUrl);
       // Ajouter les paramètres au URL
       searchParamsInstance.forEach((value, key) => {
           url.searchParams.set(key, value);
       });
-      const urlWithAddedParams = addParamToUrl(url.toString(), addparamUrlDependencie, returnUrl, baseUrl);
+      const urlWithAddedParams = addParamToUrl(url, addparamUrlDependencie, returnUrl, baseUrl);
       return returnUrl ? urlWithAddedParams.toString() : urlWithAddedParams;
   };
   interface FetchOptions {
@@ -157,24 +155,21 @@ export async function httpFetchHandler({
   }: FetchOptions): Promise<any> {
     // ✅ Vérifier si `data` est un FormData pour ajuster les headers
   const isFormData = data instanceof FormData;
-  const headers = isFormData
+  const headers_requete = isFormData
     ? optionsheaders // Ne pas modifier les headers si FormData
     : { ...optionsheaders }; // Cloner les headers pour éviter de modifier l'original
 
-    if (!isFormData && headers instanceof Object) {
-      delete (headers as Record<string, string>)["Content-Type"];
+    if (!isFormData && headers_requete instanceof Object) {
+      delete (headers_requete as Record<string, string>)["Content-Type"];
     }    
-
     const params: RequestInit = {
       method: methodSend.toUpperCase(),
-      headers: optionsheaders,
+      headers:headers_requete,
     };
-  
      // ✅ Ajouter le body uniquement pour POST, PUT, PATCH
   if (data && ["POST", "PUT", "PATCH"].includes(methodSend.toUpperCase())) {
     params.body = isFormData ? data : JSON.stringify(data);
   }
-  
     for (let attempt = 1; attempt <= retryCount; attempt++) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -207,7 +202,7 @@ export async function httpFetchHandler({
   
       } catch (error: any) {
         clearTimeout(timeoutId); // Nettoyer le timeout en cas d'erreur
-        console.error('Attempt ${attempt} failed on ${retryCount}:', error);
+        console.error(`Attempt ${attempt} failed on ${retryCount}:`, error);
         if (error.name === 'AbortError') {
           throw new Error("Request timed out");
         } else if (attempt === retryCount) {
@@ -216,4 +211,5 @@ export async function httpFetchHandler({
       }
     }
   }
+  
   

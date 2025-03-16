@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable","esnext"],
+    "module":"ESNext",
+    "lib": ["DOM", "DOM.Iterable","esnext"],
     "skipLibCheck": true,
    "outDir": "./dist",
     "rootDir": "./src",  
@@ -11,6 +11,7 @@
     "emitDeclarationOnly": true,
     "isolatedModules": true,
     "moduleDetection": "force",
+    "esModuleInterop": true,
      "noEmit": false,  // Autorise la génération des fichiers compilés
     "strict": true,
     "moduleResolution": "bundler",    // Permet de résoudre les modules comme Node.js

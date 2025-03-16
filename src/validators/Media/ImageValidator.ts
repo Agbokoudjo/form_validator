@@ -11,28 +11,15 @@
 
 import { validateImage } from 'image-validator';
 
-import { OptionsFile } from '../../interfaces';
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import { MediaValidatorInterface } from './MediaValidatorInterface';
-
-export interface OptionsImage extends OptionsFile {
-    minWidth?: number;
-    maxWidth?: number;
-    minHeight?: number;
-    maxHeight?: number;
-}
+import {OptionsImage } from './MediaValidatorInterface';
 /**
  * ImageValidator Class
  * This class validates image files by checking their extensions, dimensions, MIME types, and other characteristics.
  * It ensures that uploaded files meet specific criteria, such as allowed file types and sizes.
  * Implements the FileValidatorInterface and extends the ErrorMessageHandle class.
- * 
- * Classe ImageValidator
- * Cette classe valide les fichiers image en vérifiant leurs extensions, dimensions, types MIME et autres caractéristiques.
- * Elle garantit que les fichiers téléchargés respectent des critères spécifiques, tels que les types de fichiers et tailles autorisés.
- * Implémente l'interface FileValidatorInterface et hérite de la classe ErrorMessageHandle.
  */
-class ImageValidator extends AbstractMediaValidator implements MediaValidatorInterface {
+class ImageValidator extends AbstractMediaValidator {
     protected readonly signatureHexadecimalFormatFile:Record<string, string[]> = {
 	// Image formats
 	jpg: ['ffd8ffe0', 'ffd8ffe1', 'ffd8ffe2', 'ffd8ffe3', 'ffd8ffe8'],
@@ -63,44 +50,36 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
      * Validates an image file or a list of image files against the specified options.
      * Valide un fichier image ou une liste de fichiers image selon les options spécifiées.
      */
-	public validatorFile= async (
+	public fileValidator= async (
 		medias: File | FileList,
 		targetInputname: string = 'photofile',
 		optionsimg: OptionsImage = { allowedMimeTypeAccept: ['image/jpeg', 'image/png', 'image/jpg'] }
 	): Promise<this> => {
         const files = medias instanceof FileList ? Array.from(medias) : [medias];
-		const allowedMimeTypeAccept = optionsimg.allowedMimeTypeAccept || ['image/jpeg', 'image/png', 'image/jpg'];
-		const extension_media = this.getExtensions(allowedMimeTypeAccept);
+        const allowedMimeTypeAccept = optionsimg.allowedMimeTypeAccept || ['image/jpeg', 'image/png', 'image/jpg'];
+       
         for (const file of files) {
-            this.m_Image.set(file.name, file);
-			this.validatorExtension(targetInputname, file.name, extension_media); // Validation de l'extension dans la même boucle
-           this.validatorSize(targetInputname,file.name, optionsimg.maxsizeFile || 5, optionsimg.unityMaxSizeFile || 'MiB')
-            const mimeError = await this.validateFileMimeType(file, allowedMimeTypeAccept);
-            const signatureError = await this.validateFileSignature(file);
-
+			this.extensionValidate(file,targetInputname,optionsimg.extensions||this.getExtensions(allowedMimeTypeAccept)); // Validation de l'extension dans la même boucle
+           this.sizeValidate(file,targetInputname, optionsimg.maxsizeFile || 5, optionsimg.unityMaxSizeFile || 'MiB')
+            const mimeError = await this.mimeTypeFileValidate(file, allowedMimeTypeAccept);
+            const signatureError = await this.signatureFileValidate(file);
             if (mimeError || signatureError) {
-               this.handleValidationError(targetInputname,file.name,`${mimeError ?? ''} ${signatureError ?? ''} name_image: ${file.name}`)
+                this.handleValidationError(targetInputname, file.name, `${mimeError ?? ''} ${signatureError ?? ''} name_image: ${file.name}`)
+                continue;
             }
-            if (this.getIsFileDiguise(file.name) === false) {
-                this.validatorHeight(targetInputname,file.name, optionsimg.minHeight, optionsimg.maxHeight);
-               this.validatorWidth(targetInputname, file.name,optionsimg.minWidth, optionsimg.maxWidth);
+            if (this.getValidateFile(file.name) === true) {
+                await this.heightValidate(file,targetInputname, optionsimg.minHeight, optionsimg.maxHeight,optionsimg.unityDimensions);
+               await this.widthValidate(file,targetInputname,optionsimg.minWidth, optionsimg.maxWidth,optionsimg.unityDimensions);
             }
         }
 		return this;
     }
-    protected setFile=(files: File[]): this=> {
-        for (const file of files) {
-            this.m_Image.set(file.name, file);
-        }
-        return this;
-    }
-
 	/**
      * Validates the file signature to ensure the file is not disguised as another type.
      * Valide la signature du fichier pour s'assurer qu'il ne s'agit pas d'un fichier déguisé.
      */
-	private async validateFileSignature(file: File): Promise<string | null> {
-		const readerImg = new FileReader();
+    protected async signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null> {
+        const readerImg = new FileReader();
 		 return new Promise<string|null>((resolve) => {
             readerImg.onload = async (event: ProgressEvent<FileReader>) => {
                 try {
@@ -112,8 +91,7 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
                     const uint8Array = new Uint8Array(arrayBuffer);
                     const hexasignatureFile = uint8Array.subarray(0, 4).reduce((acc, byte) => acc + byte.toString(16).padStart(2, '0'), '');
                     // Obtention du vrai MimeType d'un fichier image
-                    this.detecteMimetype(file.name,hexasignatureFile, uint8Array);
-                    if (this.getMimeType(file.name) !== file.type) {
+                    if (this.detecteMimetype(hexasignatureFile, uint8Array)!== file.type) {
                        resolve(`The file ${file.name} you selected appears to be disguised as an image. Please choose a valid image file to continue.`)
 					} else {
 						 resolve(null);
@@ -132,88 +110,34 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
 			};
 			  readerImg.readAsArrayBuffer(file);
         });
-	}
+    }
 	/**
      * Validates the MIME type of the file against the allowed MIME types.
      * Valide le type MIME du fichier par rapport aux types MIME autorisés.
      */
-	 private async validateFileMimeType(file: File, allowedMimeTypeAccept: string[]): Promise<string | null> {
-        try {
+     protected async mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[] | undefined): Promise<string | null> {
+          try {
             await validateImage(file, { throw: true });
         } catch (error) {
             return `${error} name_image: ${file.name}`;
         }
-
-        /*const result = await validateMIMEType(file.name, {
-            originalFilename: file.name,
-            allowMimeTypes: allowedMimeTypeAccept
-        });
-
-        if (!result.ok) {
-            return `${result.error?.message} name_image: ${file.name}`;
-        }*/
         return null;
-	 }
-	/**
-     * Validates the width of the image against the specified minimum and maximum values.
-     * Valide la largeur de l'image par rapport aux valeurs minimales et maximales spécifiées.
-     */
-	protected validatorWidth = async (targetInputname: string,filename:string, minWidth: number | null | undefined, maxWidth: number | null | undefined): Promise<this> => {
-        const dimensions = await this.getImageDimensions(filename);
-        if (minWidth && dimensions.width < minWidth) {
-            this.setIsValidFieldWithKey(targetInputname, false);
-            this.setErrorMessageFieldWithKey(targetInputname, `The width of the image ${filename} is less than ${minWidth}`);
-        }
-        if (maxWidth && dimensions.width > maxWidth) {
-            this.setIsValidFieldWithKey(targetInputname, false);
-            this.setErrorMessageFieldWithKey(targetInputname, `The width of the image ${filename} is greater than ${maxWidth}`);
-        }
-        return this;
-	}
-	
-	  /**
-     * Retrieves a stored image file by its ID.
-     * Récupère un fichier image stocké par son ID.
-     */
-	protected getFileId=(id: string): File =>{
-		const image_file = this.m_Image.get(id);
-		if (!image_file) {throw new Error(`the image ${id} no exist in store`);}
-		return image_file;
-	}
+     }
 	protected getContext(): string {
         return 'image';
-    }
-	 /**
-     * Valide la hauteur de l'image.
-     * @param targetInputname Le nom du champ input.
-     * @param minHeight La hauteur minimale.
-     * @param maxHeight La hauteur maximale.
-     * @returns Une promesse qui se résout à l'instance de la classe.
-     */
-    protected validatorHeight = async (targetInputname: string, filename:string,minHeight: number | null | undefined, maxHeight: number | null | undefined): Promise<this> => {
-        const dimensions = await this.getImageDimensions(filename);
-        if (minHeight && dimensions.height < minHeight) {
-            this.setIsValidFieldWithKey(targetInputname, false);
-            this.setErrorMessageFieldWithKey(targetInputname, `The image ${filename} height is less than ${minHeight}`);
-        }
-        if (maxHeight && dimensions.height > maxHeight) {
-            this.setIsValidFieldWithKey(targetInputname, false);
-            this.setErrorMessageFieldWithKey(targetInputname, `The image ${filename} height is greater than ${maxHeight}`);
-        }
-        return this;
     }
 	/**
      * Récupère les dimensions de l'image.
      * @returns Une promesse qui se résout aux dimensions de l'image.
      */
-    private getImageDimensions = (id:string): Promise<{filename:string, width: number, height: number }> => {
+    protected getFileDimensions(file: File): Promise<{ width: number; height: number; }> {
         return new Promise((resolve, reject) => {
             const img = new Image();
             img.onload = () => {
-                resolve({filename:id, width: img.width, height: img.height });
+                resolve({width: img.width, height: img.height });
             };
             img.onerror = reject;
-            img.src = URL.createObjectURL(this.getFileId(id));
+            img.src = URL.createObjectURL(file);
         });
     }
 	/**
@@ -222,8 +146,8 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
      * @param uint8Array 
      * @returns string return le vrai type du fichier
      */
-    public detecteMimetype = (id_or_filename:string,hexasignatureFile: string, uint8Array: Uint8Array): this => {
-        let mimeType = 'unknown';
+    private detecteMimetype = (hexasignatureFile: string, uint8Array: Uint8Array): string|null => {
+        let mimeType = null;
 		if (this.signatureHexadecimalFormatFile.jpg.includes(hexasignatureFile.substring(0, 8)) || this.signatureHexadecimalFormatFile.jpeg.includes(hexasignatureFile.substring(0, 8))) {
 			mimeType = 'image/jpeg';
 		} else if (this.signatureHexadecimalFormatFile.png.includes(hexasignatureFile)) {
@@ -242,8 +166,7 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
 				mimeType = 'image/svg+xml';
 			}
 		}
-			this.setMimeType(id_or_filename,mimeType);
-            return this;
+            return mimeType;
     }
 	
 	/**
@@ -251,12 +174,12 @@ class ImageValidator extends AbstractMediaValidator implements MediaValidatorInt
      * @param allowedMimeTypes une liste de type MiMe
      * @returns string[] return un tableau contenant les extensions
      */
-    public getExtensions = (allowedMimeTypes: string[] = ['image/jpeg', 'image/png', 'image/jpg']): string[] => {
+    private getExtensions = (allowedMimeTypes: string[] = ['image/jpeg', 'image/png', 'image/jpg']): string[] => {
         let extensions = [];
         for (let index = 0; index < allowedMimeTypes.length; index++) {
             const mimeType = allowedMimeTypes[index];
             const extensionitem = mimeType.split('/').pop()?.toLowerCase();
-            if (extensionitem && extensionitem !==undefined) {
+            if (extensionitem && extensionitem !==undefined && extensionitem !=="*") {
                 extensions.push(extensionitem);
             }
         }

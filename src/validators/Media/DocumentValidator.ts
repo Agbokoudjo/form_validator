@@ -2,10 +2,8 @@ import Mammoth from 'mammoth';
 import Papa from 'papaparse';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
-
-import { OptionsFile } from '../../interfaces';
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import { MediaValidatorInterface } from './MediaValidatorInterface';
+import { MediaValidatorInterface,OptionsFile } from './MediaValidatorInterface';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'public/workers/pdf.worker.min.js';
 
@@ -31,18 +29,14 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
     txt: ['text/plain'],
     csv:['text/csv']
 };
-
-
     protected readonly signatureHexadecimalFormatDocument: Record<string, string[]> = {
         pdf:  ['25504446'],
         word: ['504b0304', 'd0cf11e0'],
         excel: ['504b0304', 'd0cf11e0'],
     };
 	private static m_instance_doc_validator: DocumentValidator;
-	private m_Document: Map<string,File>;
 	private constructor() {
 		super();
-		this.m_Document = new Map<string, File>();
 	}
 	public static getInstanceDocValidator = (): DocumentValidator => {
 		if (!DocumentValidator.m_instance_doc_validator) {
@@ -50,19 +44,18 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
 		}
 		return DocumentValidator.m_instance_doc_validator;
 	}
-	public validatorFile = async (medias: File | FileList,targetInputname:string='doc',optionsdoc:OptionsFile): Promise<this> => {
+	public fileValidator = async (medias: File | FileList,targetInputname:string='doc',optionsdoc:OptionsFile): Promise<this> => {
 		const files = medias instanceof FileList ? Array.from(medias) : [medias];
 		const extension_media = this.getExtensions(
 			optionsdoc.allowedMimeTypeAccept ||
             ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             ]);
 		for (const filepdf of files) {
-			this.m_Document.set(filepdf.name, filepdf);
-			const extension_file = this.validatorExtension(targetInputname, filepdf.name, extension_media);
+            const extension_file = this.extensionValidate(filepdf, targetInputname, extension_media);
 			let format_validator='pdf'
-			if (['odt,docx,doc'].includes(extension_file)) {
+			if (['odt,docx,doc'].includes(extension_file || 'docx')) {
 				format_validator = 'word';
-			} else if (['xlsx,xls'].includes(extension_file)) {
+			} else if (['xlsx,xls'].includes(extension_file || 'xls')) {
 				format_validator = 'excel';
             } else if ('csv'===extension_file) {
                 format_validator = 'csv';
@@ -105,29 +98,34 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
 	protected readFileAsUint8Array(file: File): Promise<Uint8Array> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-
             reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
             reader.onerror = () => reject(`Failed to read file: ${file.name}`);
-
             reader.readAsArrayBuffer(file);
         });
     }
     protected validateSignature = (file: File, formatValidator: string, uint8Array: Uint8Array): boolean => {
         const signatures = this.signatureHexadecimalFormatDocument[formatValidator] || [];
-    
         if (signatures.length === 0 && ['csv','txt'].includes(formatValidator)===true) {
             console.log(`No signatures found for format: ${formatValidator}`);
             return true;
         }
-
         const fileSignature = Array.from(uint8Array.subarray(0, 4))
             .map(byte => byte.toString(16).padStart(2, '0'))
             .join('');
-            
-
         return signatures.some((signature) => fileSignature.startsWith(signature));
-};
-
+    };
+    protected async signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null> {
+        return null;
+    }
+    protected mimeTypeFileValidate=async (file: File, allowedMimeTypeAccept?: string[] | undefined): Promise<string | null>=> {
+        return null;
+    }
+    protected async getFileDimensions(file: File): Promise<{ width: number; height: number; }> {
+        return {
+            width: 100,
+            height:100
+        }
+    }
 	protected async validatePdf(file: File, uint8Array: Uint8Array): Promise<string | null> {
         try {
             const pdfDocument = await pdfjsLib.getDocument(uint8Array).promise;
@@ -193,7 +191,6 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
             header: true, // Utilise la première ligne comme en-tête
             skipEmptyLines: true, // Ignore les lignes vides
             complete: (results) => {
-                console.log(results.data)
                 if (results.data && results.data.length > 0 && results.errors.length ===0) {
                     resolve(null); // Fichier valide
                 } else {
@@ -225,20 +222,10 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
         } else if (this.signatureHexadecimalFormatDocument.pptx.includes(hexasignatureFile)) {
             mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
         }
-		this.setMimeType(filename, mimeType);
         return this;
     }
 	protected getContext(): string {
         return 'document';
-	}
-	 /**
-     * Retrieves a stored file pdf file by its ID.
-     * Récupère un fichier file pdf stocké par son ID.
-     */
-	protected getFileId=(id: string): File =>{
-		const document_file = this.m_Document.get(id);
-		if (!document_file) {throw new Error(`the document pdf ${id} no exist in store`);}
-		return document_file ;
 	}
 	public getExtensions = (allowedMimeTypeAccept: string[]): string[] => {
         const extensionsdoc = allowedMimeTypeAccept.reduce<string[]>((acc, mimeType) => {

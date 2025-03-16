@@ -1,11 +1,17 @@
 {
   "name": "@wlindabla/form_validator",
-  "author": "AGABOKOUJO Franck",
+  "author": "AGBOKOUJO Franck (franckagbokoudjo301@gmail.com)",
+  "description": "**Form Validator** is a powerful JavaScript/TypeScript library designed to validate various types of fields in HTML forms. It supports input fields such as `text`, `email`, `tel`, `password`, as well as file types like `images`, `PDFs`, `Word documents`, `CSV`, `Excel`, and more. The library offers customizable configurations to suit different validation needs.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Agbokoudjo/form_validator"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "type": "module",
+  "private":"false",
   "keywords": [
     "jquery",
     "typescript",
@@ -15,10 +21,14 @@
     "video-validator",
     "pdf-validator",
     "csv-validator",
-    "document-validator"
+    "document-validator",
+    "collection form",
+    "collection type form",
+    "collection form field",
+    "Validation, Form validation, HTML form validator"
   ],
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "vite",
     "prepare": "yarn build",
     "build": "tsc --build --clean && tsc --build",
     "type-check": "tsc --build"
@@ -30,13 +40,14 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.14",
     "@types/jquery": "^3.5.32",
-    "@types/lodash.debounce": "^4",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/papaparse": "^5.3.15",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/xlsx": "^0.0.36",
-    "typescript": "^5.7.3",
-    "vite": "^6.0.11"
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2"
   },
   "dependencies": {
     "image-validator": "^1.2.1",
@@ -44,7 +55,7 @@
     "lodash.debounce": "^4.0.8",
     "mammoth": "^1.9.0",
     "papaparse": "^5.5.2",
-    "pdfjs-dist": "^4.10.38",
+    "pdfjs-dist": "^5.0.375",
     "xlsx": "^0.18.5"
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"
