@@ -19,7 +19,7 @@ import {OptionsImage } from './MediaValidatorInterface';
  * It ensures that uploaded files meet specific criteria, such as allowed file types and sizes.
  * Implements the FileValidatorInterface and extends the ErrorMessageHandle class.
  */
-class ImageValidator extends AbstractMediaValidator {
+export class ImageValidator extends AbstractMediaValidator {
     protected readonly signatureHexadecimalFormatFile:Record<string, string[]> = {
 	// Image formats
 	jpg: ['ffd8ffe0', 'ffd8ffe1', 'ffd8ffe2', 'ffd8ffe3', 'ffd8ffe8'],
@@ -190,4 +190,3 @@ class ImageValidator extends AbstractMediaValidator {
         return extensions;
     }
 }
-export default ImageValidator.getInstance();

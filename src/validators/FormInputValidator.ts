@@ -21,7 +21,7 @@ const phoneRegex = /^(\+|00|0)[0-9]{1,3}[0-9]{1,4}[0-9]{6,13}$/s
 const  urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
 
 
-class FormInputValidator extends FormError  implements  ValidatorInterface{
+export class FormInputValidator extends FormError  implements  ValidatorInterface{
 	private static m_instance_validator: FormInputValidator;
 	private constructor() { super() }
 	/**
@@ -307,4 +307,3 @@ class FormInputValidator extends FormError  implements  ValidatorInterface{
 	}
 
 }
-export default FormInputValidator.getInstance();

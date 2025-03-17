@@ -17,7 +17,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'public/workers/pdf.worker.min.js';
  *
  * For more information, please feel free to contact the author.
  */
-class DocumentValidator extends AbstractMediaValidator implements MediaValidatorInterface{
+export class DocumentValidator extends AbstractMediaValidator implements MediaValidatorInterface{
 	protected readonly mimeTypeMap: Record<string, string[]> = {
     pdf: ['application/pdf'],
     doc: ['application/msword'],
@@ -241,4 +241,3 @@ class DocumentValidator extends AbstractMediaValidator implements MediaValidator
 
 
 }
-export default DocumentValidator.getInstanceDocValidator();

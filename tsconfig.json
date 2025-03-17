@@ -9,7 +9,7 @@
     "rootDir": "./src",  
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
-    "isolatedModules": true,
+    "isolatedModules":false,
     "moduleDetection": "force",
     "esModuleInterop": true,
      "noEmit": false,  // Autorise la génération des fichiers compilés

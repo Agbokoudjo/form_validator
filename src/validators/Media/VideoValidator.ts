@@ -4,7 +4,7 @@ interface VideoDimensions{
     width: number;
     height: number
 }
-class VideoValidator extends AbstractMediaValidator {
+export class VideoValidator extends AbstractMediaValidator {
     private m_video_media: Map<string, File>;
     private m_dimension: Record<string, VideoDimensions>;
 	private static m_instance_media: VideoValidator;
@@ -178,4 +178,3 @@ class VideoValidator extends AbstractMediaValidator {
     });
 };
 }
-export default VideoValidator.getInstance();

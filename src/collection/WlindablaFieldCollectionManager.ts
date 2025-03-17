@@ -119,4 +119,3 @@ export class WlindablaFieldCollectionManager implements FieldCollectionInterface
     }
     public getCollectionCounters=(container_id:string):number=>{return this.collectionCounters[container_id]|| -1}
 }
-export default WlindablaFieldCollectionManager.getInstance();

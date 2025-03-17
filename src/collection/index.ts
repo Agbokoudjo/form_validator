@@ -8,4 +8,4 @@
  *
  * For more information, please feel free to contact the author.
  */
-export * from './WlindablaFieldCollectionManager'
+export {WlindablaFieldCollectionManager,FieldCollectionInterface} from './WlindablaFieldCollectionManager'

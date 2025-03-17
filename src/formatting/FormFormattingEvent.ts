@@ -17,7 +17,7 @@ export interface OptionsFormattingEvent{
     usernameModule?: boolean;
     locales?: string | string[];
 }
-class FormFormattingEvent {
+export class FormFormattingEvent {
     private m_option_module:OptionsFormattingEvent;
     private static m_instance_formatting: FormFormattingEvent;
     private constructor() { this.m_option_module = {} }
@@ -167,4 +167,3 @@ class FormFormattingEvent {
         return elmt.length !== 0;
     }
 }
-export default FormFormattingEvent.getInstance();

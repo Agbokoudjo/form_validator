@@ -1,5 +1,4 @@
-export * from "./ImageValidator";
-export * from "./VideoValidator";
-export * from "./DocumentValidator";
-import { AbstractMediaValidator } from "./AbstractMediaValidator";
-export {AbstractMediaValidator}
+export {ImageValidator} from "./ImageValidator";
+export {VideoValidator} from "./VideoValidator";
+export { DocumentValidator } from "./DocumentValidator";
+export {OptionsMediaVideo,OptionsFile,OptionsImage,MediaValidatorInterface} from "./MediaValidatorInterface"

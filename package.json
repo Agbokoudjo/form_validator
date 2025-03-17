@@ -9,7 +9,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "private":"false",
   "keywords": [
@@ -36,6 +36,12 @@
   "files": [
     "dist/"
   ],
+   "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },

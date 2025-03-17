@@ -1,1 +1,1 @@
-export * from "./FormFormattingEvent"
+export {FormFormattingEvent,OptionsFormattingEvent} from "./FormFormattingEvent"

@@ -8,6 +8,13 @@
  *
  * For more information, please feel free to contact the author.
  */
-export * from './http';
-export * from './string';
-export * from './function_dom';
+export {httpFetchHandler,addParamToUrl,buildUrlFromForm} from './http';
+export {
+    nl2br, escapeHtmlBalise, ucfirst, usernameFormat,
+    capitalizeString,bytesToMegabytes,
+} from './string';
+export {
+    serviceInternclass, addErrorMessageFieldDom,
+    clearErrorInput, handleErrorsManyForm,
+    createSmallErrorMessage
+} from './function_dom';
