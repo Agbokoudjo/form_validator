@@ -64,8 +64,8 @@ export interface addParamToUrlConfig {
   };
   interface FetchOptions {
     url: string | URL;
-    methodSend?: string;
-    data?: any;
+    methodSend?:'GET'|'POST'|'PUT'|'PATCH'|'HEAD'|'DELETE'|'PURGE'|'OPTIONS'|'TRACE'|'CONNECT';
+    data?: unknown;
     optionsheaders?: HeadersInit;
     timeout?: number;
     retryCount?: number;
@@ -140,7 +140,7 @@ console.log(response); // Parsed JSON response
 
 ---
    */
-export async function httpFetchHandler({
+export async function httpFetchHandler<T=unknown>({
     url,
     methodSend = "GET",
     data = null,
@@ -152,18 +152,15 @@ export async function httpFetchHandler({
     timeout = 5000, // 5 secondes par défaut
     retryCount = 3, // 3 tentatives par défaut
     responseType = 'json',
-  }: FetchOptions): Promise<any> {
+}: FetchOptions): Promise<HttpResponse>{
     // ✅ Vérifier si `data` est un FormData pour ajuster les headers
   const isFormData = data instanceof FormData;
-  const headers_requete = isFormData
-    ? optionsheaders // Ne pas modifier les headers si FormData
-    : { ...optionsheaders }; // Cloner les headers pour éviter de modifier l'original
-
-    if (!isFormData && headers_requete instanceof Object) {
+    const headers_requete: HeadersInit = { ...optionsheaders };
+  if (isFormData && headers_requete instanceof Object) {
       delete (headers_requete as Record<string, string>)["Content-Type"];
     }    
     const params: RequestInit = {
-      method: methodSend.toUpperCase(),
+      method: methodSend,
       headers:headers_requete,
     };
      // ✅ Ajouter le body uniquement pour POST, PUT, PATCH
@@ -179,37 +176,94 @@ export async function httpFetchHandler({
         const response = await fetch(url, params);
         clearTimeout(timeoutId);
   
-        if (!response.ok) {
-          return Promise.reject(response);
+        if (mapStatusToResponseType(response.status) ==='error') {
+          return await detectedResponseTypeNoOk<T>(response);
         }
   
-        switch (responseType) {
-          case 'json':
-            return await response.json();
-          case 'text':
-            return await response.text();
-          case 'blob':
-            return await response.blob();
-          case 'arrayBuffer':
-              return await response.arrayBuffer();
-          case 'formData':
-              return await response.formData();
-          case 'stream':
-              return response.body; // Retourne le ReadableStream directement
-          default:
-            throw new Error('Unsupported response type');
-        }
+        return await responseTypeHandle<T>(responseType, response);
   
-      } catch (error: any) {
-        clearTimeout(timeoutId); // Nettoyer le timeout en cas d'erreur
-        console.error(`Attempt ${attempt} failed on ${retryCount}:`, error);
-        if (error.name === 'AbortError') {
-          throw new Error("Request timed out");
-        } else if (attempt === retryCount) {
-          throw error; // Lancer l'erreur après la dernière tentative
-        }
+      } catch (error: any)
+      {
+          clearTimeout(timeoutId); // Nettoyer le timeout en cas d'erreur
+          console.error(`Attempt ${attempt} of ${retryCount} failed:`, error);
+
+          if (error.name === "AbortError") {
+            throw new Error("Request timed out");
+          }
+
+          if (attempt === retryCount) {
+            throw new Error(`Failed after ${retryCount} attempts: ${error.message}`);
+          }
       }
     }
+      // 🔴 Normalement, ce point n'est jamais atteint, mais on ajoute un throw par sécurité
+      throw new Error("Unexpected error in httpFetchHandler");
+}
+interface HttpResponseData<T = unknown> {readonly status: number;readonly headers: Headers;readonly data: T;}
+
+export class HttpResponse<T = unknown> {
+  constructor(private readonly response_data: HttpResponseData<T>) { }
+  get status(): number { return this.response_data.status; }
+  get headers(): Headers { return this.response_data.headers; }
+  get data(): T { return this.response_data.data; }
+}
+
+async function responseTypeHandle<T = unknown>(
+  responseType: string,
+  response: Response
+): Promise<HttpResponse> {
+  const status = response.status;
+  const headers = response.headers;
+
+  switch (responseType) {
+    case "json":
+      return new HttpResponse<T>({ status, headers, data: await response.json() });
+
+    case "text":
+      return new HttpResponse({ status, headers, data: await response.text() });
+
+    case "blob":
+      return new HttpResponse({ status, headers, data: await response.blob() });
+
+    case "arrayBuffer":
+      return new HttpResponse({ status, headers, data: await response.arrayBuffer() });
+
+    case "formData":
+      return new HttpResponse({ status, headers, data: await response.formData() });
+
+    case "stream":
+      return new HttpResponse({ status, headers, data: response.body }); // ReadableStream directement
+
+    default:
+      return new HttpResponse({ status, headers, data: await response.text() }); // Par défaut, du texte
   }
-  
-  
+}
+async function detectedResponseTypeNoOk<T=unknown>(
+  response: Response
+): Promise<HttpResponse> {
+  const contentType = (response.headers.get("content-type") ?? "").trim().toLowerCase();
+  if (["application/json", "application/ld+json"].some((type) => contentType.startsWith(type)) ||
+     contentType.includes("json") || contentType.endsWith("+json")) {
+    return await responseTypeHandle<T>("json", response);
+  }
+  if (contentType.startsWith("text/html") || contentType.startsWith("text/plain")) {
+    return await responseTypeHandle<T>("text", response);
+  }
+  if (["application/xml", "text/xml"].some((type) => contentType.startsWith(type))
+      ||
+    contentType.includes("xml")
+  ) {
+    return await responseTypeHandle<T>("text", response); // XML est souvent traité comme texte
+  }
+  // ✅ Retour par défaut si aucun type détecté
+  return new HttpResponse({status: response.status,headers: response.headers,data: response.statusText});
+}
+type MappedHttpStatus = 'success' | 'info' | 'warning' | 'error';
+export function mapStatusToResponseType(status: number): MappedHttpStatus {
+  if (status < 200) {return 'info';}
+  if (status >= 200 && status < 300) { return 'success'; }
+  if (status >= 300 && status < 400) {return 'warning'; }
+  if (status >= 400 && status < 500) {return 'error'; }
+  if (status >= 500) {return 'error';}
+  return 'error';
+}

@@ -1,4 +1,4 @@
-import {FormErrorInterface } from "../validators/FormError";
+import {FormErrorInterface } from "../Validators/FormError";
 
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
@@ -11,7 +11,7 @@ import {FormErrorInterface } from "../validators/FormError";
  * For more information, please feel free to contact the author.
  */
 if (typeof window.jQuery === 'undefined') {
-    throw new Error("jQuery is required for usage of these functions");
+    console.error("jQuery is required for usage of these functions");
 }
 /**
  * This function handles error messages for the current input field, 

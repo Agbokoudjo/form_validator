@@ -5,10 +5,11 @@
     "module":"ESNext",
     "lib": ["DOM", "DOM.Iterable","esnext"],
     "skipLibCheck": true,
-   "outDir": "./dist",
-    "rootDir": "./src",  
-    "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true,
+   "outDir": "dist",
+    "rootDir": "src",  
+    "allowImportingTsExtensions":false,
+    "declarationMap": true,
+    "emitDeclarationOnly":false,
     "isolatedModules":false,
     "moduleDetection": "force",
     "esModuleInterop": true,
@@ -16,7 +17,7 @@
     "strict": true,
     "moduleResolution": "bundler",    // Permet de résoudre les modules comme Node.js
     "declaration": true,     
-    "allowJs":true,
+    "allowJs":false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
@@ -24,5 +25,5 @@
     "types": ["jquery"]
   },
   "include": ["src/**/*", "global.d.ts","pdfjs-dist.d.ts", "public/workers", "src/workers/pdf.worker.min.js"],
-  "exclude": ["node_modules","dist","main.ts"]
+  "exclude": ["node_modules","src/main.ts","dist"]
 }

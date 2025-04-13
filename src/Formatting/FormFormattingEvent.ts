@@ -1,4 +1,4 @@
-import { capitalizeString, escapeHtmlBalise, usernameFormat } from "../_fonction/string";
+import { capitalizeString, escapeHtmlBalise, usernameFormat } from "../_Functions/string";
 
 /*
  * This file is part of the project by AGBOKOUDJO Franck.

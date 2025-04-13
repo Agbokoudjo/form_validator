@@ -9,7 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 
-import { escapeHtmlBalise } from "../_fonction/string";
+import { escapeHtmlBalise } from "../_Functions/string";
 import { FormError, FormErrorInterface } from "./FormError";
 import { ValidatorInterface,OptionsInputField,URLOptions,DateOptions,SelectOptions,PassworkRuleOptions } from "./ValidatorFormInterface";
 const emailErrorMessage = "Please enter a valid email address";
@@ -305,5 +305,4 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 	private isSelectOptions(obj: unknown): obj is SelectOptions {
 		return obj !== null && typeof obj === "object" && "optionsChoices" in obj;
 	}
-
 }

@@ -45,7 +45,7 @@ export interface FormErrorInterface{
 	 * @param messageerrorinput EN : The error message to add for the field.
 	 * @returns EN : The instance of the class to allow method chaining.
 	 */
-	setErrorMessageField: (targetInputname: string, messageerrorinput: string) => this;
+	setErrorMessageField: (targetInputname: string, messageerrorinput: string | string[]) => this;
 	/**
 	 * EN : Retrieves all error messages associated with a specific field in the form.
 	 * If no error messages are defined for the field, returns an empty array.
@@ -128,13 +128,30 @@ export abstract class FormError implements FormErrorInterface{
 		}
 		return this;
 	}
-	public hasErrorsField=(targetname: string): boolean => {return this.m_is_valid_field.get(targetname)===true};
-	public setErrorMessageField = (targetInputname: string, messageerrorinput: string): this => {
+	public hasErrorsField = (targetname: string): boolean => {
+		return this.m_is_valid_field.get(targetname) === true || this.m_is_valid_field.get(targetname)===undefined 
+	};
+	public setErrorMessageField = (targetInputname: string, messageerrorinput: string | string[]): this => {
+		// Si messageerrorinput est un tableau, on l'assigne directement à errorMessageField
 		const errorMessageField = this.m_errorMessageField.get(targetInputname) || [];
-		if (!errorMessageField.includes(messageerrorinput)) {
-			errorMessageField.push(messageerrorinput);
-			this.m_errorMessageField.set(targetInputname, errorMessageField);
+
+		// Si le message d'erreur est un tableau, on ajoute les messages un par un
+		if (Array.isArray(messageerrorinput)) {
+			messageerrorinput.forEach((message) => {
+				if (!errorMessageField.includes(message)) {
+					errorMessageField.push(message);
+				}
+			});
+		} else {
+			// Si c'est une chaîne, on l'ajoute directement
+			if (!errorMessageField.includes(messageerrorinput)) {
+				errorMessageField.push(messageerrorinput);
+			}
 		}
+
+		// On met à jour l'erreur pour ce champ
+		this.m_errorMessageField.set(targetInputname, errorMessageField);
+
 		return this;
 	};
 

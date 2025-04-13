@@ -8,13 +8,7 @@
  *
  * For more information, please feel free to contact the author.
  */
-export {httpFetchHandler,addParamToUrl,buildUrlFromForm} from './http';
-export {
-    nl2br, escapeHtmlBalise, ucfirst, usernameFormat,
-    capitalizeString,bytesToMegabytes,
-} from './string';
-export {
-    serviceInternclass, addErrorMessageFieldDom,
-    clearErrorInput, handleErrorsManyForm,
-    createSmallErrorMessage
-} from './function_dom';
+export * from './http';
+export * from './string';
+export * from './dom';
+export * from './api';

@@ -38,7 +38,7 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
 	private constructor() {
 		super();
 	}
-	public static getInstanceDocValidator = (): DocumentValidator => {
+	public static getInstance= (): DocumentValidator => {
 		if (!DocumentValidator.m_instance_doc_validator) {
 			DocumentValidator.m_instance_doc_validator = new DocumentValidator();
 		}
@@ -48,7 +48,8 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
 		const files = medias instanceof FileList ? Array.from(medias) : [medias];
 		const extension_media = this.getExtensions(
 			optionsdoc.allowedMimeTypeAccept ||
-            ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ['application/pdf', 'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
             ]);
 		for (const filepdf of files) {
             const extension_file = this.extensionValidate(filepdf, targetInputname, extension_media);
@@ -238,6 +239,4 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
     this.setAllowedExtension(extensionsdoc);
     return extensionsdoc;
 };
-
-
 }

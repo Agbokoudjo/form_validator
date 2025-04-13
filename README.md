@@ -98,11 +98,16 @@ import { debounce } from "lodash";
 import {
   clearErrorInput,
   serviceInternclass,
-} from "@wlindabla/form_validator/_fonction/function_dom";
-import formInputValidator from "@wlindabla/form_validator/validators/FormInputValidator";
-import documentValidator from "@wlindabla/form_validator/validators/Media/DocumentValidator";
-import imageValidator from "@wlindabla/form_validator/validators/Media/ImageValidator";
-import formFormattingEvent from "@wlindabla/form_validator/formatting/FormFormattingEvent";
+} from "@wlindabla/form_validator";
+import {FormInputValidator} from "@wlindabla/form_validator";
+import {DocumentValidator} from "@wlindabla/form_validator";
+import {ImageValidator} from "@wlindabla/form_validator";
+import {FormFormattingEvent} from "@wlindabla/form_validator";
+const formInputValidator = FormInputValidator.getInstance();
+const documentValidator = DocumentValidator.getInstance();
+const videoValidator = VideoValidator.getInstance();
+const formFormattingEvent = FormFormattingEvent.getInstance();
+const imageValidator = ImageValidator.getInstance();
 
 
 
@@ -124,7 +129,8 @@ The `FormFormattingEvent` library provides utility functions to format user inpu
 Ensure that your project supports ES6 module imports. You can import the library as follows:
 
 ```javascript
-import formFormattingEvent from "./formatting/FormFormattingEvent";
+import {FormFormattingEvent} from "@wlindabla/form_validator";
+const formFormattingEvent = FormFormattingEvent.getInstance();
 ```
 
 ## Usage
@@ -198,7 +204,7 @@ The `escapeHtmlBalise` function is a utility designed to sanitize and escape HTM
 Then, import the function into your project:
 
 ```ts
-import { escapeHtmlBalise } from "@wlindabla/form_validator/_fonction";
+import { escapeHtmlBalise } from "@wlindabla/form_validator";
 ```
 
 ---
@@ -314,7 +320,7 @@ The function returns a formatted string where the first letter is uppercase and 
 #### Example Usage
 
 ```typescript
-import { ucfirst } from '@wlindabla/form_validator/_fonction';
+import { ucfirst } from '@wlindabla/form_validator';
 
 const result = ucfirst("agbokoudjo"); 
 console.log(result); // Outputs "Agbokoudjo"
@@ -345,7 +351,7 @@ The function returns the string with `<br>` inserted wherever newlines exist.
 #### Example Usage
 
 ```typescript
-import { nl2br } from '@wlindabla/form_validator/_fonction';
+import { nl2br } from '@wlindabla/form_validator';
 
 const result = nl2br("Hello\nWorld");
 console.log(result); // Outputs "Hello<br>World"
@@ -372,7 +378,7 @@ The function returns a string where the first letter of each word is capitalized
 #### Example Usage
 
 ```typescript
-import { capitalizeString } from '@wlindabla/form_validator/_fonction';
+import { capitalizeString } from '@wlindabla/form_validator';
 
 const result = capitalizeString("hounha franck empedocle");
 console.log(result); // Outputs "Hounha Franck Empedocle"
@@ -402,7 +408,7 @@ The function returns the formatted full name, with the last name placed accordin
 #### Example Usage
 
 ```typescript
-import { usernameFormat } from '@wlindabla/form_validator/_fonction';
+import { usernameFormat } from '@wlindabla/form_validator';
 
 const resultLeft = usernameFormat("Agbokoudjo hounha franck empedocle", "left");
 console.log(resultLeft); // Outputs "AGBOKOUDJO Hounha Franck Empedocle"
@@ -441,7 +447,7 @@ The function returns either:
 #### Example Usage
 
 ```typescript
-import { addParamToUrl } from '@wlindabla/form_validator/_fonction';
+import { addParamToUrl } from '@wlindabla/form_validator';
 
 // Adding parameters to a given URL
 const updatedUrl = addParamToUrl('https://example.com', { page: 2, sort: 'asc' });
@@ -475,7 +481,7 @@ The function returns either:
 #### Example Usage
 
 ```typescript
-import { buildUrlFromForm } from '@wlindabla/form_validator/_fonction';
+import { buildUrlFromForm } from '@wlindabla/form_validator';
 
 // Assuming we have a form element in our HTML
 const form = document.querySelector('form') as HTMLFormElement;
@@ -542,7 +548,7 @@ The function returns a `Promise` that resolves to the requested data in the spec
 
 ### **Example Usage**
 ```ts
-import { httpFetchHandler } from '@wlindabla/form_validator/_fonction';
+import { httpFetchHandler } from '@wlindabla/form_validator';
 const response = await httpFetchHandler({
   url: "https://api.example.com/data",
   methodSend: "POST",
@@ -555,6 +561,28 @@ console.log(response); // Parsed JSON response
 
 ---
 
+### `mapStatusToResponseType(status: number): 'success' | 'info' | 'warning' | 'error'`
+
+This function maps an HTTP status code to a response type, which helps in categorizing the status for easier handling in the application. The response type is returned based on the HTTP status code provided as input.
+
+#### Parameters:
+- `status` (number): The HTTP status code received from an API response. This value is used to determine the appropriate response type.
+
+#### Returns:
+- **'success'**: For status codes in the 200–299 range, indicating successful requests (e.g., `200 OK`, `201 Created`).
+- **'info'**: For status codes in the 100–199 range, indicating informational responses (e.g., `100 Continue`, `101 Switching Protocols`).
+- **'warning'**: For status codes in the 300–399 range, indicating redirection responses (e.g., `301 Moved Permanently`, `302 Found`).
+- **'error'**: For status codes in the 400–499 range, indicating client errors (e.g., `404 Not Found`, `401 Unauthorized`), and for status codes in the 500–599 range, indicating server errors (e.g., `500 Internal Server Error`, `503 Service Unavailable`).
+
+If the status code is not covered by the defined ranges, it defaults to `'error'` for safety.
+
+#### Example usage:
+```typescript
+const responseType = mapStatusToResponseType(200);
+console.log(responseType); // 'success'
+
+const responseType = mapStatusToResponseType(404);
+console.log(responseType); // 'error'
 
 ---
 
@@ -960,7 +988,8 @@ Converts a list of MIME types to their corresponding file extensions.
 
 ## Usage Example
 ```typescript
-import imageValidator from '@wlindabla/form_validator/ImageValidator';
+import {ImageValidator} from "@wlindabla/form_validator";
+const imageValidator = ImageValidator.getInstance();
 
 jQuery(function documentLoad() {
   const imagesAll = jQuery<HTMLInputElement>('input#img');
@@ -1108,7 +1137,8 @@ Retrieves allowed extensions based on the MIME type map.
 
 ## Example Usage
 ```typescript
-import documentValidator from "./validators/Media/DocumentValidator";
+import {DocumentValidator} from "@wlindabla/form_validator";
+const documentValidator = DocumentValidator.getInstance();
  const pdfAll = jQuery<HTMLInputElement>('input#pdf');
   let instanceValidatorpdf = documentValidator;
   const validatePdf= debounce(async (event: JQuery.BlurEvent) => {
@@ -1257,13 +1287,338 @@ To use this library in your project, you can import the `VideoValidator` class d
 ### Import Example
 
 ```javascript
-import videoValidator from "@wlindabla/form_validator/validators/Media/VideoValidator";
+import {VideoValidator} from "@wlindabla/form_validator";
+const videoValidator = VideoValidator.getInstance();
 ```
 
 ---
 
 
 ---
+
+---
+
+
+# `ApiError` Class Documentation
+
+The `ApiError` class is designed to handle and process errors returned from an API, particularly focusing on violation errors, which are common in validation processes. This class makes it easier to extract specific error messages related to each field, and also provides a structured way to retrieve all violation messages.
+
+## **Class: `ApiError`**
+### **Constructor:**
+```typescript
+import { ApiError } from "@wlindabla/form_validator";
+constructor(data: Record<string, unknown>, status: number)
+```
+
+#### **Parameters:**
+- **`data`**: The data returned from the API, usually containing information about errors and violations (e.g., validation errors).
+  - Type: `Record<string, unknown>`
+  - Structure:
+      ```json
+        {
+          "title": "Validation Failed",
+          "detail": "Some fields failed validation.",
+          "violations": [
+            {
+              "propertyPath": "name",
+              "message": "This field is required."
+            },
+            {
+              "propertyPath": "email",
+              "message": "Invalid email format."
+            }
+          ]
+        }
+  ```
+
+- **`status`**: The HTTP status code returned from the API, indicating the response status (e.g., 400 for bad request, 422 for unprocessable entity).
+  - Type: `number`
+
+---
+
+### **Methods**
+
+#### **`violationsFor(field: string): string[]`**
+```typescript
+violationsFor(field: string): string[]
+```
+
+#### **Description:**
+This method retrieves the list of violation messages for a specific field. It filters the violations by `propertyPath` and returns an array of messages related to that field.
+
+#### **Parameters:**
+- **`field`**: The name of the field for which violations are being retrieved.
+  - Type: `string`
+
+#### **Returns:**
+- **`string[]`**: An array of violation messages related to the specified field. If no violations are found for the field, it returns an empty array.
+
+#### **Example Usage:**
+```typescript
+const apiError = new ApiError({
+    "violations": [
+        { "propertyPath": "username", "message": "Username is required" },
+        { "propertyPath": "email", "message": "Invalid email address" }
+    ]
+}, 400);
+
+const usernameViolations = apiError.violationsFor("username");
+console.log(usernameViolations); // ["Username is required"]
+```
+
+---
+
+#### **`name`**
+```typescript
+get name(): string
+```
+
+#### **Description:**
+This getter method returns a string combining the error title and detail. If the error detail is not available, it only returns the title.
+
+#### **Returns:**
+- **`string`**: The combined title and detail of the error.
+
+#### **Example Usage:**
+```typescript
+const apiError = new ApiError({
+    "title": "Validation Error",
+    "detail": "One or more fields are invalid"
+}, 400);
+
+console.log(apiError.name); // "Validation Error One or more fields are invalid"
+```
+
+---
+
+#### **`allViolations`**
+```typescript
+get allViolations(): Record<string, string[]>
+```
+
+#### **Description:**
+This getter method organizes and retrieves all violation messages grouped by `propertyPath` (the field name). If there are no violations, it returns an object containing a `main` key with a general error message.
+
+#### **Returns:**
+- **`Record<string, string[]>`**: An object where each key is a field name (`propertyPath`), and the value is an array of violation messages for that field. If no violations are found, it returns an object with a `main` key.
+
+#### **Example Usage:**
+```typescript
+const apiError = new ApiError({
+    "violations": [
+        { "propertyPath": "username", "message": "Username is required" },
+        { "propertyPath": "email", "message": "Invalid email address" },
+        { "propertyPath": "username", "message": "Username must be unique" }
+    ]
+}, 400);
+
+console.log(apiError.allViolations);
+// {
+//   username: ["Username is required", "Username must be unique"],
+//   email: ["Invalid email address"]
+// }
+```
+
+---
+
+## **Use Cases**
+
+### **1. Handling Field Validation Errors**
+The `ApiError` class is particularly useful when working with APIs that return field validation errors. For example, when submitting a form and the server returns violations (e.g., required fields, invalid email), you can use this class to easily access specific error messages for each field.
+
+**Example Scenario:**
+You send a request to an API that validates user input (like a registration form). If any fields (e.g., username, email) are invalid, the server returns a structured response with violation messages. You can use `ApiError` to display these errors to the user in a structured way.
+
+**Sample Code:**
+```typescript
+const apiError = new ApiError(responseData, responseStatus);
+
+// Retrieve specific field error messages
+const usernameErrors = apiError.violationsFor("username");
+const emailErrors = apiError.violationsFor("email");
+
+// Display errors to the user
+console.log(usernameErrors); // ["Username is required"]
+console.log(emailErrors);    // ["Invalid email address"]
+```
+
+### **2. General Error Handling**
+In cases where there are no specific field violations, the `ApiError` class provides a way to return a general error message that can be used for user notifications.
+
+**Example Scenario:**
+When the API returns an error without specific field violations (e.g., authentication failure, or a server error), the `ApiError` class allows you to display a generic error message.
+
+**Sample Code:**
+```typescript
+const apiError = new ApiError({ "title": "Server Error", "detail": "Something went wrong" }, 500);
+
+console.log(apiError.name); // "Server Error Something went wrong"
+```
+
+---
+Here’s how you can document the usage of `ApiError` in your `README.md` file, explaining how it can be integrated into a React component that handles form submissions:
+
+---
+
+
+
+## Overview
+## Usage in React
+
+### 1. **Handling API Errors in React**
+
+When submitting a form in React, you might want to handle errors returned from an API, particularly form validation errors. To manage this, we can use the `ApiError` class.
+
+### Example Usage in a React Component
+
+Here is an example of how to integrate the `ApiError` class in a React component that handles form submissions:
+
+```jsx
+import React, { useState, useEffect } from 'react';
+import ValidatorErrorField from './ValidatorErrorField'; // Component to display error messages
+
+// Function to submit form data and trigger custom event on error
+async function submitForm(formData) {
+  try {
+    const response = await fetch('/api/submit', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const responseData = await response.json();
+
+    // Create an instance of ApiError with the response data
+    const apiError = new ApiError(responseData, response.status);
+
+    // Dispatch a custom event with the apiError instance
+    const event = new CustomEvent('formSubmissionError', {
+      detail: { apiError }
+    });
+
+    document.dispatchEvent(event);
+  } catch (error) {
+    console.error('Error during form submission', error);
+  }
+}
+
+const YourForm = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+  });
+
+  const [errorMessages, setErrorMessages] = useState({});
+
+  useEffect(() => {
+    // Listen for the custom formSubmissionError event
+    const handleApiError = (event) => {
+      const { apiError } = event.detail;
+      const violations = apiError.allViolations;
+
+      // Map violations to errorMessages object for use in the form
+      const errorMessages = {};
+
+      Object.entries(violations).forEach(([field, messages]) => {
+        errorMessages[field] = messages.join(', ');
+      });
+
+      setErrorMessages(errorMessages); // Update state with error messages
+    };
+
+    document.addEventListener('formSubmissionError', handleApiError);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener('formSubmissionError', handleApiError);
+    };
+  }, []);
+
+  const onChangeHandle = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const onSubmitForm = (e) => {
+    e.preventDefault();
+    submitForm(formData); // Trigger form submission and handle errors
+  };
+
+  return (
+    <form onSubmit={onSubmitForm}>
+      <div>
+        <label htmlFor="name">Name</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          value={formData.name}
+          onChange={onChangeHandle}
+        />
+        {errorMessages['name'] && (
+          <ValidatorErrorField
+            errordisplay={true}
+            messageerror={errorMessages['name']}
+            classnameerror={["fw-bold", "text-danger", "mt-2", "error-message"]}
+          />
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={onChangeHandle}
+        />
+        {errorMessages['email'] && (
+          <ValidatorErrorField
+            errordisplay={true}
+            messageerror={errorMessages['email']}
+            classnameerror={["fw-bold", "text-danger", "mt-2", "error-message"]}
+          />
+        )}
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+```
+
+### How It Works:
+
+1. **Form Submission**:  
+   When the user submits the form, the `submitForm` function is called. It sends the form data to the API and waits for the response.
+
+2. **Handling Errors**:  
+   If the API responds with errors (e.g., validation errors), an instance of the `ApiError` class is created and dispatched via a custom event (`formSubmissionError`).
+
+3. **Event Listener**:  
+   The `YourForm` component listens for the `formSubmissionError` event. When the event is triggered, it extracts the errors from the `ApiError` instance and updates the state with the error messages.
+
+4. **Displaying Errors**:  
+   The form renders any error messages next to the corresponding fields using the `ValidatorErrorField` component, which accepts error messages and displays them styled according to the provided classes.
+
+---
+
+### Key Benefits:
+
+- **Separation of Concerns**: The error-handling logic is abstracted away from the React component, making the component code cleaner and easier to manage.
+- **Reusability**: You can use the `ApiError` class across multiple forms and components, making it a reusable solution for handling API errors.
+- **Flexibility**: By using custom events, you can easily handle errors from various parts of your application without having to pass props or states explicitly between components.
+
+---
+
+This way, the `ApiError` class integrates seamlessly with React form components and provides a structured and effective approach to handling validation errors from the API.
+## **Conclusion**
+
+The `ApiError` class is a powerful utility to handle API errors, especially when working with form validation. By structuring error messages by field and offering methods for easy access, it simplifies the process of displaying specific violations to the user. This class ensures that error handling is efficient and user-friendly.
+
+---
+
 
 ## Contact Information
 

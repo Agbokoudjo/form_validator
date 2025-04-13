@@ -9,14 +9,18 @@ import viteLogo from "./vite.svg";
 import {
   clearErrorInput,
   serviceInternclass,
-} from "./_fonction/function_dom";
+} from "./_Functions/dom";
 import typescriptLogo from "./typescript.svg";
-import formInputValidator from "./validators/FormInputValidator";
-import documentValidator from "./validators/Media/DocumentValidator";
-import videoValidator from "./validators/Media/VideoValidator";
-import imageValidator from "./validators/Media/ImageValidator";
-import formFormattingEvent from "./formatting/FormFormattingEvent";
-
+import { FormInputValidator } from "./Validators/FormInputValidator";
+import { DocumentValidator } from "./Validators/Media/DocumentValidator";
+import { VideoValidator } from "./Validators/Media/VideoValidator";
+import { ImageValidator } from "./Validators/Media/ImageValidator";
+import { FormFormattingEvent } from "./Formatting/FormFormattingEvent";
+const formInputValidator = FormInputValidator.getInstance();
+const documentValidator = DocumentValidator.getInstance();
+const videoValidator = VideoValidator.getInstance();
+const formFormattingEvent = FormFormattingEvent.getInstance();
+const imageValidator = ImageValidator.getInstance();
 window.$ = jQuery;
 window.jQuery = jQuery;
 document.querySelector<HTMLDivElement>('#app-header')!.innerHTML=`
@@ -127,7 +131,8 @@ jQuery(function mediaLoad() {
         target.files as FileList, target.name,
         {
           allowedMimeTypeAccept: ['application/pdf', 'text/csv', 'text/plain',
-            'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'application/vnd.oasis.opendocument.text'
           ]
         });

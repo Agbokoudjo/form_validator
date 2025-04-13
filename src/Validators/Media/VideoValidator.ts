@@ -5,12 +5,10 @@ interface VideoDimensions{
     height: number
 }
 export class VideoValidator extends AbstractMediaValidator {
-    private m_video_media: Map<string, File>;
     private m_dimension: Record<string, VideoDimensions>;
 	private static m_instance_media: VideoValidator;
 	private constructor() {
 		super();
-        this.m_video_media = new Map<string, File>(); // Initialize the map here 
         this.m_dimension = {};
 	}
 	public static getInstance = (): VideoValidator => {

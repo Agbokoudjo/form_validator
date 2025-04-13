@@ -10,7 +10,7 @@
  */
 
 if (typeof window.jQuery === 'undefined') {
-    throw new Error("jQuery is required for usage of the class WlindablaFieldCollectionManager");
+    console.error("jQuery is required for usage of the class WlindablaFieldCollectionManager");
 }
 /**
  * Interface définissant les méthodes pour gérer une collection de champs dans un formulaire.
