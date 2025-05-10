@@ -15,7 +15,7 @@ if (typeof window.jQuery === 'undefined') {
 /**
  * Interface définissant les méthodes pour gérer une collection de champs dans un formulaire.
  */
-export interface FieldCollectionInterface {
+interface FieldCollectionInterface {
     /**
      * Ajoute un champ à la collection.
      *
@@ -44,13 +44,11 @@ export interface FieldCollectionInterface {
  *
  * This class automatically manages input field collections in a form based on a given assumption.
  */
-export class WlindablaFieldCollectionManager implements FieldCollectionInterface{
+export class WlindablaFieldCollectionManager implements FieldCollectionInterface {
     private static m_instance_Manager: WlindablaFieldCollectionManager;
     protected collectionCounters: Record<string, number>;
     // Constructeur privé pour empêcher l'instantiation directe
-    private constructor() {
-        this.collectionCounters={}
-    }
+    private constructor() { this.collectionCounters = {} }
 
     /**
      * Obtenir l'instance unique de la classe.
@@ -65,16 +63,16 @@ export class WlindablaFieldCollectionManager implements FieldCollectionInterface
         }
         return WlindablaFieldCollectionManager.m_instance_Manager;
     }
-    public init=(class_btn: string='.wlindabla-collection-add',subject:any): void=>{
+    public init = (class_btn: string = '.wlindabla-collection-add', subject: any): void => {
         jQuery(subject).on('click', `${class_btn}`, (event: JQuery.ClickEvent) => {
             event.preventDefault();
             this.addFieldToCollection(jQuery(event.target))
         })
         jQuery(subject).on('click', '.wlindabla-collection-delete', (event: JQuery.ClickEvent) => {
             this.removeFieldFromCollection(jQuery(event.target))
-    });
+        });
     }
-    public addFieldToCollection=(target: JQuery<HTMLElement>):void=>{
+    public addFieldToCollection = (target: JQuery<HTMLElement>): void => {
         const container = target.closest('[data-prototype]');//
         const container_id = container.attr('id') as string;
         const counter = this.setCollectionCounters(container_id);
@@ -83,18 +81,18 @@ export class WlindablaFieldCollectionManager implements FieldCollectionInterface
         // Set field id
         const idRegexp = new RegExp(`${container_id}_${protoName}`, 'g');
         proto = proto.replace(idRegexp, `${container_id}_${counter}`);
-      // Set field name
+        // Set field name
         const parts = container_id.split('_');
         const nameRegexp = new RegExp(`${parts[parts.length - 1]}\\]\\[${protoName}`, 'g');
         proto = proto.replace(nameRegexp, `${parts[parts.length - 1]}][${counter}`);
         this.addRemoveButtonToField(jQuery(proto))
         jQuery(proto)
-        .insertBefore(target.parent())
-        .addClass('wlindabla-collection-row  row')
-        .trigger('wlindabla-admin-append-form-element');
+            .insertBefore(target.parent())
+            .addClass('wlindabla-collection-row  row')
+            .trigger('wlindabla-admin-append-form-element');
         target.trigger('wlindabla-collection-item-added');
     }
-    public addRemoveButtonToField(containerRow: JQuery<HTMLDivElement | HTMLElement>): void{
+    public addRemoveButtonToField(containerRow: JQuery<HTMLDivElement | HTMLElement>): void {
         const remove_btn = jQuery('<button class="btn my-2 btn-danger wlindabla-collection-delete">delete</button>');
         remove_btn.attr({ type: 'button' })
             .prepend('<i class="fas fa-trash" aria-hidden="true"></i>');
@@ -102,20 +100,20 @@ export class WlindablaFieldCollectionManager implements FieldCollectionInterface
         containerRemoveBtn.append(remove_btn);
         containerRow.prepend(containerRemoveBtn);
     }
-    public removeFieldFromCollection(target_remove: JQuery<HTMLDivElement | HTMLElement>): void{
+    public removeFieldFromCollection(target_remove: JQuery<HTMLDivElement | HTMLElement>): void {
         target_remove.trigger('wlindabla-collection-item-deleted');
         target_remove.closest('.wlindabla-collection-row').slideUp(1000, () => {
             jQuery(this).remove();
         });
-         jQuery(document).trigger('wlindabla-collection-item-deleted-successful');
+        jQuery(document).trigger('wlindabla-collection-item-deleted-successful');
     }
     protected setCollectionCounters = (container_id: string): number => {
         if (this.collectionCounters.hasOwnProperty(container_id) === true) {
             this.collectionCounters[container_id] += 1;
         } else {
-              this.collectionCounters[container_id]= 0;
+            this.collectionCounters[container_id] = 0;
         }
         return this.collectionCounters[container_id];
     }
-    public getCollectionCounters=(container_id:string):number=>{return this.collectionCounters[container_id]|| -1}
+    public getCollectionCounters = (container_id: string): number => { return this.collectionCounters[container_id] ?? -1 }
 }

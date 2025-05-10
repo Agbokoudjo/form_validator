@@ -9,8 +9,8 @@
  * For more information, please feel free to contact the author.
  */
 
-import { escapeHtmlBalise } from "../_Functions/string";
-import { FormError, FormErrorInterface } from "./FormError";
+import { escapeHtmlBalise } from "../_Utils/string";
+import { FormError} from "./FormError";
 import { ValidatorInterface,OptionsInputField,URLOptions,DateOptions,SelectOptions,PassworkRuleOptions } from "./ValidatorFormInterface";
 const emailErrorMessage = "Please enter a valid email address";
 const phoneErrorMessage = 'This phone number seems to be invalid';
@@ -19,7 +19,6 @@ const emailRegex =
 	/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const phoneRegex = /^(\+|00|0)[0-9]{1,3}[0-9]{1,4}[0-9]{6,13}$/s    
 const  urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
-
 
 export class FormInputValidator extends FormError  implements  ValidatorInterface{
 	private static m_instance_validator: FormInputValidator;
@@ -104,8 +103,8 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
             requiredInput: true,
              escapestripHtmlAndPhpTags:true
         }): this => {
-        let messageerror = optionsinputtext.errorMessageInput || textErrormMessage;
-        const regexName = optionsinputtext.regexValidator || /^[\p{L}\s]+$/u;
+        let messageerror = optionsinputtext.errorMessageInput ?? textErrormMessage;
+        const regexName = optionsinputtext.regexValidator ?? /^[\p{L}\s]+$/u;
         let datavalue = datainput.trim();
         if (optionsinputtext.escapestripHtmlAndPhpTags && optionsinputtext.escapestripHtmlAndPhpTags === true) {
             datavalue = escapeHtmlBalise(datainput) as string;  
@@ -122,21 +121,21 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
     }
 	public emailValidator = (datavalueemail: string, targetInputnameemail: string, optionsinputemail: OptionsInputField={minLength:6,maxLength:180}): this => { 
 		return this.textValidator(datavalueemail, targetInputnameemail, {
-			errorMessageInput: `${optionsinputemail.errorMessageInput || emailErrorMessage} eg:${optionsinputemail.egAwait ?? "franckagbokoudjo301@gmail.com"}`,
-			regexValidator: optionsinputemail.regexValidator || emailRegex,
-			minLength: optionsinputemail.minLength || 6,
-			maxLength: optionsinputemail.maxLength || 180,
-			requiredInput: optionsinputemail.requiredInput || true,
+			errorMessageInput: `${optionsinputemail.errorMessageInput ?? emailErrorMessage} eg:${optionsinputemail.egAwait ?? "franckagbokoudjo301@gmail.com"}`,
+			regexValidator: optionsinputemail.regexValidator ?? emailRegex,
+			minLength: optionsinputemail.minLength ?? 6,
+			maxLength: optionsinputemail.maxLength ?? 180,
+			requiredInput: optionsinputemail.requiredInput ?? true,
 			typeInput:'email'
 		}); 
 	};  
 	public telValidator = (data_tel: string, targetInputname: string, optionsinputTel: OptionsInputField): this => {
 		return this.textValidator(data_tel, targetInputname, {
-			regexValidator: optionsinputTel.regexValidator || phoneRegex,
-			errorMessageInput: `${optionsinputTel.errorMessageInput || phoneErrorMessage} eg:${optionsinputTel.egAwait ?? '+229016725186'}`, 
-			minLength: optionsinputTel.minLength || 8,
-			maxLength: optionsinputTel.maxLength || 80,
-			requiredInput: optionsinputTel.requiredInput || true,
+			regexValidator: optionsinputTel.regexValidator ?? phoneRegex,
+			errorMessageInput: `${optionsinputTel.errorMessageInput ?? phoneErrorMessage} eg:${optionsinputTel.egAwait ?? '+229016725186'}`, 
+			minLength: optionsinputTel.minLength ?? 8,
+			maxLength: optionsinputTel.maxLength ?? 80,
+			requiredInput: optionsinputTel.requiredInput ?? true,
 			typeInput:'tel'
 		})
 	}
@@ -161,29 +160,27 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 		if (optionsinputtext.specialChar && !/[!@#$%^&*(),.?":{}|<>[\]\\]/.test(datainput)) {
 			 this.setValidatorStatus(false,"Password must contain at least one special character.",targetInputname);
 		}
-		if (optionsinputtext.regexValidator && !optionsinputtext.regexValidator.test(datainput)) {
-				this.setValidatorStatus(false,"Password does not match the required pattern.",targetInputname);
-		}
-		this.validatorLength(datainput, targetInputname, optionsinputtext.minLength, optionsinputtext.maxLength)
-		this.validatorRequired(datainput, targetInputname,optionsinputtext.requiredInput || true)
-   		 return this; // Enables method chaining
+		return this.textValidator(datainput,
+			targetInputname,
+			{ minLength:optionsinputtext.minLength,
+				maxLength: optionsinputtext.maxLength,
+				requiredInput: optionsinputtext.requiredInput ?? true,
+				regexValidator: optionsinputtext.regexValidator ?? /[A-Za-z0-9[!@#$%^&*(),.?":{}|<>[\]\\]]/,
+				typeInput: "password",
+				errorMessageInput: "Password does not match the required pattern. ",
+			}
+		)
 	}
-	public urlValidator = (urlData: string,targetInputname: string,url_options: URLOptions = {
-																				allowedProtocols: ["ftp", "https", "http"],
-																				allowLocalhost: false,
-																				requireTLD: true,
-																				allowIP: false,
-																				allowHash: false,
-																				allowQueryParams: true,
-																			}): this => {
-    	const regexToUse = url_options.regexValidator || urlRegex;
-		if (!regexToUse.test(urlData)) {
-			this.setValidatorStatus(
-				false,
-				`${urlData.trim()} is invalid. Expected format: ${url_options.egAwait ?? 'https://example.com'}`,
-				targetInputname
-			);
-		}
+	public urlValidator = (urlData: string,
+		targetInputname: string,
+		url_options: URLOptions = {
+			allowedProtocols: ["ftp", "https", "http"],
+			allowLocalhost: false,
+			requireTLD: true,
+			allowIP: false,
+			allowHash: false,
+			allowQueryParams: true,
+		}): this => {
     	const parsedURL = new URL(urlData.trim());
 		// Vérifie si le protocole est autorisé
 		if (url_options.allowedProtocols && !url_options.allowedProtocols.includes(parsedURL.protocol.replace(':', ''))) {
@@ -211,26 +208,22 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 		if (!url_options.allowHash && parsedURL.hash) {
 			this.setValidatorStatus(false,`URL fragments ${parsedURL.hash} are not allowed.`,targetInputname);
 		}
-    	return this;
+    	return this.textValidator(urlData,
+				targetInputname,
+				{ regexValidator:url_options.regexValidator ?? urlRegex,
+					errorMessageInput: url_options.errorMessageInput ?? `${urlData.trim()} is invalid. Expected format: https://example.com  `,
+					minLength: url_options.minLength ?? 8,
+					maxLength: url_options.maxLength ?? 255,
+					escapestripHtmlAndPhpTags: url_options.escapestripHtmlAndPhpTags ?? true,
+					typeInput:"url"
+				});
 };
 
 	public dateValidator = (date_input: string, targetInputname: string, date_options: DateOptions): this => {
-		// Vérification si la date est obligatoire et vide
-		if (date_options.requiredInput && !date_input.trim()) {
-			this.setValidatorStatus(false, `The field "${targetInputname}" is required.`, targetInputname);
-			return this;
-		}
-		// Vérification du format de la date avec une regex personnalisée si fournie
-		const regexToUse = date_options.regexValidator || /^\d{4}-\d{2}-\d{2}$/; // Format YYYY-MM-DD
-		if (!regexToUse.test(date_input)) {
-			this.setValidatorStatus(false, `The value "${date_input}" is not a valid date format. Expected format: YYYY-MM-DD.`, targetInputname);
-			return this;
-		}
 		// Conversion en objet Date
 		const dateValue = new Date(date_input);
 		if (isNaN(dateValue.getTime())) {
 			this.setValidatorStatus(false, `The provided date "${date_input}" is invalid.`, targetInputname);
-			return this;
 		}
     	const now = new Date();
 		// Vérification de la date minimale
@@ -238,7 +231,6 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 			const minDate = new Date(date_options.minDate);
 			if (dateValue < minDate) {
 				this.setValidatorStatus(false, `The date must be after ${date_options.minDate}.`, targetInputname);
-				return this;
 			}
 		}
 		// Vérification de la date maximale
@@ -246,21 +238,27 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 			const maxDate = new Date(date_options.maxDate);
 			if (dateValue > maxDate) {
 				this.setValidatorStatus(false, `The date must be before ${date_options.maxDate}.`, targetInputname);
-				return this;
 			}
 		}
 		// Vérification si les dates futures sont autorisées
 		if (date_options.allowFuture === false && dateValue > now) {
 			this.setValidatorStatus(false, `The date "${dateValue.toISOString().split('T')[0]}" cannot be in the future.`, targetInputname);
-			return this;
 		}
 		// Vérification si les dates passées sont autorisées
 		if (date_options.allowPast === false && dateValue < now) {
 			this.setValidatorStatus(false, `The date "${dateValue.toISOString().split('T')[0]}" cannot be in the past.`, targetInputname);
-			return this;
 		}
-   		 return this;
-		};
+   		 return this.textValidator(date_input,
+				targetInputname, {
+				regexValidator: date_options.regexValidator ?? /^\d{4}-\d{2}-\d{2}$/,
+				minLength: date_options.minLength ?? 10,
+				maxLength: date_options.maxLength ?? 21,
+				errorMessageInput: `The value "${date_input}" is not a valid date format. Expected format: YYYY-MM-DD`,
+				escapestripHtmlAndPhpTags: true,
+				typeInput: "date",
+				requiredInput: date_options.requiredInput
+			});
+		}
 
 	public selectValidator = (value_index: string,targetInputname: string,options_select: SelectOptions): this => {
 		if (!options_select.optionsChoices.includes(value_index)) {
@@ -274,7 +272,7 @@ export class FormInputValidator extends FormError  implements  ValidatorInterfac
 };
 
     protected validatorRequired = (datainput: string, targetInputname: string, required: boolean = true): this => {
-        if (required === true && !datainput) {
+        if (required === true && !datainput.trim()) {
             this.setValidatorStatus(false,"this input field is mandatory", targetInputname)
         }
         return this;

@@ -9,7 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 export class ApiError {
-    constructor(private m_data: Record<string, unknown>|string, private m_status: number) { }
+    constructor(private m_data: Record<string, unknown> | string, private m_status: number) { }
     get status() { return this.m_status; }
     /**
      * Retrieves the list of validation error messages for a specific field.
@@ -67,12 +67,9 @@ export class ApiError {
      * // Output: "Unknown Error"
      */
     get name(): string {
-         if (typeof this.m_data === 'string') { return this.m_data; }
-        const title = this.m_data?.title as string | undefined; // Default if title is missing
-        if (!title) {
-            return this.m_data.toString();
-        }
-        const detail = this.m_data?.detail as string|undefined ?? "";
+        if (typeof this.m_data === 'string') { return this.m_data; }
+        const title = this.m_data.title as string; // Default if title is missing
+        const detail = this.m_data?.detail as string | undefined;
         return detail ? `${title}: ${detail}` : title; // Add ":" only if detail exists
     }
     /**
@@ -88,21 +85,21 @@ export class ApiError {
      * the object will contain a `main` key with an array holding the name of the error.
      */
     get allViolations(): Record<string, string[]> {
-         if (typeof this.m_data === 'string') { return { main: [this.name] }; }
-         const violations = this.m_data.violations as { propertyPath: string, message: string }[] | undefined;
+        if (typeof this.m_data === 'string') { return { main: [this.name] }; }
+        const violations = this.m_data.violations as { propertyPath: string, message: string }[] | undefined;
         if (!violations) { return { main: [this.name] }; }
         return violations.reduce((acc, violation) => {
             acc[violation.propertyPath] = acc[violation.propertyPath] ?? [];
             acc[violation.propertyPath].push(violation.message);
             return acc;
-        },{} as Record<string, string[]>)
+        }, {} as Record<string, string[]>)
     }
 }
-export interface ApiView{
-    '@id':string,
+export interface ApiView {
+    '@id': string,
     first: string,
     last?: string,
     previous?: string,
     next?: string
 }
-export class ApiSuccess{constructor(){throw new Error("I' am not implemented");}}
+export class ApiSuccess { constructor() { throw new Error("I' am not implemented"); } }

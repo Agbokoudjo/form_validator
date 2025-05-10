@@ -1,4 +1,4 @@
-import { bytesToMegabytes } from '../../_Functions/string';
+import { bytesToMegabytes } from '../../_Utils/string';
 import { FormError } from '../FormError';
 
 /** 

@@ -10,5 +10,9 @@
  */
 export * from './http';
 export * from './string';
-export * from './dom';
 export * from './api';
+export * from './translate';
+export * from './media';
+export * from "./workers";
+export * from "./logger";
+export * from "./sweetAlert";

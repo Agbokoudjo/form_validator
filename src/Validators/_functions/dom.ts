@@ -1,4 +1,4 @@
-import {FormErrorInterface } from "../Validators/FormError";
+import { FormErrorInterface } from "../FormError";
 
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
@@ -22,12 +22,12 @@ if (typeof window.jQuery === 'undefined') {
  * @param input_field - Champ input (JQuery<HTMLInputElement|HTMLTextAreaElement>)
  * @param Errorhandle - Le type de validator héritant la classe ErrorMessageFormHandle par défaut
  */
-export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>, errorhandle:FormErrorInterface): void {
+export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>, errorhandle: FormErrorInterface): void {
     const btnsubmited = jQuery('button[type="submit"]', input_field.closest('form'));
     if (!errorhandle.hasErrorsField(input_field.attr('name') as string)) {
         btnsubmited.attr('disabled', 'disabled');
         btnsubmited.css({ display: 'none' });
-        addErrorMessageFieldDom(input_field.attr('id') as string,errorhandle);
+        addErrorMessageFieldDom(input_field.attr('id') as string, errorhandle);
     } else {
         btnsubmited.css({ display: 'block' });
         if (btnsubmited.attr('disabled')) { btnsubmited.removeAttr('disabled'); }
@@ -45,20 +45,20 @@ export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTe
  * adds the 'is-invalid' class if not present, creates small error message elements, 
  * and appends them to the field.
  */
-export function addErrorMessageFieldDom(fieldId: string,errorhandle: FormErrorInterface): void {
+export function addErrorMessageFieldDom(fieldId: string, errorhandle: FormErrorInterface): void {
     const elmtfield = jQuery(`#${fieldId}`);
-    const errormessagefield = errorhandle.getErrorMessageField(elmtfield.attr('name') as string); 
+    const errormessagefield = errorhandle.getErrorMessageField(elmtfield.attr('name') as string);
     if (errormessagefield && errormessagefield.length > 0) {
         const containerDivErrorMessage = jQuery('<div class="border border-3 border-light"></div>');
-        if (!elmtfield.hasClass('is-invalid')) { 
-            elmtfield.addClass('is-invalid'); 
+        if (!elmtfield.hasClass('is-invalid')) {
+            elmtfield.addClass('is-invalid');
         }
         const errormessagedom = errormessagefield.map((errormessagefieldItem, keyerror) => {
             const smallerror = createSmallErrorMessage(fieldId, errormessagefieldItem, keyerror);
             return smallerror;
         });
         containerDivErrorMessage.append(errormessagedom);
-        elmtfield.after(containerDivErrorMessage);  
+        elmtfield.after(containerDivErrorMessage);
     }
 }
 /**
@@ -138,11 +138,11 @@ export function createSmallErrorMessage(
  * - Clears errors related to the field using the provided ErrorMessageHandle instance.
  */
 export function clearErrorInput(inputFieldJQuery: JQuery, errorhandle: FormErrorInterface): void {
-    if (!inputFieldJQuery.hasClass('is-invalid')) {return;}
-        inputFieldJQuery.removeClass('is-invalid');
-        inputFieldJQuery.css({ border: 'medium none blue' });
-        jQuery(`.error-item-${inputFieldJQuery.attr('id')}`).each(function (index, elmtError) {
-            jQuery<HTMLElement>(elmtError).empty().remove();
-        });
-        errorhandle.clearError(inputFieldJQuery.attr('name') as string);
+    if (!inputFieldJQuery.hasClass('is-invalid')) { return; }
+    inputFieldJQuery.removeClass('is-invalid');
+    inputFieldJQuery.css({ border: 'medium none blue' });
+    jQuery(`.error-item-${inputFieldJQuery.attr('id')}`).each(function (index, elmtError) {
+        jQuery<HTMLElement>(elmtError).empty().remove();
+    });
+    errorhandle.clearError(inputFieldJQuery.attr('name') as string);
 }

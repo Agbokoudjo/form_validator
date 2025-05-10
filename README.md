@@ -1619,6 +1619,781 @@ The `ApiError` class is a powerful utility to handle API errors, especially when
 
 ---
 
+## Chunked file upload management
+
+## `ChunkSizeConfiguration` Interface
+
+This interface defines the configuration object used to determine the optimal upload chunk size. It allows for dynamic adjustments based on the detected network speed and the size of the file being uploaded.
+
+```typescript
+export interface ChunkSizeConfiguration {}
+```
+
+### Configuration Properties:
+
+#### `defaultChunkSizeMo: number`
+
+The default chunk size, in megabytes (MB), to be used when no specific conditions based on network speed or file size are met. This value serves as the fallback.
+
+**Example:** `50` (represents 50 MB)
+
+#### `slowSpeedThresholdMbps: number`
+
+The network speed threshold, in megabits per second (Mbps). If the detected upload speed is below this value, the system considers the connection to be slow and may apply more conservative (smaller) chunk sizes to improve upload reliability.
+
+**Example:** `5` (represents 5 Mbps)
+
+#### `verySlowSpeedChunkSizeMo: number`
+
+The maximum chunk size, in megabytes (MB), to be used when the upload speed is considered very slow (below the `slowSpeedThresholdMbps`). This setting helps prevent timeouts and increases the likelihood of successful uploads on poor network connections.
+
+**Example:** `2` (represents a maximum of 2 MB for slow connections)
+
+#### `fileSizeThresholds: { maxSizeMo: number; chunkSizeMo: number; }[]`
+
+An array of objects that define different chunk sizes to be used based on the size of the file being uploaded. Each object specifies:
+
+* `maxSizeMo: number`: The maximum file size (in MB) for which the corresponding `chunkSizeMo` should be applied.
+* `chunkSizeMo: number`: The chunk size (in MB) to be used for files up to the `maxSizeMo`.
+
+This array should be ordered by `maxSizeMo` in ascending order. You can use `Infinity` as the `maxSizeMo` in the last element to define the chunk size for all larger files.
+
+**Example:**
+
+```json
+[
+  { "maxSizeMo": 200, "chunkSizeMo": 50 },   // For files up to 200 MB, use 50 MB chunks
+  { "maxSizeMo": 400, "chunkSizeMo": 100 },  // For files up to 400 MB, use 100 MB chunks
+  { "maxSizeMo": Infinity, "chunkSizeMo": 700 } // For files larger than 400 MB, use 700 MB chunks
+]
+```
+
+### `calculateUploadChunkSize` Function
+
+This function calculates the optimal chunk size (in bytes) for uploading a media file, taking into account the file size and optionally the network upload speed. It uses a provided configuration (`ChunkSizeConfiguration`) to determine the appropriate chunk size.
+
+```typescript
+export function calculateUploadChunkSize(
+    media_size: number,
+    speedMbps: number | undefined,
+    config: ChunkSizeConfiguration = defaultChunkConfig
+): number
+```
+
+#### Parameters:
+
+* `media_size: number`: The total size of the media file to be uploaded, in bytes.
+* `speedMbps: number | undefined`: (Optional) The estimated network upload speed in megabits per second (Mbps). If provided, this will influence the calculated chunk size, especially for slow connections. If `undefined`, the calculation will be based solely on the `media_size`.
+* `config: ChunkSizeConfiguration = defaultChunkConfig`: (Optional) An object conforming to the `ChunkSizeConfiguration` interface. This configuration defines the default chunk size, slow speed thresholds, and chunk sizes for different file size ranges. If not provided, the `defaultChunkConfig` will be used.
+
+#### Returns:
+
+`number`: The calculated chunk size in bytes. This value represents the recommended size for dividing the media file into chunks for upload.
+
+#### Functionality:
+
+1.  **Unit Conversion**: Converts the `media_size` from bytes to megabytes (MB) for easier comparison with the thresholds defined in the `config`.
+2.  **Slow Connection Management**:
+    * If the `speedMbps` is provided and is less than the `slowSpeedThresholdMbps` specified in the `config`, the function returns the smaller value between the `defaultChunkSizeMo` and the `verySlowSpeedChunkSizeMo` (both converted to bytes). This ensures that smaller chunks are used on slow connections to improve reliability.
+3.  **File Size Based Adjustment**:
+    * The function iterates through the `fileSizeThresholds` array in the `config`.
+    * For each threshold, it checks if the `media_sizeMo` is less than or equal to the `maxSizeMo` defined in the threshold.
+    * If a matching threshold is found, the corresponding `chunkSizeMo` (converted to bytes) is returned. This allows for larger chunk sizes for larger files on potentially faster connections.
+4.  **Default Chunk Size**:
+    * If none of the above conditions are met (e.g., for smaller files on faster connections or when no specific file size threshold is matched), the function returns the `defaultChunkSizeMo` (converted to bytes) as the chunk size. The `fileSizeThresholds` should ideally include a catch-all threshold (e.g., with `maxSizeMo: Infinity`) to ensure this default is applied appropriately for all file sizes.
+
+#### Example Usage:
+
+```typescript
+import { calculateUploadChunkSize, ChunkSizeConfiguration } from '@wlindabla/form_validator'; // Assuming the function and interface are in './utils'
+
+const fileSize = 150 * Math.pow(1024, 2); // 150 MB in bytes
+const fastNetworkSpeed = 25; // 25 Mbps
+const slowNetworkSpeed = 3; // 3 Mbps
+
+const customConfig: ChunkSizeConfiguration = {
+    defaultChunkSizeMo: 30,
+    slowSpeedThresholdMbps: 6,
+    verySlowSpeedChunkSizeMo: 1,
+    fileSizeThresholds: [
+        { maxSizeMo: 100, chunkSizeMo: 20 },
+        { maxSizeMo: 500, chunkSizeMo: 100 },
+        { maxSizeMo: Infinity, chunkSizeMo: 200 },
+    ],
+};
+
+const chunkSizeFast = calculateUploadChunkSize(fileSize, fastNetworkSpeed, customConfig);
+console.log(`Chunk size for fast network: ${chunkSizeFast / Math.pow(1024, 2)} MB`);
+
+const chunkSizeSlow = calculateUploadChunkSize(fileSize, slowNetworkSpeed, customConfig);
+console.log(`Chunk size for slow network: ${chunkSizeSlow / Math.pow(1024, 2)} MB`);
+
+const chunkSizeNoSpeed = calculateUploadChunkSize(fileSize, undefined, customConfig);
+console.log(`Chunk size without speed info: ${chunkSizeNoSpeed / Math.pow(1024, 2)} MB`);
+
+const chunkSizeDefaultConfig = calculateUploadChunkSize(fileSize, fastNetworkSpeed);
+console.log(`Chunk size with default config: ${chunkSizeDefaultConfig / Math.pow(1024, 2)} MB`);
+```
+
+
+### `createChunkFormData` Function
+
+This function creates a `FormData` object containing all the necessary information for uploading a single chunk of a larger media file.
+
+```typescript
+export function createChunkFormData(
+    chunk_media: Blob,
+    orginal_name_media: string,
+    mediaIdFromServer: number,
+    sizeMedia: number,
+    uploadedChunks: number,
+    totalChunks: number,
+    provider: string = "LocalVideo",
+    othersData: Record<string, string | Blob> = {}
+): FormData
+```
+
+#### Parameters:
+
+* `chunk_media: Blob`: The raw data of the current media chunk being uploaded.
+* `orginal_name_media: string`: The original name of the complete media file.
+* `mediaIdFromServer: number`: A unique identifier for the media file, likely assigned by the server.
+* `sizeMedia: number`: The total size of the original media file in bytes.
+* `uploadedChunks: number`: The index of the current chunk being uploaded (0-based).
+* `totalChunks: number`: The total number of chunks the media file has been divided into.
+* `provider: string = "LocalVideo"`: (Optional) The source or provider of the media. Defaults to `"LocalVideo"`.
+* `othersData: Record<string, string | Blob> = {}`: (Optional) An object containing additional key-value pairs (strings or Blobs) to be included in the `FormData`.
+
+#### Returns:
+
+`FormData`: An object ready to be sent in an HTTP request, containing the chunk data and associated metadata.
+
+#### Functionality:
+
+The `createChunkFormData` function constructs a `FormData` object with the following fields:
+
+* `"chunkMedia"`: The actual `Blob` containing the current chunk data.
+* `"sizeChunk"`: The size of the current chunk in bytes (as a string).
+* `"chunkIndex"`: The index of the current chunk (as a string).
+* `"totalChunks"`: The total number of chunks (as a string).
+* `"filename"`: The original name of the media file.
+* `"mediaId"`: The unique identifier for the media file (as a string).
+* `"extension"`: The file extension extracted from the original filename.
+* `"sizeMedia"`: The total size of the original media file (as a string).
+* `"provider"`: The media provider (defaults to `"LocalVideo"`).
+* `"sizeTailChunk"`: (Only included for the last chunk) The size of the last chunk in bytes (as a string).
+* Any key-value pairs from the `othersData` object (where the value is a string or a `Blob`).
+
+This `FormData` object is typically used to send each chunk to the server via a POST request during a chunked file upload process. The server can then use the information within the `FormData` to reassemble the complete file in the correct order.
+
+#### Example Usage:
+
+```typescript
+import { createChunkFormData } from '@wlindabla/form_validator'; 
+const chunk = new Blob(['chunk data']);
+const originalName = 'myvideo.mp4';
+const mediaId = 123;
+const totalSize = 1024 * 1024 * 5; // 5 MB
+const currentChunkIndex = 0;
+const totalNumberOfChunks = 5;
+const additionalData = { userId: 'user123', uploadSession: 'abc-123' };
+
+const formData = createChunkFormData(
+    chunk,
+    originalName,
+    mediaId,
+    totalSize,
+    currentChunkIndex,
+    totalNumberOfChunks,
+    'MyUploader',
+    additionalData
+);
+
+// You can then use this formData object in a fetch or XMLHttpRequest request
+// fetch('/upload-chunk', {
+//   method: 'POST',
+//   body: formData,
+// });
+```
+
+
+### `ChunkMediaDetailInterface`
+
+This interface defines the structure of an object that holds details about a single chunk of a media file during an upload process.
+
+```typescript
+export interface ChunkMediaDetailInterface {}
+```
+#### Properties:
+
+* `chunkIndex: number`: The index of the current chunk. Typically 0-based, indicating its position within the sequence of chunks.
+* `start: number`: The starting byte position of this chunk within the original media file.
+* `totalChunks: number`: The total number of chunks that the original media file has been divided into.
+* `mediaName: string`: The original name of the media file.
+* `mediaId?: number`: (Optional) A unique identifier for the media file, possibly assigned by the server.
+* `media?: File`: (Optional) The `File` object representing the original media file (may be available in the context where chunking is initiated).
+* `status?: number`: (Optional) A numerical code representing the current status of the upload for this specific chunk (e.g., 0 for pending, 1 for uploading, 2 for completed, -1 for error). The specific meaning of these numbers would be defined by your application's logic.
+* `urlActionUploadFile?: string | URL`: (Optional) The URL or endpoint to which this specific chunk should be uploaded.
+* `messageFromServer: string`: A message received from the server related to the upload of this chunk (e.g., success message, error details).
+* `progressPercentage?: number`: (Optional) A numerical value (between 0 and 100) indicating the upload progress of this specific chunk or the overall file.
+* `downloadMediaComplete?: boolean`: (Optional) A boolean flag indicating whether the entire media file download/upload process is complete.
+* `provider: string`: A string indicating the source or provider of the media (e.g., "LocalVideo", "RemoteURL").
+
+#
+This interface provides a structured way to manage and track the state and information associated with each individual chunk during a potentially long-running upload process. It includes details about the chunk's position, the original file, upload status, server communication, and progress.
+#
+
+```markdown
+### `ChunkMediaDetail` Class
+
+This class provides a read-only wrapper around the `ChunkMediaDetailInterface`, offering convenient accessors to the chunk's details and a method to check for upload completion.
+
+```typescript
+export class ChunkMediaDetail {
+    constructor(private readonly data_chunk: ChunkMediaDetailInterface) { }}
+```
+
+#### Constructor:
+
+* `constructor(private readonly data_chunk: ChunkMediaDetailInterface)`: Initializes a new `ChunkMediaDetail` instance with a read-only reference to an object conforming to the `ChunkMediaDetailInterface`.
+
+#### Properties (Getters):
+
+* `status: number | undefined`: Returns the current status of the chunk upload, as defined in the underlying `ChunkMediaDetailInterface`.
+* `message: string`: Returns the message received from the server related to this chunk's upload.
+* `progressPercentage: number | undefined`: Returns the upload progress percentage for this chunk or the overall file.
+* `mediaIdFromServer: number | undefined`: Returns the unique identifier for the media file, if available.
+* `chunkIndex: number`: Returns the index of the current chunk, **decremented by 1**. This might be done to provide a 0-based index externally if the interface uses a 1-based index.
+* `totalChunks: number`: Returns the total number of chunks for the media file.
+* `mediaName: string`: Returns the original name of the media file.
+* `start: number`: Returns the starting byte position of this chunk in the original file.
+* `urlAction: string | URL | undefined`: Returns the URL or endpoint for uploading this chunk.
+* `provider: string`: Returns the provider of the media.
+* `media: File | undefined`: Returns the `File` object of the original media, if available.
+
+#### Methods:
+
+* `isComplete(): boolean`: Returns a boolean indicating whether the entire media file upload/download process is marked as complete based on the `downloadMediaComplete` property of the underlying `ChunkMediaDetailInterface`.
+
+#### Purpose:
+
+The `ChunkMediaDetail` class acts as a wrapper to provide a more convenient and potentially controlled way to access the properties of a chunk's detail information. By using getters, it can encapsulate the underlying data structure and potentially add logic or formatting to the accessed values (as seen with the `chunkIndex`). This class is likely used within the upload management logic to represent and interact with the details of each individual chunk.
+
+
+### Media Upload/Download Events
+
+These constants define the names of events that are dispatched during the media upload and download processes. You can listen for these events to track the status and handle different stages of these operations.
+
+#### `MEDIA_CHUNK_UPLOAD_STARTED`
+
+* **Description:** This event is dispatched when the upload process for an individual chunk of a media file has begun.
+* **Purpose:** To indicate the start of a chunk upload attempt.
+* **Example Usage:** You might listen to this event to update the UI to show that a new chunk is being uploaded.
+
+#### `MEDIA_CHUNK_UPLOAD_FAILED`
+
+* **Description:** This event is dispatched when an attempt to upload a specific chunk of the media file has failed.
+* **Purpose:** To signal that a chunk upload was unsuccessful and might require a retry or error handling.
+* **Example Usage:** You might listen to this event to trigger a retry mechanism or display an error message to the user.
+
+#### `MEDIA_CHUNK_UPLOAD_STATUS`
+
+* **Description:** This event is dispatched to provide updates on the current status of an ongoing media chunk upload.
+* **Purpose:** To report intermediate progress information during the upload of a chunk.
+* **Example Usage:** You might listen to this event to update a progress bar for the currently uploading chunk.
+
+#### `MEDIA_CHUNK_UPLOAD_SUCCESS`
+
+* **Description:** This event is dispatched when a specific chunk of the media file has been successfully uploaded to the server.
+* **Purpose:** To indicate that a chunk was uploaded without any errors.
+* **Example Usage:** You might listen to this event to track the number of successfully uploaded chunks and proceed to the next chunk.
+
+#### `MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE`
+
+* **Description:** This event is dispatched when the maximum number of retry attempts for uploading a chunk has been reached, and the upload still failed.
+* **Purpose:** To signal a persistent failure in uploading a chunk after multiple retries.
+* **Example Usage:** You might listen to this event to stop further retries and inform the user about a permanent upload failure for this chunk.
+
+#### `DOWNLOAD_MEDIA_COMPLETE`
+
+* **Description:** This event is dispatched when the entire media file download (which might have been done in chunks) has been successfully completed.
+* **Purpose:** To indicate that the media file has been fully downloaded and is ready for use.
+* **Example Usage:** You might listen to this event to display the downloaded media or perform post-download operations.
+
+#### `DOWNLOAD_MEDIA_FAILURE`
+
+* **Description:** This event is dispatched when an error occurred during the media file download process, and the download failed.
+* **Purpose:** To signal that the media file download was unsuccessful.
+* **Example Usage:** You might listen to this event to display an error message to the user or attempt to restart the download.
+
+#### `MEDIA_CHUNK_UPLOAD_RESUME`
+
+* **Description:** This event is dispatched when an interrupted upload attempt for a media chunk is being resumed.
+* **Purpose:** To indicate that a previously paused or failed chunk upload is being restarted.
+* **Example Usage:** You might listen to this event to update the UI to reflect the resumption of the upload.
+
+#### `DOWNLOAD_MEDIA_RESUME`
+
+* **Description:** This event is dispatched when an interrupted download attempt for a media file is being resumed.
+* **Purpose:** To indicate that a previously paused or failed media download is being restarted.
+* **Example Usage:** You might listen to this event to update the UI or manage the download progress.
+
+#### `MEDIA_METADATA_SAVE_SUCCESS`
+
+* **Description:** This event is dispatched when the metadata associated with the media file (e.g., title, description) has been successfully saved on the server.
+* **Purpose:** To signal the successful persistence of media-related information.
+* **Example Usage:** You might listen to this event to provide feedback to the user that the media information has been saved.
+
+### `updateProgressBarHTMLNotified` Function
+
+This function updates an existing progress bar HTML element or creates a new one if it doesn't exist, returning the HTML content as a string. It uses jQuery to manipulate the DOM structure.
+
+```typescript
+export function updateProgressBarHTMLNotified(
+    progress: number,
+    media_id: number,
+    filename: string,
+    providerName: string = "LocalVideo"
+): string
+```
+
+#### Parameters:
+
+* `progress: number`: The current upload progress percentage (between 0 and 100).
+* `media_id: number`: The unique identifier of the media being uploaded. This is used to generate a unique ID for the progress bar.
+* `filename: string`: The name of the file being uploaded, displayed as a label.
+* `providerName: string = "LocalVideo"`: (Optional) The name of the media provider. This is included in the progress bar's ID to prevent naming conflicts if multiple providers are uploading files. Defaults to `"LocalVideo"`.
+
+#### Returns:
+
+`string`: A string containing the HTML content of the updated (or newly created) progress bar element.
+
+#### Functionality:
+
+1.  **Constructs the Progress Bar ID**: A unique ID (`progress-bar-item_${providerName}_${media_id}`) is generated for the progress bar element.
+
+2.  **Checks for Existing Progress Bar**: The function attempts to select an HTML element with the generated ID using jQuery (`jQuery(`#${progressBarId}`))`.
+
+3.  **Updates Existing Bar (if found)**:
+    * If a progress bar element with the matching ID exists:
+        * Its `width` style is updated to reflect the current `progress` percentage.
+        * Its `aria-valuenow` attribute is updated with the `progress` value for accessibility.
+        * Its text content is updated to display the rounded `progress` percentage.
+
+4.  **Creates New Bar (if not found)**:
+    * If no progress bar element with the matching ID is found:
+        * A new `div` element containing the progress bar structure is created using a template literal and jQuery. This structure includes:
+            * A `<small>` element to display the `filename` with a tooltip for the full name.
+            * A `div` with the class `progress` as a container.
+            * A `div` with Bootstrap classes (`progress-bar`, `bg-success`, `progress-bar-striped`, `progress-bar-animated`) to visually represent the progress. Its `width`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, and text content are set based on the `progress`.
+
+5.  **Logs Progress Information**: The current text content of the (potentially updated or newly created) progress bar is logged to the console using a `Logger.log` function (assuming this is a custom logging utility). The DOM element itself is also logged.
+
+6.  **Returns HTML Content**: The `innerHTML` of the updated or newly created jQuery object (converted to a native DOM element using `.get(0)`) is returned as a string. This allows the calling code to insert or manipulate the progress bar element in the DOM as needed.
+
+#### Usage Notes:
+
+* This function relies on the presence of the jQuery library in the environment where it's executed.
+* The returned HTML string can be directly inserted into the DOM using methods like `innerHTML`, `append`, or `prepend` on a target HTML element.
+* The unique ID generation ensures that progress bars for different media files or providers will not conflict.
+* The use of Bootstrap classes provides basic styling for the progress bar. Ensure that Bootstrap CSS is included in your project for the intended visual appearance.
+* The `Logger.log` calls are for debugging purposes and might need to be adapted or removed depending on your project's logging strategy.
+
+
+### `CustomEventOptions` Interface
+
+This interface defines the optional configuration options that can be passed when emitting a custom event using the `emitEvent` function.
+
+```typescript
+export interface CustomEventOptions {}
+```
+
+#### Properties:
+
+* `bubbles?: boolean`: (Optional) A boolean value indicating whether the event should propagate (bubble up) through the DOM tree after being dispatched on the target. Defaults to `false` if not provided.
+* `cancelable?: boolean`: (Optional) A boolean value indicating whether the default action associated with the event can be prevented by calling the `preventDefault()` method on the event object in an event listener. Defaults to `true` if not provided.
+* `composed?: boolean`: (Optional) A boolean value indicating whether the event should traverse the shadow DOM boundary. `true` means the event can propagate from within a shadow DOM to the normal DOM tree. Defaults to `true` if not provided.
+
+### `emitEvent` Function
+
+This function dispatches a custom event of a specified type on a given target (`Window` or `Document`), attaching media chunk details and optional event configuration.
+
+```typescript
+export function emitEvent(
+    typeEvent: EventUploadMedia,
+    target: Window | Document,
+    chunk_media_detail: ChunkMediaDetail,
+    eventOptions?: CustomEventOptions
+): void
+```
+
+#### Parameters:
+
+* `typeEvent: EventUploadMedia`: A string representing the type (name) of the event to be dispatched. This should be one of the event constants defined for media upload/download (e.g., `MEDIA_CHUNK_UPLOAD_STARTED`).
+* `target: Window | Document`: The target object on which the event will be dispatched. This is typically the global `window` object or the `document` object.
+* `chunk_media_detail: ChunkMediaDetail`: An instance of the `ChunkMediaDetail` class containing specific information about the media chunk relevant to the event. This data will be available in the `detail` property of the dispatched `CustomEvent`.
+* `eventOptions?: CustomEventOptions`: (Optional) An object conforming to the `CustomEventOptions` interface, allowing you to configure the bubbling, cancelability, and composed behavior of the event.
+
+#### Functionality:
+
+The `emitEvent` function creates a new `CustomEvent` with the provided `typeEvent` and dispatches it on the specified `target`. The `detail` property of the `CustomEvent` is set to the `chunk_media_detail` object, allowing event listeners to access the chunk-specific information. The `bubbles`, `cancelable`, and `composed` properties of the `CustomEvent` are determined by the `eventOptions` if provided, or default to `false`, `true`, and `true` respectively.
+
+#### Example Usage:
+
+```typescript
+import { MEDIA_CHUNK_UPLOAD_STARTED } from './events'; // Assuming events.ts
+import { ChunkMediaDetail } from './chunk-media-detail'; // Assuming chunk-media-detail.ts
+
+const chunkDetail = new ChunkMediaDetail({
+    chunkIndex: 0,
+    start: 0,
+    totalChunks: 5,
+    mediaName: 'myvideo.mp4',
+    messageFromServer: '',
+    provider: 'LocalVideo',
+});
+
+const customOptions: CustomEventOptions = {
+    bubbles: true,
+    cancelable: false,
+};
+
+emitEvent(MEDIA_CHUNK_UPLOAD_STARTED, window, chunkDetail, customOptions);
+
+// To emit without custom options:
+emitEvent(MEDIA_CHUNK_UPLOAD_STARTED, document, chunkDetail);
+```
+
+## Function `uploadedMediaInChunks`
+
+This asynchronous function enables the upload of large media files in chunks. It handles splitting the file, progressively sending each chunk to the server, retrying failed uploads, and notifying different stages of the process via events.
+
+### Parameters
+
+The function takes a configuration object of type `UploadedMediaInChunksOptions` with the following properties:
+
+* `urlActionUploadMedia` (`string`): The URL of the server endpoint responsible for receiving media chunks.
+* `media` (`File`): The `File` object representing the media file to be uploaded.
+* `startUpdate` (`number`, optional): The starting byte position for resuming an interrupted upload. Default: `0`.
+* `uploadedChunksUpdate` (`number`, optional): The number of chunks already uploaded in case of resumption. Default: `0`.
+* `mediaIdFromServer` (`number`, optional): The unique identifier of the media as known on the server (useful for tracking chunks).
+* `provider` (`string`, optional): The name of the media provider (e.g., "LocalVideo"). Default: `"LocalVideo"`.
+* `target` (`Window | Document`): The object on which upload events will be dispatched (usually `window` or `document`).
+* `timeoutUploadByChunk` (`number`, optional): The timeout in milliseconds for uploading each chunk. If the server does not respond within this time, the request will be aborted. Default: `60000` (60 seconds).
+* `speedMbps` (`number`, optional): The estimated connection speed in Mbps, used to calculate chunk size.
+* `othersData` (`Record<string, any>`, optional): An object containing additional data to send with each chunk.
+* `config` (`any`, optional): An additional configuration object (usage not specified here).
+* `eventOptions` (`any`, optional): Additional options for events (usage not specified here).
+
+### Backend Expected Data (JSON)
+
+The frontend expects the backend to return data in JSON format upon receiving each chunk. An important data key expected is `"message"`, which typically contains an informative message about the chunk upload status.
+
+Example of expected backend JSON response:
+
+```json
+{
+  "message": "Chunk 1 of the file 'my_video.mp4' was successfully received.",
+  "mediaId": 1678886400,
+  "urlActionUploadMedia": "[https://your-server.com/api/upload-media](https://your-server.com/api/upload-media)"
+}
+```
+
+Specifically, during the initial registration of file metadata (before chunk uploads), the backend is likely to return a JSON response with the following keys:
+
+* `"message"` (`string`): A message indicating the successful registration of metadata. Example: `"The metadata for the file \"filename.mp4\" has been successfully registered."`.
+* `"mediaId"` (`number`): The unique identifier assigned to the media by the server. This `mediaId` is used to associate chunks with the file.
+* `"urlActionUploadMedia"` (`string`): The URL to which file chunks should be sent.
+
+Additionally, the `"downloadMediaComplete"` key (of type `boolean`, optional) in the JSON response of a chunk upload indicates whether the server has received all chunks and the upload is complete from the server's perspective.
+
+### Dispatched Events
+
+The `uploadedMediaInChunks` function dispatches events on the `target` object (usually `window` or `document`) to notify about different stages of the upload process. Details for each event are passed through a `ChunkMediaDetail` object.
+
+1.  **`MEDIA_CHUNK_UPLOAD_STARTED`**:
+    * Dispatched at the beginning of the upload for each chunk (before sending the request).
+    * Event details include:
+        * `chunkIndex`: The index of the chunk being uploaded (starts at 1).
+        * `start`: The starting byte position of the chunk within the file.
+        * `totalChunks`: The total number of chunks for the file.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `messageFromServer`: An informative message indicating the start of the chunk upload.
+        * `provider`: The media provider.
+        * `progressPercentage`: The current overall upload percentage.
+        * `attempt`: The current attempt number for uploading this chunk (starts at 1).
+
+2.  **`MEDIA_CHUNK_UPLOAD_SUCCESS`**:
+    * Dispatched when a chunk has been successfully uploaded and the server has responded without an HTTP error.
+    * Event details include:
+        * `chunkIndex`: The index of the chunk that was successfully uploaded (after incrementing).
+        * `totalChunks`: The total number of chunks.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `status`: The HTTP status code of the server response.
+        * `messageFromServer`: A message indicating the successful upload of the chunk.
+        * `progressPercentage`: The current overall upload percentage.
+        * `start`: The starting byte position of the chunk.
+        * `provider`: The media provider.
+
+3.  **`MEDIA_CHUNK_UPLOAD_FAILED`**:
+    * Dispatched when an error occurs during the attempt to upload a chunk (e.g., network error or server error with an error HTTP status).
+    * Event details include:
+        * `chunkIndex`: The index of the chunk that failed.
+        * `totalChunks`: The total number of chunks.
+        * `start`: The starting byte position of the chunk.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `media`: The `File` object of the media.
+        * `status`: The HTTP status code of the error response (if available).
+        * `messageFromServer`: An error message indicating the reason for the chunk upload failure.
+        * `urlActionUploadFile`: The upload URL.
+        * `provider`: The media provider.
+        * `attempt`: The current attempt number that failed.
+        * `responseStatus`: The HTTP status of the error (if it's an `HttpFetchError`).
+        * `responseBody`: The body of the error response (if it's an `HttpFetchError`).
+
+4.  **`MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE`**:
+    * Dispatched when a chunk could not be uploaded after reaching the maximum number of configured retries (`maxRetries`).
+    * Event details include:
+        * `chunkIndex`: The index of the chunk that failed after multiple retries.
+        * `totalChunks`: The total number of chunks.
+        * `start`: The starting byte position of the chunk.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `messageFromServer`: A message indicating that the chunk upload failed after the maximum number of retries.
+        * `downloadMediaComplete`: `false`.
+        * `progressPercentage`: The current overall upload percentage.
+        * `urlActionUploadFile`: The upload URL.
+        * `attempt`: The number of the last attempt (which failed).
+
+5.  **`DOWNLOAD_MEDIA_COMPLETE`**:
+    * Dispatched when all chunks have been successfully uploaded and the media upload is considered complete (based on the server response or reaching 100% progress).
+    * Event details include:
+        * `chunkIndex`: The index of the last uploaded chunk.
+        * `totalChunks`: The total number of chunks.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `status`: The HTTP status code of the last server response.
+        * `messageFromServer`: A message indicating the successful completion of the upload.
+        * `progressPercentage`: `100`.
+        * `downloadMediaComplete`: `true`.
+        * `start`: The starting byte position of the last chunk.
+        * `provider`: The media provider.
+
+6.  **`DOWNLOAD_MEDIA_FAILURE`**:
+    * Dispatched if the overall upload process fails for any reason (e.g., if not all chunks could be uploaded).
+    * Event details include:
+        * `chunkIndex`: The number of chunks uploaded at the time of failure.
+        * `totalChunks`: The total number of chunks.
+        * `mediaName`: The name of the media file.
+        * `mediaId`: The identifier of the media on the server.
+        * `media`: The `File` object of the media.
+        * `status`: The HTTP status code of the last server response (if available).
+        * `messageFromServer`: An error message indicating the overall upload failure.
+        * `progressPercentage`: The overall upload percentage at the time of failure.
+        * `downloadMediaComplete`: `false`.
+        * `start`: The starting byte position of the last processed chunk.
+        * `urlActionUploadFile`: The upload URL.
+        * `provider`: The media provider.
+
+
+## Function `uploadedMedia`
+
+This asynchronous function handles sending the metadata of a media file to the server before chunked uploading. It displays a processing notification during the send operation and notifies the user upon success or failure. On success, it dispatches an event to signal that chunk uploading can begin.
+
+### Parameters
+
+The function takes a configuration object of type `MetadataSaveMediaOptions` with the following properties:
+
+* `urlAction` (`string` | `URL` | `Request`): The URL of the server endpoint responsible for receiving the file's metadata.
+* `metadataSaveFile` (`FormData`): A `FormData` object containing the file's metadata to be sent to the server.
+* `target` (`Window` | `Document`): The object on which a custom success event will be dispatched.
+* `messageBeforeDataSend` (`string`, optional): A message to display in the processing notification before sending data. Default: "Sending metadata from the file to the server. Waiting for the answer ...".
+* `optionsHeaderInit` (`HeadersInit`, optional): An object containing custom HTTP headers to include in the request.
+* `eventOptions` (`CustomEventOptions`, optional): An object containing options for the custom success event (`bubbles`, `cancelable`, `composed`).
+
+### Workflow
+
+1.  **Displaying a Processing Notification:** A SweetAlert notification is displayed to inform the user that the metadata is being sent. It includes a processing message and a progress bar with a 45-second timer. User interaction with the page is blocked during this phase.
+2.  **Sending Metadata to the Server:** The function uses `httpFetchHandler` to send a `POST` request to the specified URL (`urlAction`) with the file's metadata (`metadataSaveFile`). The request expects a JSON response and has a 45-second timeout, with up to 3 retries in case of initial failure.
+3.  **Handling the Server Response:**
+    * **Success:** If the server responds with an HTTP status indicating success (2xx code), a success SweetAlert notification is displayed. The message for this notification comes either from the `"message"` field of the server's JSON response or from a default message.
+    * **Error:** If the server responds with an HTTP status indicating an error (4xx or 5xx code), an exception is thrown. The `catch` block intercepts this error and displays an error SweetAlert notification at the top-end of the screen. The error message displayed is extracted from various sources:
+        * The `message` of an `HttpFetchError` instance (our custom error class for fetch errors).
+        * The `"message"` field of the server's JSON response (if the error is an instance of `HttpResponse`).
+        * The name of an `ApiError` instance (if the server's error response does not contain a `"message"` field).
+        * A generic error message in case of an unexpected error.
+4.  **Dispatching the Success Event:** If the metadata is successfully sent to the server, a custom event named `MEDIA_METADATA_SAVE_SUCCESS` is dispatched on the specified `target` object. The details of this event contain the following information returned by the server:
+    * `urlActionUploadMedia`: The URL to which the file's chunks should be uploaded. This URL will be used by the `uploadedMediaInChunks` function.
+    * `mediaId`: The unique identifier assigned to the file by the server. This ID will be used to associate the chunks with the file.
+
+### Dispatched Event
+
+* **`MEDIA_METADATA_SAVE_SUCCESS`**: Dispatched on the `target` object upon successful sending of metadata to the server. The event details contain:
+    * `urlActionUploadMedia`: The URL for chunk uploading.
+    * `mediaId`: The identifier of the media on the server.
+
+This function is a crucial preparatory step before uploading the media file's chunks. It ensures that the server is informed about the file's metadata and provides the necessary URL and identifier for the subsequent chunk uploading process.
+
+
+## Class `MediaUploadEventListener`
+
+This class extends `AbstractMediaUploadEventListener` and provides a concrete implementation for handling events related to chunked media file uploads. It uses `CustomEvent` to listen for events and `Swal.fire` to display notifications to the user regarding the upload process.
+
+**Important:** For custom event listening logic, the final developer will need to create a new class that extends `MediaUploadEventListener` and implement their own logic within the `eventMediaListenerAll` method. The `eventMediaListenerAll` method in this class is intentionally left empty to be overridden by derived classes.
+
+The developer can use this class in various JavaScript contexts such as **Vanilla JS**, **jQuery**, or **ReactJS**.
+
+### Inheritance
+
+This class inherits from `AbstractMediaUploadEventListener`, which requires it to provide a concrete implementation for the following abstract methods:
+
+* `mediaMetadataSaveSuccessEvent(event: CustomEvent): Promise<void>`
+* `mediaChunkUploadStartedEvent(event: CustomEvent<ChunkMediaDetail>): void`
+* `mediaChunkUploadSuccessEvent(event: CustomEvent<ChunkMediaDetail>): void`
+* `mediaChunkUploadFailedEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`
+* `mediaChunkUploadMaxRetryExpireEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`
+* `downloadMediaFailureEvent(event: CustomEvent<ChunkMediaDetail>): void`
+* `downloadMediaCompleteEvent(event: CustomEvent<ChunkMediaDetail>): void`
+* `mediaChunkUploadResumeEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`
+* `downloadMediaResume(event: CustomEvent<ChunkMediaDetail>): Promise<void>`
+* `mediaChunkUploadStatusEvent(event: CustomEvent<ChunkMediaDetail>): void`
+
+### Constructor
+
+```typescript
+public constructor(private readonly speedMbps?: number) { super(); }
+```
+
+* Takes an optional `speedMbps` parameter (number) that could be used for calculations related to chunk size or timeouts (although its usage is not explicitly visible in this implementation).
+* Calls the constructor of the parent class (`AbstractMediaUploadEventListener`).
+
+### Method `eventMediaListenerAll`
+
+```typescript
+public eventMediaListenerAll = async (target: Window | Document = document): Promise<void> => { }
+```
+
+* This method is intended to be **overridden** in classes that extend `MediaUploadEventListener`.
+* It takes a `target` (window or document) on which event listeners will be attached.
+* In this base implementation, it does not contain any event listening logic. The final developer will need to add calls to `target.addEventListener()` (for Vanilla JS or ReactJS) or `jQuery(target).on()` (for jQuery) here for the specific events they want to listen to and associate with their own event handlers.
+
+### Event Handling Methods
+
+* **`mediaMetadataSaveSuccessEvent(event: CustomEvent): Promise<void>`**:
+    * Logs a message to the console indicating that the handler for the `mediaMetadataSaveSuccessEvent` has been called.
+    * **Note:** This base implementation does not contain user notification logic for this event. A derived class could add a notification informing the user about the successful saving of metadata here.
+
+* **`mediaChunkUploadStartedEvent(event: CustomEvent<ChunkMediaDetail>): void`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user that the processing of the chunk has started, showing the message and the progress percentage.
+
+* **`mediaChunkUploadSuccessEvent(event: CustomEvent<ChunkMediaDetail>): void`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user about the successful upload of the chunk, showing the message, status (if available), and progress percentage.
+
+* **`mediaChunkUploadFailedEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user about the failed upload of the chunk, showing the message, status (if available), and progress percentage.
+
+* **`mediaChunkUploadMaxRetryExpireEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user that the chunk upload failed after the maximum number of retries.
+    * Offers the user the option to retry or cancel the operation. If confirmed, it calls the `resumeMediaUploadFromCache` function.
+
+* **`downloadMediaFailureEvent(event: CustomEvent<ChunkMediaDetail>): void`**:
+    * This method is currently empty. A derived class should implement the logic to handle the overall failure of the media download.
+
+* **`downloadMediaCompleteEvent(event: CustomEvent<ChunkMediaDetail>): void`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user that the media download is complete, showing the message, status (if available), and progress percentage.
+    * Calls the `removeAllEventListeners` method.
+
+* **`mediaChunkUploadResumeEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void>`**:
+    * Retrieves the details of the event (`ChunkMediaDetail`).
+    * Displays a SweetAlert notification informing the user about the resumption of the upload for a specific chunk.
+
+* **`downloadMediaResume(event: CustomEvent<ChunkMediaDetail>): Promise<void>`**:
+    * This method is currently empty. A derived class should implement the logic to handle the overall resumption of the media download.
+
+* **`mediaChunkUploadStatusEvent(event: CustomEvent<ChunkMediaDetail>): void`**:
+    * This method is currently empty. A derived class could use it to handle intermediate status updates for the chunk uploads.
+
+### Utility Methods
+
+* **`removeAllEventListeners(): void`**: This method is currently empty. A derived class should implement the logic here to detach all event listeners that have been attached.
+
+* **`setTarget(target: Window | Document): this`**: Allows setting the target (window or document) on which event listeners will be attached.
+
+* **`getTarget(): Window | Document`**: Returns the current target of the event listeners.
+
+* **`setConfigOptions(configOptions: ChunkSizeConfiguration | undefined): this`**: Allows setting configuration options for the chunk size.
+
+* **`getConfigOptions(): ChunkSizeConfiguration | undefined`**: Returns the configuration options for the chunk size.
+
+
+### Usage
+
+In a jQuery context:
+
+The developer can instantiate the class and attach event listeners using jQuery, for example:
+JavaScript
+```ts
+jQuery(async function eventListener() {
+  const speedMbps_media = await downloadTestFileConnectivityAndSpeed();
+  console.log(speedMbps_media);
+  const mediaEventListener = new MediaUploadEventListener(speedMbps_media);
+  await mediaEventListener.eventMediaListenerAll(this); // 'this' refers to the jQuery element (document in this case)
+});
+
+In a ReactJS or VanillaJS context:
+
+The developer can create their own class that extends MediaUploadEventListener and implement their own event listening logic using the standard browser addEventListener and removeEventListener methods. Inheritance allows for the reuse of the default event handler implementations (such as those displaying SweetAlert notifications) while customizing how events are attached and managed.
+JavaScript
+
+// Example of an extended class in a ReactJS or VanillaJS context
+class CustomMediaUploadEventListener extends MediaUploadEventListener {
+  constructor(speedMbps?: number) {
+    super(speedMbps);
+  }
+
+  async eventMediaListenerAll(target: Window | Document = window): Promise<void> {
+    target.addEventListener(MEDIA_METADATA_SAVE_SUCCESS, (event) => this.mediaMetadataSaveSuccessEvent(event as CustomEvent));
+    target.addEventListener(MEDIA_CHUNK_UPLOAD_STARTED, (event) => this.mediaChunkUploadStartedEvent(event as CustomEvent<ChunkMediaDetail>));
+    // ... add other listeners
+  }
+
+  protected async mediaMetadataSaveSuccessEvent(event: CustomEvent): Promise<void> {
+    console.log('Custom handler for mediaMetadataSaveSuccessEvent', event.detail);
+    // Add your application-specific logic here
+  }
+
+  // The other event handlers can use the default implementation from MediaUploadEventListener
+}
+```
+```tsx
+// Example of usage in React (useEffect for lifecycle management)
+import React, { useEffect } from 'react';
+
+function MyUploaderComponent() {
+  useEffect(() => {
+    const speed = 10; // Retrieve connection speed
+    const listener = new CustomMediaUploadEventListener(speed);
+    listener.eventMediaListenerAll(window);
+
+    // Cleanup of listeners when the component unmounts (optional depending on your lifecycle management)
+    // return () => {
+    //   window.removeEventListener(...);
+    // };
+  }, []);
+
+  // ... your JSX ...
+}
+```
+
+
 
 ## Contact Information
 
@@ -1630,5 +2405,3 @@ This file is part of the project by AGBOKOUDJO Franck.
 - Company: INTERNATIONALES WEB SERVICES
 
 For more information, please feel free to contact the author.
-
----

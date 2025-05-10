@@ -9,7 +9,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "keywords": [
     "jquery",
@@ -46,19 +46,21 @@
     "@types/jest": "^29.5.14",
     "@types/jquery": "^3.5.32",
     "@types/lodash.debounce": "^4.0.9",
-    "@types/papaparse": "^5.3.15",
+    "@types/papaparse": "^5.3.16",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/xlsx": "^0.0.36",
     "typescript": "^5.8.3",
-    "vite": "^6.2.6"
+    "vite": "^6.3.5"
   },
   "dependencies": {
+    "animate.css": "^4.1.1",
     "image-validator": "^1.2.1",
     "jquery": "^3.7.1",
     "lodash.debounce": "^4.0.8",
     "mammoth": "^1.9.0",
     "papaparse": "^5.5.2",
-    "pdfjs-dist": "^5.1.91",
+    "pdfjs-dist": "^5.2.133",
+    "sweetalert2": "^11.21.0",
     "xlsx": "^0.18.5"
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"
