@@ -16,3 +16,5 @@ export * from './media';
 export * from "./workers";
 export * from "./logger";
 export * from "./sweetAlert";
+export * from "./helpers";
+export * from "./Exception";

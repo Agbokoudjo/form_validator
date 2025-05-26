@@ -1,5 +1,3 @@
-import { FormErrorInterface } from "../FormError";
-
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
  *
@@ -10,89 +8,39 @@ import { FormErrorInterface } from "../FormError";
  *
  * For more information, please feel free to contact the author.
  */
+import { HTMLFormChildrenElement, Logger } from "../..";
 if (typeof window.jQuery === 'undefined') {
     console.error("jQuery is required for usage of these functions");
 }
-/**
- * This function handles error messages for the current input field, 
- * displaying error messages related to input errors. 
- * It disables the submit button when the field content is invalid 
- * and enables it when the field is valid.
- * 
- * @param input_field - Champ input (JQuery<HTMLInputElement|HTMLTextAreaElement>)
- * @param Errorhandle - Le type de validator héritant la classe ErrorMessageFormHandle par défaut
- */
-export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>, errorhandle: FormErrorInterface): void {
-    const btnsubmited = jQuery('button[type="submit"]', input_field.closest('form'));
-    if (!errorhandle.hasErrorsField(input_field.attr('name') as string)) {
-        btnsubmited.attr('disabled', 'disabled');
-        btnsubmited.css({ display: 'none' });
-        addErrorMessageFieldDom(input_field.attr('id') as string, errorhandle);
+interface ValidatorErrorFieldProps {
+    messageerror: string | string[];
+    classnameerror?: string[];
+    id: string;
+    separator_join: string;
+}
+function smallError(message_error: string, className: string, id: string, key: number = Date.now()): string {
+    return `<small id="${id}" class="${className}" key=${key}>${message_error}<small>`
+}
+export const validatorErrorField = (validate_error_field: ValidatorErrorFieldProps = {
+    messageerror: ' ',
+    classnameerror: ["fw-bold", "text-danger", "mt-2"],
+    id: `${Date.now()}`,
+    separator_join: "<br/><hr/>"
+}): string => {
+    const { messageerror, id, classnameerror, separator_join } = validate_error_field;
+    const classNames = `error-message ${classnameerror?.join(" ")}`;
+    let small_error: string[] = [];
+    if (Array.isArray(messageerror)) {
+        messageerror.map((messageerroritem, keyitemerror) => (
+            small_error.push(`${smallError(messageerroritem, classNames, id, keyitemerror)}`)
+        ))
     } else {
-        btnsubmited.css({ display: 'block' });
-        if (btnsubmited.attr('disabled')) { btnsubmited.removeAttr('disabled'); }
+        small_error = [smallError(messageerror, classNames, id)]
     }
+    return small_error.join(separator_join);
 }
-/**
- * This function adds error messages to a field in the DOM.
- * 
- * Cette fonction ajoute des messages d'erreur à un champ dans le DOM.
- * 
- * @param fieldId - The unique ID of the field to which the error messages will be added.
- * @param Errorhandle - An instance of ErrorMessageHandle used to retrieve error messages.
- * 
- * This function checks if there are error messages associated with the field, 
- * adds the 'is-invalid' class if not present, creates small error message elements, 
- * and appends them to the field.
- */
-export function addErrorMessageFieldDom(fieldId: string, errorhandle: FormErrorInterface): void {
-    const elmtfield = jQuery(`#${fieldId}`);
-    const errormessagefield = errorhandle.getErrorMessageField(elmtfield.attr('name') as string);
-    if (errormessagefield && errormessagefield.length > 0) {
-        const containerDivErrorMessage = jQuery('<div class="border border-3 border-light"></div>');
-        if (!elmtfield.hasClass('is-invalid')) {
-            elmtfield.addClass('is-invalid');
-        }
-        const errormessagedom = errormessagefield.map((errormessagefieldItem, keyerror) => {
-            const smallerror = createSmallErrorMessage(fieldId, errormessagefieldItem, keyerror);
-            return smallerror;
-        });
-        containerDivErrorMessage.append(errormessagedom);
-        elmtfield.after(containerDivErrorMessage);
-    }
-}
-/**
- * This function handles errors for multiple form fields.
- * 
- * Cette fonction gère les erreurs pour plusieurs champs de formulaire.
- * 
- * @param formName - The name of the form to which the errors belong.
- * @param formId - The unique ID of the form.
- * @param errors - An object containing field names as keys and corresponding error messages as values.
- * 
- * This function loops through the errors object, finds the corresponding form fields,
- * adds the 'is-invalid' class to them, and appends a small error message element next to the input field.
- */
-export function handleErrorsManyForm(
-    formName: string,
-    formId: string,
-    errors: Record<string, string>
-): void {
-    if (Object.keys(errors).length === 0) return;
-    let element: JQuery<HTMLElement>;
-    for (const key in errors) {
-        element = jQuery(`#${formName}_${key}`);
-        element.addClass('is-invalid');
-        const small = createSmallErrorMessage(formId, errors[key], key);
-        element.after(small);
-    }
-}
-
 /**
  * This function creates a small error message element for a given input field.
- * 
- * Cette fonction crée un élément de message d'erreur en petit pour un champ d'entrée donné.
- * 
  * @param fieldInputID - The ID of the input field for which the error message is created.
  * @param errorMessage - The error message text to display.
  * @param keyError - A unique key or identifier for the specific error instance.
@@ -112,15 +60,77 @@ export function createSmallErrorMessage(
     if (existingErrorItem.length > 0) {
         return existingErrorItem;
     }
-    const small = jQuery('<small></small>')
-        .addClass(`error-item-${fieldInputID}`)
-        .addClass('invalid-feedback d-block')
-        .attr('id', `error-item-${fieldInputID}-${keyError}`)
-        .text(errorMessage)
-        .after('<br/>')
-        .after('<hr/>');
-    return small;
+    return jQuery(validatorErrorField({
+        messageerror: errorMessage,
+        classnameerror: [`error-item-${fieldInputID}`, 'invalid-feedback d-block'],
+        id: `error-item-${fieldInputID}-${keyError}`,
+        separator_join: "<br/><hr/>"
+    }));
 }
+/**
+ * This function adds error messages to a field in the DOM.
+ * @param fieldId - The unique ID of the field to which the error messages will be added.
+ * @param Errorhandle - An instance of ErrorMessageHandle used to retrieve error messages.
+ * This function checks if there are error messages associated with the field, 
+ * adds the 'is-invalid' class if not present, creates small error message elements, 
+ * and appends them to the field.
+ */
+export function addErrorMessageFieldDom(
+    elmtfield: JQuery<HTMLFormChildrenElement>,
+    errormessagefield?: string[],
+    className_container_ErrorMessage: string = "border border-3 border-light"): void {
+    const fieldId = elmtfield.attr("id")!;
+    if (errormessagefield && errormessagefield.length > 0) {
+        const containerDivErrorMessage = jQuery(`<div class="${className_container_ErrorMessage}"
+             id="container-div-error-message-${fieldId}"></div>`);
+        if (!elmtfield.hasClass('is-invalid')) { elmtfield.addClass('is-invalid'); }
+        const errormessagedom = errormessagefield.map((errormessagefieldItem, keyerror) => {
+            return createSmallErrorMessage(fieldId, errormessagefieldItem, keyerror);
+        });
+        containerDivErrorMessage.append(errormessagedom);
+        elmtfield.after(containerDivErrorMessage);
+    }
+}
+/**
+ * This function handles error messages for the current input field, 
+ * displaying error messages related to input errors. 
+ * It disables the submit button when the field content is invalid 
+ * and enables it when the field is valid.
+ * @param input_field - Champ input (JQuery<HTMLInputElement|HTMLTextAreaElement>)
+ * @param Errorhandle - Le type de validator héritant la classe ErrorMessageFormHandle par défaut
+ */
+export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTextAreaElement>,
+    errormessagefield?: string[]): void {
+    const btnsubmited = jQuery('button[type="submit"]', input_field.closest('form'));
+    btnsubmited.attr('disabled', 'disabled');
+    btnsubmited.css({ display: 'none' });
+    addErrorMessageFieldDom(input_field, errormessagefield);
+}
+
+/**
+ * This function handles errors for multiple form fields.
+ * @param formName - The name of the form to which the errors belong.
+ * @param formId - The unique ID of the form.
+ * @param errors - An object containing field names as keys and corresponding error messages as values.
+ * 
+ * This function loops through the errors object, finds the corresponding form fields,
+ * adds the 'is-invalid' class to them, and appends a small error message element next to the input field.
+ */
+export function handleErrorsManyForm(
+    formName: string,
+    formId: string,
+    errors: Record<string, string>
+): void {
+    if (Object.keys(errors).length === 0) return;
+    let element: JQuery<HTMLElement>;
+    for (const key in errors) {
+        element = jQuery(`#${formName}_${key}`);
+        element.addClass('is-invalid');
+        element.after(createSmallErrorMessage(formId, errors[key], key));
+    }
+}
+
+
 /**
  * This function clears error messages associated with an input field.
  * 
@@ -137,12 +147,116 @@ export function createSmallErrorMessage(
  *   and removes them from the DOM.
  * - Clears errors related to the field using the provided ErrorMessageHandle instance.
  */
-export function clearErrorInput(inputFieldJQuery: JQuery, errorhandle: FormErrorInterface): void {
+export function clearErrorInput(
+    inputFieldJQuery: JQuery<HTMLFormChildrenElement>,
+    applicCss: Record<string, string> = { border: 'medium none blue' }
+): void {
     if (!inputFieldJQuery.hasClass('is-invalid')) { return; }
     inputFieldJQuery.removeClass('is-invalid');
-    inputFieldJQuery.css({ border: 'medium none blue' });
+    inputFieldJQuery.css(applicCss);
     jQuery(`.error-item-${inputFieldJQuery.attr('id')}`).each(function (index, elmtError) {
         jQuery<HTMLElement>(elmtError).empty().remove();
     });
-    errorhandle.clearError(inputFieldJQuery.attr('name') as string);
+    return;
+}
+export type FlagRegExp = `${'g' | 'i' | 'm' | 'u' | 'y' | 's'}`; // Type plus précis
+/**
+ * Extracts the `pattern` attribute from an input or textarea element
+ * and returns it as a JavaScript `RegExp` object, with optional flags.
+ *
+ * This function uses jQuery internally to safely access the DOM element's attributes.
+ * While jQuery is used, this does not prevent the function from being used in modern
+ * frameworks such as React, as long as the DOM node is accessible (e.g., via a `ref`).
+ *
+ * It ensures that the element exists in the DOM, that the `pattern` attribute is present,
+ * and that the provided regex flags are valid before attempting to create a RegExp object.
+ *
+ * @param children - The input or textarea DOM element from which to extract the pattern.
+ * @param formParentName - A descriptive name of the form for context in logging (e.g. 'LoginForm').
+ * @param flag - A string of valid regex flags (`g`, `i`, `m`, `u`, `y`, `s`). Defaults to `'i'`.
+ *
+ * @returns A `RegExp` object if the pattern exists and is valid, otherwise `null`.
+ *
+ * @throws Will rethrow any error encountered during RegExp construction (e.g., if the pattern is invalid).
+ *
+ * @example
+ * const input = document.querySelector('#email') as HTMLInputElement;
+ * const regex = getInputPatternRegex(input, 'LoginForm', 'gi');
+ * if (regex?.test(input.value)) {
+ *   console.log('Valid email input!');
+ * }
+ *```tsx
+* import React, { useRef } from 'react';
+
+export function MyFormComponent() {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleValidate = () => {
+    if (inputRef.current) {
+      const regex = getInputPatternRegex(inputRef.current, 'MyReactForm', 'i');
+      const value = inputRef.current.value;
+      if (regex?.test(value)) {
+        console.log('✅ Valid input!');
+      } else {
+        console.warn('❌ Invalid input!');
+      }
+    }
+  };
+
+  return (
+    <div>
+      <input
+        ref={inputRef}
+        type="text"
+        name="username"
+        pattern="^[a-zA-Z0-9_]{4,12}+$"
+        placeholder="Enter your username"
+      />
+      <button onClick={handleValidate}>Validate</button>
+    </div>
+  );
+}
+*
+ *```
+ * @note This function assumes that jQuery is available in your project.
+ *       In React, you can pass a `ref.current` element to this function.
+ */
+
+export function getInputPatternRegex(
+    children: HTMLElement | JQuery<HTMLElement | HTMLElement>,
+    formParentName: string,
+    flag: string = 'i'
+): RegExp | undefined {
+    if (children instanceof HTMLElement || children instanceof HTMLElement) {
+        children = jQuery<HTMLElement | HTMLElement>(children);
+    }
+    if (children.length <= 0) {
+        Logger.warn(`The input element is not present in the DOM for ${formParentName}`);
+        return undefined;
+    }
+
+    // Valider les flags
+    const isValidFlag = /^[gimuyss]*$/.test(flag);
+    if (!isValidFlag) {
+        Logger.error(`Invalid regex flag(s) "${flag}" passed for the ${formParentName} form.`);
+        return undefined;
+    }
+
+    try {
+        const pattern = children.attr('pattern');
+        const fieldName = children.attr('name') ?? '[unknown name]';
+
+        if (!pattern) {
+            Logger.error(
+                `The ${fieldName} field in the ${formParentName} form does not have a pattern attribute.`
+            );
+            return undefined;
+        }
+        const regex = new RegExp(pattern, flag);
+        Logger.log('Pattern transform in javascript', regex)
+        return regex;
+    } catch (error: any) {
+        Logger.error(`Invalid pattern in ${formParentName} form field: ${error.message}`);
+        throw error;
+    }
 }

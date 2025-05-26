@@ -7,9 +7,13 @@
     "type": "git",
     "url": "git+https://github.com/Agbokoudjo/form_validator"
   },
+  "bugs": {
+    "url": "https://github.com/Agbokoudjo/form_validator/issues"
+  },
+  "homepage": "https://github.com/Agbokoudjo/form_validator#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "type": "module",
   "keywords": [
     "jquery",
@@ -37,7 +41,8 @@
     "lint": "eslint ."
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "publishConfig": {
     "access": "public"

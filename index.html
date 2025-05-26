@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,45 +27,138 @@
        <hr/><br/>
       <div class="form-group text-center">
         <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
-        <form class="form" method="post" action="test">
+        <form class="form" method="post" action="test" name="form_validate" id="form_validate">
           <label for="lastname">Lastname</label><br/>
-          <input type="text" class="form-control lastname"
-          placeholder="Eg:AGBOKOUDJO" id="lastname" name="lastname"/><br/>
+          <input type="text" 
+          class="form-control lastname"
+          placeholder="Eg:AGBOKOUDJO" 
+          id="lastname" 
+          name="lastname"
+          event-validate-blur="blur"  
+          event-validate-input="input"
+          pattern="^[a-zA-ZÀ-ÿ\s]+$"
+          required="true"
+           escapestrip-html-and-php-tags="true"
+           max-length="100"
+           min-length="3"
+          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          eg-await="AGBOKOUDJO"
+          /><br/>
            <label for="firstname">Firstnames</label><br/>
           <input type="text" class="form-control firstname"
-          placeholder="Eg:Franck Empedocle Hounha" id="firstname" name="firstname"/><br/>
+          placeholder="Eg:Franck Empedocle Hounha" 
+          id="firstname" 
+          name="firstname"
+          event-validate-blur="blur"  
+          event-validate-input="input"
+          pattern="^[a-zA-ZÀ-ÿ\s]+$"
+           required="true"
+           escapestrip-html-and-php-tags="true"
+           max-length="200"
+           min-length="3"
+          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          eg-await="Hounha Franck"
+          /><br/>
           <label for="username">Fullname</label><br/>
           <input type="text" class="form-control username"
           placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
-          id="username" name="username"
+          id="username" 
+          name="username"
           position-lastname="right"
+          event-validate-blur="blur" 
+           event-validate-input="input"
+           pattern="^[a-zA-ZÀ-ÿ\s]+$"
+            escapestrip-html-and-php-tags="true"
+           max-length="200"
+           min-length="6"
+           required="true"
+          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          eg-await="AGABOKOUDJO Hounha Franck"
           /><br/>
           <hr/><br/>
            <label for="email">Email</label><br/>
-          <input type="email" class="email form-control" 
-          placeholder="Eg:franckagbokoudjo301@gmail.com" id="email" name="email"/><br/>
+          <input type="email" 
+          class="email form-control" 
+          placeholder="Eg:franckagbokoudjo301@gmail.com" 
+          id="email" name="email"
+          event-validate-blur="blur"  
+          event-validate-input="input"
+          required="true"
+           escapestrip-html-and-php-tags="false"
+           max-length="180"
+           min-length="6"
+          error-message-input="email is invalid"
+          eg-await="franckagbokoudjo301@gmail.com"
+          /><br/>
           <label for="tel">Phone:</label>
             <input type="tel" class="tel form-control" 
-          placeholder="Eg:+22967251886" id="tel" name="tel"/><br/>
+          placeholder="Eg:+22967251886" 
+          id="tel" name="tel"
+          event-validate-blur="blur" 
+           event-validate-input="input"
+           required="true"
+           pattern="^([\+]{1})([0-9\s]{1,})+$"
+            escapestrip-html-and-php-tags="false"
+           max-length="180"
+           min-length="6"
+           error-message-input="The content of this field must contain only number ,one symbol +,
+           of spaces and must not null "
+            eg-await="+2290167251886"
+          /><br/>
           <label for="message" class="form-label">Message:</label>
           <textarea id="message"
+          name="message"
           class="form-control" 
-           placeholder="write the message here" rows="10" cols="5">
-
+           placeholder="write the message here" 
+           rows="10"
+            cols="5"
+           event-validate-blur="blur"  
+           event-validate-input="input"
+           pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
+            escapestrip-html-and-php-tags="false"
+           max-length="100000"
+           min-length="20"
+           required
+           >
           </textarea>
           <hr/><br/>
           <strong class="text-center fw-bolder">File Validation</strong><br/>
-          <label for="img">Uploader des images</label><br/>
+          <label for="img">Uploader des images</label><br>
           <input type="file" class="images form-control" multiple 
-          placeholder="choose images many or one" id="img" 
-          accept="image/*"
-          name="images"/><br/>
+          id="img" 
+          name="images"
+          event-validate-blur="blur"  
+          event-validate-change="change"
+          media-type="image"
+          /><br/>
            <label for="pdf">Uploader des documents pdf</label><br/>
-          <input type="file" class="pdf form-control" multiple 
-          placeholder="choose pdf many or one" id="pdf" name="pdf"/><br/>
+          <input type="file" class="pdf form-control" 
+          multiple 
+           event-validate-blur="blur"  
+           event-validate-change="change"
+              media-type="document"
+          allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+            application/vnd.oasis.opendocument.text"
+          extensions="jpg,jpeg,png,webp"
+          id="pdf" name="pdf"/><br/>
            <label for="video">Uploader des medias video</label><br/>
-          <input type="file" class="video form-control" multiple 
-          placeholder="choose video many or one" id="video" name="video"/><br/>
+          <input type="file" 
+          class="video form-control" 
+          multiple 
+           event-validate-blur="blur"  
+           event-validate-change="change"
+           id="video" 
+              media-type="video"
+             allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
+            video/mp4, video/quicktime, video/x-matroska,
+            video/webm, video/3gpp, video/3gpp2, video/x-m4v,
+            video/mpeg, video/mp2t, video/ogg, video/x-ms-asf,
+            application/vnd.rn-realmedia, video/divx"
+            extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
+            3g2, m4v, mpg, mpeg, ts, ogv, asf, rm, divx
+            "
+           name="video"/><br/>
           <button type="submit" class="btn-submit btn">Valider</button>
         </form>
       </div>

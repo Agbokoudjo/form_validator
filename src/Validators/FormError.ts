@@ -8,8 +8,8 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { FieldStateValidating } from "./ValidatorFormInterface";
-export interface FormErrorInterface{
+import { FieldStateValidating } from "./ValidatorFormInputNoTypeFileInterface";
+export interface FormErrorInterface {
 	/**
 	 * Sets the validation status and error message for a specific input field.
 	 * 
@@ -36,7 +36,7 @@ export interface FormErrorInterface{
 	 * console.log(status.errorMessage); // "Invalid email format" (if applicable)
 	 */
 	getValidatorStatus: (targetInputname: string) => FieldStateValidating;
-	
+
 	/**
 	 * EN : Stores an error message for an input field in the form. 
 	 * If the error message already exists, it will not be added again.
@@ -80,34 +80,34 @@ export interface FormErrorInterface{
 	 */
 	removeSpecificErrorMessage: (targetInputname: string, messageerrorinput: string) => this;
 	/**
-     * Récupère l'état de validation de tous les champs.
-     * @returns La Map des états de validation des champs.
-     */
-    getErrorsFieldAll:()=> Map<string, boolean>
-    /**
-     * Récupère les messages d'erreur de tous les champs.
-     * @returns La Map des messages d'erreur des champs.
-     */
+	 * Récupère l'état de validation de tous les champs.
+	 * @returns La Map des états de validation des champs.
+	 */
+	getErrorsFieldAll: () => Map<string, boolean>
+	/**
+	 * Récupère les messages d'erreur de tous les champs.
+	 * @returns La Map des messages d'erreur des champs.
+	 */
 	getErrorMessageFieldAll: () => Map<string, string[]>;
 }
-export abstract class FormError implements FormErrorInterface{
+export abstract class FormError implements FormErrorInterface {
 	private m_is_valid_field: Map<string, boolean>;
-    private m_errorMessageField: Map<string, string[]>;
+	private m_errorMessageField: Map<string, string[]>;
 	protected constructor() {
-		 this.m_is_valid_field = new Map<string, boolean>();
-        this.m_errorMessageField = new Map<string, string[]>();
+		this.m_is_valid_field = new Map<string, boolean>();
+		this.m_errorMessageField = new Map<string, string[]>();
 	}
 	/**
 	 * Vérifie si tous les champs sont valides.
 	 * @returns true si tous les champs sont valides, false sinon.
 	 */
 	public areAllFieldsValid = (): boolean => {
-    for (const isValid of this.m_is_valid_field.values()) {
-        if (!isValid) {
-            return false;
-        }
-    }
-    return true;
+		for (const isValid of this.m_is_valid_field.values()) {
+			if (!isValid) {
+				return false;
+			}
+		}
+		return true;
 	}
 	/**
 	 * Réinitialise tous les états de validation et messages d'erreur.
@@ -116,7 +116,7 @@ export abstract class FormError implements FormErrorInterface{
 	public clearAll = (): this => {
 		this.m_is_valid_field.clear();
 		this.m_errorMessageField.clear();
-    return this;
+		return this;
 	}
 	public removeSpecificErrorMessage = (targetInputname: string, messageerrorinput: string): this => {
 		const errorMessageField = this.m_errorMessageField.get(targetInputname) || [];
@@ -129,7 +129,7 @@ export abstract class FormError implements FormErrorInterface{
 		return this;
 	}
 	public hasErrorsField = (targetname: string): boolean => {
-		return this.m_is_valid_field.get(targetname) === true || this.m_is_valid_field.get(targetname)===undefined 
+		return this.m_is_valid_field.get(targetname) === true || this.m_is_valid_field.get(targetname) === undefined
 	};
 	public setErrorMessageField = (targetInputname: string, messageerrorinput: string | string[]): this => {
 		// Si messageerrorinput est un tableau, on l'assigne directement à errorMessageField
@@ -164,7 +164,7 @@ export abstract class FormError implements FormErrorInterface{
 		}
 		return this;
 	};
-    public getErrorsFieldAll = (): Map<string, boolean> => { return this.m_is_valid_field; }
+	public getErrorsFieldAll = (): Map<string, boolean> => { return this.m_is_valid_field; }
 	public getErrorMessageFieldAll = (): Map<string, string[]> => { return this.m_errorMessageField; }
 	public setValidatorStatus = (status: boolean, error_message: string, targetInputname: string): this => {
 		this.m_is_valid_field.set(targetInputname, status);

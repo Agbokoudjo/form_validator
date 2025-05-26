@@ -108,14 +108,10 @@ const documentValidator = DocumentValidator.getInstance();
 const videoValidator = VideoValidator.getInstance();
 const formFormattingEvent = FormFormattingEvent.getInstance();
 const imageValidator = ImageValidator.getInstance();
-
-
-
 ```
-
 ---
 
-Here is a well-formatted English version of your `README.md` with clear explanations and proper structure:  
+  
 
 ```md
 # 📝 Code Explanation  
@@ -417,8 +413,103 @@ const resultRight = usernameFormat("hounha franck empedocle Agbokoudjo", "right"
 console.log(resultRight); // Outputs "Hounha Franck Empedocle AGBOKOUDJO"
 ```
 
+
+````markdown
+### `toBoolean`
+
+```typescript
+export function toBoolean(value: string | null | undefined): boolean
+````
+
+**Description:**
+
+This function converts a string value to its boolean representation. It recognizes a specific set of truthy and falsy string values. For any other string input, it logs a warning and defaults to returning `false`.
+
+**Parameters:**
+
+  * `value`: `string | null | undefined` - The string to be converted to a boolean. The function also handles `null` and `undefined` inputs by returning `false`.
+
+**Truthy Values (case-insensitive and trimmed):**
+
+  * `"true"`
+  * `"1"`
+  * `"yes"`
+
+**Falsy Values (case-insensitive and trimmed):**
+
+  * `"false"`
+  * `"0"`
+  * `"no"`
+
+**Returns:**
+
+  * `boolean`: The boolean representation of the input string. Returns `true` if the normalized (trimmed and lowercased) input is one of the recognized truthy values. Returns `false` if the normalized input is one of the recognized falsy values, or if the input is `null`, `undefined`, or any other unrecognized string.
+
+**Warning:**
+
+  * If the input `value` is a string that does not match any of the recognized truthy or falsy values, a warning message is logged using `Logger.warn`, indicating the unrecognized string. The function then returns `false`.
+
+**Example Usage:**
+
+```typescript
+import { toBoolean } from './utils'; // Assuming your function is in utils.ts
+import { Logger } from './logger';   // Assuming you have a logger module
+
+console.log(toBoolean("true"));   // Output: true
+console.log(toBoolean("1"));      // Output: true
+console.log(toBoolean("yes"));    // Output: true
+console.log(toBoolean("FALSE"));  // Output: false
+console.log(toBoolean("0"));      // Output: false
+console.log(toBoolean("No"));     // Output: false
+console.log(toBoolean("  true ")); // Output: true (trimmed)
+console.log(toBoolean("maybe"));   // Output: false (and logs a warning)
+console.log(toBoolean(null));      // Output: false
+console.log(toBoolean(undefined)); // Output: false
+console.log(toBoolean(""));        // Output: false (and logs a warning)
+```
+
+```
+```
+---
+My apologies! It seems I misunderstood the core of your request and didn't provide the markdown formatting as explicitly as you needed for a direct copy-paste into your `README.md`.
+
+You're absolutely right! You want the complete markdown block that you can just drop into your file.
+
+Here's the documentation for your `addHashToIds` function, fully formatted in Markdown, ready for your `README.md`:
+
 ---
 
+```markdown
+### `addHashToIds`
+
+This function takes an array of strings (typically IDs) and returns a new array where each string is prefixed with a hash symbol (`#`). This is commonly useful when preparing IDs for use as CSS selectors or URL fragments.
+
+```typescript
+export function addHashToIds(ids: string[]): string[]
+```
+
+#### Parameters
+
+* `ids` (string[]): An array of strings that represent identifiers.
+
+#### Returns
+
+* `string[]`: A new array where each original `id` string is now prefixed with `#`.
+
+#### Example
+
+```typescript
+import { addHashToIds } from './path/to/your/module'; // Adjust the import path as needed
+
+const myRawIds = ["header", "navigation", "footer"];
+const hashedIds = addHashToIds(myRawIds);
+
+console.log(hashedIds); 
+// Expected output: ["#header", "#navigation", "#footer"]
+```
+
+---
+```
 
 ```markdown
 # URL Utility Functions
@@ -680,6 +771,89 @@ handleErrorsManyForm(formName, formId, errors);  // Handle and display errors fo
 
 ---
 
+````markdown
+### `getInputPatternRegex`
+
+```typescript
+export function getInputPatternRegex(
+    children: HTMLInputElement | HTMLTextAreaElement,
+    formParentName: string,
+    flag: string = 'i'
+): RegExp | null
+````
+
+**Description:**
+
+This function retrieves the `pattern` attribute from a given HTML input or textarea element and constructs a regular expression (`RegExp`) object using this pattern and the provided flags. It includes error handling for cases where the element is not found, the `pattern` attribute is missing, or the provided flags are invalid.
+
+**Internal jQuery Dependency:**
+
+**Internally, this function utilizes the jQuery library** to interact with the provided `children` HTML element. Specifically, it wraps the native DOM element in a jQuery object to easily access its attributes using the `.attr()` method.
+
+**Compatibility with ReactJS:**
+
+While this function internally depends on jQuery, **it can still be used within ReactJS projects.** ReactJS primarily manages the DOM using its virtual DOM, but it operates with standard HTML elements in the browser. As long as the `children` parameter passed to this function is a valid HTMLInputElement or HTMLTextAreaElement (which can be obtained from a React component's ref or event target), the function will work as expected.
+
+**Important Considerations for ReactJS:**
+
+  * Ensure that jQuery is included in your ReactJS project if you intend to use this function.
+  * Be mindful of directly manipulating the DOM in React components. Using refs to access DOM nodes and passing them to utility functions like this is generally acceptable.
+  * Consider if a purely React-centric approach (e.g., using React's state and event handling for validation) might be more aligned with the React philosophy for complex scenarios. However, for simple cases where you need to extract and use the `pattern` attribute, this utility can be convenient.
+
+**Parameters:**
+
+  * `children`: `HTMLInputElement | HTMLTextAreaElement` - The HTML input or textarea element from which to extract the `pattern` attribute. In a React context, this would typically be a DOM node obtained via a ref.
+  * `formParentName`: `string` - The name or identifier of the parent form. This is used for logging and error messages to provide context.
+  * `flag`: `string = 'i'` - The regular expression flags to be used when creating the `RegExp` object. The default value is `'i'` (case-insensitive matching). Allowed flags are `'g'`, `'i'`, `'m'`, `'u'`, `'y'`, and `'s'`.
+
+**Returns:**
+
+  * `RegExp | null`: A `RegExp` object created from the `pattern` attribute and the provided flags. Returns `null` in the following cases:
+      * The provided `children` element is not present in the DOM (jQuery selection is empty).
+      * The provided `flag` string contains invalid regular expression flags.
+      * The `children` element does not have a `pattern` attribute.
+
+**Error Handling:**
+
+  * **Warning:** If the `children` element is not found in the DOM, a warning message is logged using the `Logger.warn` method, including the `formParentName` for context.
+  * **Error:** If the provided `flag` string contains invalid characters, an error message is logged using the `Logger.error` method, specifying the invalid flags and the `formParentName`. The function then returns `null`.
+  * **Error:** If the `children` element does not have a `pattern` attribute, an error message is logged using the `Logger.error` method, including the field name (if available) and the `formParentName`. The function then returns `null`.
+  * **Exception:** If the `pattern` attribute contains an invalid regular expression syntax that causes an error during the `RegExp` construction, an error message is logged using `Logger.error`, and the error is re-thrown.
+
+**Example Usage (including React context):**
+
+```typescript jsx
+import React, { useRef } from 'react';
+import { getInputPatternRegex } from './utils'; // Assuming your function is in utils.ts
+
+function MyFormComponent() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const formName = 'myReactForm';
+
+  const getPattern = () => {
+    if (inputRef.current) {
+      const regex = getInputPatternRegex(inputRef.current, formName);
+      if (regex) {
+        console.log('Regular expression from React input:', regex);
+      } else {
+        console.log('Could not get pattern from React input.');
+      }
+    }
+  };
+
+  return (
+    <form name={formName}>
+      <input type="text" name="myInput" pattern="[A-Za-z]+" ref={inputRef} />
+      <button type="button" onClick={getPattern}>Get Pattern</button>
+    </form>
+  );
+}
+
+export default MyFormComponent;
+```
+
+```
+```
 ---
 
 # Input Validation Class Documentation
@@ -1296,6 +1470,631 @@ const videoValidator = VideoValidator.getInstance();
 
 ---
 
+---
+---
+
+# `FormChildrenTypeNoFileValidate` Class Documentation
+
+This documentation provides a detailed explanation of the `FormChildrenValidateInterface` and its implementation, the `FormChildrenTypeNoFileValidate` class. These components are designed to handle the validation of HTML form fields that are not of type `file`.
+
+---
+
+## `FormChildrenValidateInterface` Interface
+
+This interface defines the contract for any form field validation component. It ensures that any class implementing it provides a standard set of methods for managing validation, retrieving validation options, and interacting with validation events.
+
+### Methods
+
+#### `isValid(): boolean`
+
+* **Description:** Checks if the form field is currently valid, meaning it has no recorded validation errors.
+* **Usage:** Use this method to determine the validity state of a field without triggering a new validation. It's useful for quick checks of the current state.
+
+#### `getOptionsValidate(): OptionsValidate`
+
+* **Description:** Retrieves the specific validation options configured for the form field. These options define the rules and criteria for validation to be applied.
+* **Usage:** This method is primarily used internally by the validation process to get the rules to apply. It can also be useful if you need to inspect a field's default or custom validation options.
+
+#### `validate(): Promise<void>`
+
+* **Description:** Triggers the validation process for the form field. This is an asynchronous operation that performs all necessary checks and records errors if the field is invalid.
+* **Usage:** Call this method to validate a form field. It's the primary method for initiating validation manually or in response to a user event (e.g., form submission, field blur).
+
+#### `eventValidate(): EventValidate`
+
+* **Description:** Returns the validation event associated with the field. This event is emitted when the field's validation is performed.
+* **Usage:** Allows you to subscribe to validation events to react when the field's validation status changes (e.g., showing or hiding an error message).
+
+#### `eventClearError(): EventValidate`
+
+* **Description:** Returns the "clear error" event associated with the field. This event is emitted when validation errors for the field are cleared.
+* **Usage:** Allows you to subscribe to error clearing events to react when field error messages should be hidden or the field is marked as valid.
+
+#### `clearErrorField(): void`
+
+* **Description:** Clears all validation errors currently associated with the form field.
+* **Usage:** Use this method to reset a field's error state, for example, when the user starts typing again in an invalid field or after a successful form submission.
+
+---
+
+## `FormChildrenTypeNoFileValidate` Class
+
+This class implements the `FormChildrenValidateInterface` for HTML form fields that are not of type `file`. It manages the logic for retrieving validation options based on the HTML input type and uses a form input validator (`FormInputValidator`) to perform the actual checks.
+
+### Constructor
+
+```typescript
+constructor(
+    childrenInput: HTMLFormChildrenElement,
+    protected readonly formInputValidate: FormInputValidator,
+    private optionsValidate?: OptionsValidateNoTypeFile
+)
+```
+
+* **`childrenInput`**: The HTML element of the form field to be validated.
+* **`formInputValidate`**: An instance of the form validator (`FormInputValidator`) that contains the actual validation logic.
+* **`optionsValidate` (optional)**: Custom validation options. If not provided, the class will **deduce default options** based on the HTML input's type.
+
+### Validation Attributes (via HTML Attributes) and Default Values
+
+This class deduces validation options by reading attributes directly from the HTML element (`childrenInput`). If an attribute is not specified, a default value is used.
+
+| HTML Attribute (on the input)     | Field Type (HTML `type` of the input) | Description                                                         | Default Value                                                |
+| :-------------------------------- | :------------------------------------ | :------------------------------------------------------------------ | :----------------------------------------------------------- |
+| `max-length`                      | `text`, `tel`, `textarea`, `url`, `password`, `date`, `number` | Maximum allowed length for the input.                               | `255` for `text`, `tel`, `url`, `password`; `1000` for `textarea`; `21` for `date` |
+| `min-length`                      | `text`, `tel`, `textarea`, `url`, `password`, `date`, `number` | Minimum allowed length for the input.                               | `1` for `text`, `tel`; `10` for `textarea`, `date`; `6` for `url`; `8` for `password` |
+| `required`                        | `text`, `tel`, `textarea`, `password` | Indicates if the field is mandatory.                                | `false`                                                      |
+| `escapestrip-html-and-php-tags`   | `text`, `textarea`, `select`          | Indicates if HTML and PHP tags should be escaped/stripped.          | `false`                                                      |
+| `error-message-input`             | `text`, `tel`                         | Custom error message to display.                                    | Generic non-compliance message                               |
+| `regex-validator`                 | Any type                              | Custom regular expression for validation.                           | Deduced from HTML pattern if present                         |
+| `eg-await`                        | `text`                                | Specific attribute for awaiting/triggering logic.                   | `undefined`                                                  |
+| `upper-case-allow`                | `password`                            | Allows uppercase letters in the password.                           | `false`                                                      |
+| `lower-case-allow`                | `password`                            | Allows lowercase letters in the password.                           | `false`                                                      |
+| `special-char`                    | `password`                            | Allows special characters in the password.                          | `false`                                                      |
+| `number-allow`                    | `password`                            | Allows numbers in the password.                                     | `false`                                                      |
+| `allowed-protocols`               | `url`                                 | List of allowed URL protocols (comma-separated).                    | `['https']`                                                  |
+| `required-tld`                    | `url`                                 | Requires a TLD (top-level domain) in the URL.                       | `false`                                                      |
+| `allow-localhost`                 | `url`                                 | Allows `localhost` URLs.                                            | `false`                                                      |
+| `allow-ip`                        | `url`                                 | Allows IP addresses as URLs.                                        | `false`                                                      |
+| `allow-query-params`              | `url`                                 | Allows query parameters in the URL.                                 | `false`                                                      |
+| `allow-hash`                      | `url`                                 | Allows hash anchors in the URL.                                     | `false`                                                      |
+| `format-date`                     | `date`                                | Expected date format (e.g., `YYYY-MM-DD`).                          | `undefined`                                                  |
+| `min-date`                        | `date`                                | Minimum allowed date.                                               | `undefined`                                                  |
+| `max-date`                        | `date`                                | Maximum allowed date.                                               | `undefined`                                                  |
+| `allow-future`                    | `date`                                | Allows future dates.                                                | `false`                                                      |
+| `allow-past`                      | `date`                                | Allows past dates.                                                  | `false`                                                      |
+| `min`                             | `number`                              | Minimum allowed numeric value.                                      | `undefined`                                                  |
+| `max`                             | `number`                              | Maximum allowed numeric value.                                      | `undefined`                                                  |
+| `step`                            | `number`                              | Number increment/decrement step.                                    | `undefined`                                                  |
+
+**Attributes for Checkbox/Radio Containers (on the parent element with the group ID)**
+
+| HTML Attribute (on the container) | Field Type (HTML `type` of the input) | Description                                                | Default Value |
+| :-------------------------------- | :------------------------------------ | :--------------------------------------------------------- | :------------ |
+| `max-allowed`                     | `checkbox`                            | Maximum number of selectable checkboxes.                   | `undefined`   |
+| `min-allowed`                     | `checkbox`                            | Minimum number of selectable checkboxes.                   | `undefined`   |
+| `required`                        | `checkbox`, `radio`                   | Indicates that at least one option must be selected in the group. | `false`       |
+
+### Implemented Methods
+
+#### `validate(): Promise<void>`
+
+* **Description:** Validates the current value of the field using the injected `FormInputValidator` instance.
+* **Usage:** This method is the cornerstone of validation. It's called to execute all validation rules defined by the retrieved `OptionsValidate`. It emits a validation event after execution.
+
+#### `isValid(): boolean`
+
+* **Description:** Checks the field's error state by consulting the `FormInputValidator` instance.
+* **Usage:** Allows you to know if the field currently has errors without triggering a new validation.
+
+#### `getOptionsValidate(): OptionsValidateNoTypeFile`
+
+* **Description:** Retrieves the validation options. If `optionsValidate` were passed to the constructor, they are used. Otherwise, this method **dynamically determines and builds the default validation options** based on the input type (`text`, `tel`, `textarea`, `password`, `url`, `date`, `select`, `number`, `checkbox`, `radio`) and the HTML attributes present on the element.
+* **Usage:** This method is crucial because it adapts the validation behavior to the specific HTML field type by reading configurations directly from the DOM.
+
+#### `protected getFormError(): FormErrorInterface`
+
+* **Description:** Returns the `FormInputValidator` instance that manages errors.
+* **Usage:** Internal method to access the error handler.
+
+#### `private hasContainerCheckbox(): boolean`
+
+* **Description:** Checks for the presence of a container (with an `id` matching the checkbox group's `name`) for checkbox groups and ensures all checkboxes in the group are inside it.
+* **Usage:** Internal method for checkbox group validation, essential for applying `max-allowed` and `min-allowed` rules. **Throws an error if the container structure is not respected.**
+
+#### `private hasContainerRadio(): boolean`
+
+* **Description:** Similar to `hasContainerCheckbox`, but for radio button groups.
+* **Usage:** Internal method for radio group validation. **Throws an error if the container structure is not respected.**
+
+#### `private getAttrCheckboxContainer(attributeName: string): string | undefined`
+
+* **Description:** Retrieves the value of a specific attribute on the checkbox group's container.
+* **Usage:** Internal method to extract validation rules from the container (`max-allowed`, `min-allowed`, `required`).
+
+#### `private getAttrRadioContainer(attributeName: string): string | undefined`
+
+* **Description:** Retrieves the value of a specific attribute on the radio group's container.
+* **Usage:** Internal method to extract the `required` rule from the container.
+
+#### `private getOptionsValidateTextarea(): OptionsInputField`
+#### `private getOptionsValidateUrl(): URLOptions`
+#### `private getOptionsValidateDate(): DateOptions`
+#### `private getOptionsValidateSelect(): SelectOptions`
+#### `private getOptionsValidateNumber(): NumberOptions`
+#### `private getOptionsValidateSimpleText(): OptionsInputField`
+#### `private getOptionsValidatePassword(): PassworkRuleOptions`
+#### `private getOptionsValidateCheckBox(): OptionsCheckbox`
+#### `private getOptionsValidateRadio(): OptionsRadio`
+
+* **Description:** These private methods are responsible for constructing the validation options objects (`OptionsInputField`, `URLOptions`, etc.) for each HTML input type. They read the corresponding attributes from the HTML element (`this._children` or its container) and apply default values if the attributes are not found.
+* **Usage:** They are called by `getOptionsValidate()` to provide the specific validation rules for the field type.
+
+---
+
+---
+
+# `FormChildrenTypeFileValidate` Class Documentation
+
+This documentation provides a comprehensive explanation of the `FormChildrenTypeFileValidate` class, designed for the specific validation of HTML form fields of type `file`. This class extends `AbstractFormChildrenValidate` and implements `FormChildrenValidateInterface`, ensuring adherence to a standard validation contract while providing specialized media file validation capabilities.
+
+---
+
+## Class `FormChildrenTypeFileValidate`
+
+This class specializes in handling validation for file input elements (`<input type="file">`). It leverages an `AbstractMediaValidator` to perform the actual file-specific checks based on various attributes defined directly on the HTML input element.
+
+### Constructor
+
+```typescript
+constructor(
+    children: HTMLInputElement,
+    protected readonly mediaValidator: AbstractMediaValidator,
+    protected optionsValidateMedia?: OptionsValidateTypeFile
+)
+```
+
+* **`children`**: The `HTMLInputElement` representing the file input field to be validated.
+* **`mediaValidator`**: An instance of `AbstractMediaValidator` responsible for executing the file and media-specific validation rules.
+* **`optionsValidateMedia` (optional)**: Custom validation options for media files. If not provided, the class will **derive default options** based on the `media-type` attribute of the input element.
+
+**Important Note**: The constructor explicitly checks for the presence of a `media-type` attribute on the input element. If this attribute is missing, it will throw an `AttributeException`, as this attribute is crucial for determining the type of media validation to perform (e.g., image, document, video).
+
+### Validation Attributes (via HTML Attributes) and Default Values
+
+This class determines validation rules by reading attributes directly from the HTML `input` element (`children`). If an attribute is not specified, a sensible default value is applied.
+
+| HTML Attribute (on the input) | Applies To | Description | Default Value |
+| :---------------------------- | :--------- | :---------- | :------------ |
+| `media-type`                  | All file types | **Mandatory.** Specifies the type of media being uploaded (e.g., `image`, `document`, `video`). | **Required.** Throws `AttributeException` if missing. |
+| `extentions`                  | All file types | A comma-separated list of allowed file extensions (e.g., `jpg,png,gif`). | `undefined` (all extensions allowed by `allowed-mime-type-accept` if specified) |
+| `allowed-mime-type-accept`    | All file types | A comma-separated list of allowed MIME types (e.g., `image/jpeg,image/png`). | `undefined` (all MIME types allowed by `extentions` if specified) |
+| `maxsize-file`                | All file types | The maximum allowed file size. This value is an integer. | `2` (interpreted as MB by default) |
+| `unity-max-size-file`         | All file types | The unit for `maxsize-file` (e.g., `KB`, `MB`, `GB`). | Assumed to be **MB** if not specified. |
+| `unity-dimensions`            | Image, Video | The unit for `min-width`, `max-width`, `min-height`, `max-height` (e.g., `px`). | `undefined` |
+| `min-width`                   | Image, Video | Minimum width allowed for the media. | `10` |
+| `max-width`                   | Image, Video | Maximum width allowed for the media. | `1600` |
+| `min-height`                  | Image, Video | Minimum height allowed for the media. | `10` |
+| `max-height`                  | Image, Video | Maximum height allowed for the media. | `2500` |
+| `duration`                    | Video      | Maximum duration allowed for the video (in seconds). | `10` |
+| `unity-duration-media`        | Video      | The unit for `duration` (e.g., `seconds`, `minutes`). | `undefined` |
+| `event-clear-error`           | All file types | The DOM event that triggers the clearing of errors for the field. | `'change'` |
+
+### Implemented Methods
+
+#### `isValid(): boolean`
+
+* **Description:** Checks if the file input field is currently valid, meaning it has no recorded validation errors from the `mediaValidator`.
+* **Usage:** Use this method to quickly ascertain the current validity status of the file field without re-running the full validation.
+
+#### `validate(): Promise<void>`
+
+* **Description:** Initiates the asynchronous validation process for the file input. It checks if a file (or files) has been selected. If so, it passes the file(s) and the relevant validation options to the `mediaValidator`. After validation, it emits an event.
+* **Usage:** This is the primary method to call when you need to validate the selected file(s), typically on form submission or when the file input's value changes.
+
+#### `getOptionsValidate(): OptionsValidateTypeFile`
+
+* **Description:** Retrieves the validation options for the current media type. If `optionsValidateMedia` were passed to the constructor, they are used. Otherwise, this method **dynamically constructs default validation options** based on the `_mediaType` determined from the `media-type` HTML attribute. It supports `image`, `document`, and `video` types.
+* **Usage:** This method is critical for adapting the validation behavior to the specific media type, reading configuration directly from the DOM attributes. It will throw an error if an unsupported `media-type` is provided.
+
+#### `protected getFormError(): FormErrorInterface`
+
+* **Description:** Returns the instance of `AbstractMediaValidator` which is responsible for managing validation errors for this field.
+* **Usage:** This protected method provides internal access to the error handling mechanism.
+
+#### `public eventClearError(): EventValidate`
+
+* **Description:** Returns the event that triggers the clearing of validation errors for this field. By default, this is the `'change'` event of the input, but it can be customized via the `event-clear-error` HTML attribute.
+* **Usage:** Allows external components to subscribe to this event to clear error messages or reset the field's visual state when appropriate.
+
+### Private Helper Methods for Option Derivation
+
+The following private methods are responsible for building the specific validation option objects based on the `media-type` attribute and other HTML attributes on the input element.
+
+#### `private getOptionsValidateVideo(): OptionsMediaVideo`
+
+* **Description:** Constructs the `OptionsMediaVideo` object, inheriting base file options and adding video-specific attributes like `duration`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, and `unityDurationMedia`. Defaults are applied if attributes are missing.
+* **Usage:** Called internally by `getOptionsValidate()` when `_mediaType` is `'video'`.
+
+#### `private getOptionsValidateImage(): OptionsImage`
+
+* **Description:** Constructs the `OptionsImage` object, inheriting base file options and adding image-specific attributes like `minWidth`, `maxWidth`, `minHeight`, and `maxHeight`. Defaults are applied if attributes are missing.
+* **Usage:** Called internally by `getOptionsValidate()` when `_mediaType` is `'image'`.
+
+#### `private getBaseOptionsValidate(): OptionsFile`
+
+* **Description:** This method serves as a base to construct common file validation options (`OptionsFile`) applicable to all media types (image, document, video). It reads attributes such as `extentions`, `allowedMimeTypeAccept`, `maxsizeFile`, `unityMaxSizeFile`, and `unityDimensions`.
+* **Usage:** Called by `getOptionsValidateVideo()` and `getOptionsValidateImage()` to ensure common file validation rules are always included.
+
+---
+---
+
+# `FormValidate` Class Documentation
+
+This documentation provides an in-depth look at the `FormValidate` class, a central component for managing and orchestrating the validation of form fields within your application. It streamlines the process of attaching validation logic to various form elements and provides convenient methods for triggering validation and retrieving field IDs based on desired DOM events.
+
+---
+
+## Class `FormValidate`
+
+The `FormValidate` class serves as a robust controller for form validation. It initializes by identifying all relevant form fields within a specified HTML form and then dynamically creates appropriate validator instances (`FormChildrenTypeNoFileValidate` or `FormChildrenTypeFileValidate`) for each field. This class also helps in organizing form field IDs based on the DOM events that should trigger their validation, simplifying event listener setup.
+
+### Constructor
+
+```typescript
+constructor(formCssSelector: string = "form")
+```
+
+* **`formCssSelector` (optional)**: A CSS selector string that targets the HTML `<form>` element you wish to validate.
+    * **Default Value**: `"form"` (will target the first `<form>` element found in the document if no specific selector is provided).
+
+**Initialization Logic:**
+
+The constructor performs the following key steps:
+1.  **Form Identification**: It attempts to locate the `<form>` element using the provided `formCssSelector`. If no form is found, it throws an `Error`.
+2.  **Field Collection**: It identifies all `input`, `select`, and `textarea` elements within the targeted form.
+3.  **Exclusion Filtering**: It filters out certain input types that typically don't require client-side validation (e.g., `hidden`, `submit`, `datetime`, `datetime-local`, `time`, `month`).
+4.  **ID Extraction**: It collects the `id` attributes of all eligible form fields. These IDs are crucial for later associating fields with DOM events.
+
+### Key Internal Attributes
+
+* `_idChildrens`: A private array of strings containing the `id` attributes of all validatable child elements within the form.
+* `_form`: A jQuery object representing the HTML `<form>` element being validated.
+* `_formChildrenValidate`: A private instance of `FormChildrenValidateInterface` (either `FormChildrenTypeNoFileValidate` or `FormChildrenTypeFileValidate`), representing the validator for the *last* child element whose validation was triggered.
+* `_excludedTypes`: An array of `HTMLInputElement` types that are explicitly excluded from automatic validation.
+
+### Public Methods
+
+#### `autoValidateAllFields(): Promise<void>`
+
+* **Description**: Iterates through all identified form fields, builds a validator instance for each, and triggers their respective `validate()` methods. This is useful for validating the entire form, for example, during form submission.
+* **Usage**: Call this method when you need to perform a comprehensive validation check on all fields in the form.
+    ```typescript
+    const myFormValidator = new FormValidate('#myForm');
+    myFormValidator.autoValidateAllFields()
+        .then(() => console.log('All fields validated successfully!'))
+        .catch(error => console.error('Form validation failed:', error));
+    ```
+
+#### `validateChildrenForm(target: HTMLFormChildrenElement): Promise<void>`
+
+* **Description**: Validates a *specific* form field based on the provided target HTML element. It gets the appropriate validator instance for the `target` and runs its `validate()` method.
+* **Usage**: This method is ideal for real-time, field-specific validation, such as when a user types in a field (`input` event) or leaves a field (`blur` event).
+    ```typescript
+    const myFormValidator = new FormValidate('#myForm');
+    const emailInput = document.getElementById('email') as HTMLInputElement;
+
+    emailInput.addEventListener('blur', async (event) => {
+        try {
+            await myFormValidator.validateChildrenForm(event.target as HTMLFormChildrenElement);
+            // Handle valid field (e.g., remove error message)
+        } catch (error) {
+            // Handle invalid field (e.g., display error message)
+        }
+    });
+    ```
+
+#### `buildValidators(): FormChildrenValidateInterface[]`
+
+* **Description**: Generates and returns an array of validator instances, one for each validatable child element in the form. This method does *not* trigger validation; it only prepares the validator objects.
+* **Usage**: Can be used if you need programmatic access to all validator instances without immediately performing validation.
+
+#### `clearErrorDataChildren(): void`
+
+* **Description**: Clears any validation errors associated with the *last* validated child element. This method acts on the `_formChildrenValidate` instance, if it exists.
+* **Usage**: Useful for clearing error messages related to a specific field, for example, when the user starts re-typing after an error was displayed.
+
+### Private Helper Method
+
+#### `private getValidatorInstance(target: HTMLFormChildrenElement): FormChildrenTypeFileValidate | FormChildrenTypeNoFileValidate`
+
+* **Description**: This crucial private method dynamically determines and returns the correct validator class (`FormChildrenTypeFileValidate` for `type="file"` inputs, `FormChildrenTypeNoFileValidate` for others) based on the input element's type and its `media-type` attribute (for file inputs). It also injects the correct validator registry instances.
+* **Usage**: Called internally by `autoValidateAllFields()` and `validateChildrenForm()`. It ensures that the appropriate validation logic is applied based on the field type.
+* **Important**: For `type="file"` inputs, it **requires** the `media-type` HTML attribute (e.g., `media-type="image"`, `media-type="video"`, `media-type="document"`). If `media-type` is missing or unsupported for a file input, it will throw an `AttributeException` or a generic `Error`.
+
+### Public Getters
+
+#### `childrens: JQuery<HTMLFormChildrenElement>`
+
+* **Description**: Returns a jQuery collection of all validatable input, select, and textarea elements within the form (excluding the `_excludedTypes`).
+* **Usage**: Provides direct access to the jQuery wrapped form children for further manipulation or querying.
+
+#### `idChildrenUsingEventBlur: string[]`
+
+* **Description**: Returns an array of `id`s for form fields that have the `event-validate-blur="blur"` HTML attribute.
+* **Usage**: Facilitates attaching blur event listeners to specific fields.
+    ```html
+    <input type="text" id="myInput" event-validate-blur="blur">
+    ```
+
+#### `idChildrenUsingEventInput: string[]`
+
+* **Description**: Returns an array of `id`s for form fields that have the `event-validate-input="input"` HTML attribute.
+* **Usage**: Facilitates attaching input event listeners for real-time validation as the user types.
+    ```html
+    <input type="text" id="myTextArea" event-validate-input="input">
+    ```
+
+#### `idChildrenUsingEventChange: string[]`
+
+* **Description**: Returns an array of `id`s for form fields that have the `event-validate-change="change"` HTML attribute.
+* **Usage**: Facilitates attaching change event listeners, particularly useful for `select` elements, checkboxes, and radio buttons.
+    ```html
+    <select id="mySelect" event-validate-change="change"></select>
+    ```
+
+#### `idChildrenUsingEventFocus: string[]`
+
+* **Description**: Returns an array of `id`s for form fields that have the `event-validate-focus="focus"` HTML attribute.
+* **Usage**: Facilitates attaching focus event listeners, though validation on focus is less common. Can be used for specific UI behaviors.
+    ```html
+    <input type="text" id="myFocusInput" event-validate-focus="focus">
+    ```
+
+#### `idChildrens: string[]`
+
+* **Description**: Returns the initial array of `id`s for all validatable child elements collected during the constructor phase.
+* **Usage**: Provides a comprehensive list of all field IDs that the `FormValidate` instance is managing.
+
+#### `form: JQuery<HTMLFormElement>`
+
+* **Description**: Returns the jQuery object representing the HTML form associated with this `FormValidate` instance.
+* **Usage**: Provides direct access to the form element itself for DOM manipulation or event handling.
+
+
+---
+
+# Using the `FormValidate` Class in Practice
+
+This section demonstrates how to integrate and use the `FormValidate` class within a jQuery `$(function)` block to manage form validation dynamically based on user interactions.
+
+---
+
+## Overview
+
+The provided code snippet illustrates a common pattern for setting up client-side form validation. It leverages the `FormValidate` class to:
+
+1.  **Initialize Form Validation**: Create an instance of `FormValidate` targeting a specific HTML form.
+2.  **Format Input Fields**: Apply custom formatting rules to certain input fields (e.g., converting last names to uppercase, capitalizing usernames).
+3.  **Attach Event Listeners**: Dynamically attach `blur`, `input`, and `change` event listeners to form fields. The `FormValidate` class helps identify which fields should trigger validation on which events using custom HTML attributes.
+4.  **Handle Validation Outcomes**: Listen for custom events (`FieldValidationFailed` and `FieldValidationSuccess`) emitted by the validation system to provide real-time feedback to the user.
+
+## Code Breakdown and Usage
+
+```javascript
+jQuery(function validateInput() {
+  /**
+   * Text input formatting
+   */
+  // Example usage of an external 'formFormattingEvent' object
+  // These methods modify the input field's value directly,
+  // typically converting text to a desired format.
+  formFormattingEvent.lastnameToUpperCase(this, 'en');
+  formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');
+  formFormattingEvent.usernameFormatDom(this, " ", " ", "en");
+
+  /**
+   * Initialize FormValidate for a specific form
+   * The '#form_validate' selector targets the HTML form with id="form_validate"
+   */
+  const formValidate = new FormValidate('#form_validate');
+
+  /**
+   * Get IDs of fields configured for specific validation events
+   * The addHashToIds function (from your other documentation) prefixes each ID with '#'.
+   * .join(",") creates a comma-separated string of selectors (e.g., "#field1,#field2").
+   * These strings are used as event delegation selectors for jQuery's .on() method.
+   */
+  const idsBlur = addHashToIds(formValidate.idChildrenUsingEventBlur).join(",");
+  const idsInput = addHashToIds(formValidate.idChildrenUsingEventInput).join(",");
+  const idsChange = addHashToIds(formValidate.idChildrenUsingEventChange).join(",");
+
+  /**
+   * Event Listener: 'blur'
+   * Triggers validation when a field loses focus.
+   *
+   * HTML Attribute requirement: The input field must have the attribute
+   * `event-validate-blur="blur"` for its ID to be included in `idsBlur`.
+   */
+  formValidate.form.on("blur", `${idsBlur}`, (event: JQuery.BlurEvent) => {
+    const target = event.target;
+    // Ensure the target is an HTML input or textarea element before validating
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      console.log("Blur event triggered for:", event);
+      // Validate the specific field that triggered the blur event
+      formValidate.validateChildrenForm(event.target as HTMLFormChildrenElement);
+    }
+  });
+
+  /**
+   * Custom Event Listener: 'FieldValidationFailed'
+   * Fired when a field validation fails. This event is typically dispatched
+   * by your `FormChildrenValidateInterface` implementation (e.g., `FormChildrenTypeNoFileValidate`)
+   * when `validate()` finds errors.
+   *
+   * Data provided: A `CustomEvent` with `detail` containing `targetChildrenForm` (the HTML element)
+   * and `message` (the error message).
+   */
+  formValidate.form.on(FieldValidationFailed, (event: JQuery.TriggeredEvent) => {
+    // Cast the originalEvent to CustomEvent to access its 'detail' property
+    const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
+    console.log("Validation failed for:", data.targetChildrenForm, "Message:", data.message);
+    // Call a utility function to display the error message next to the field
+    addErrorMessageFieldDom(jQuery(data.targetChildrenForm), data.message);
+  });
+
+  /**
+   * Custom Event Listener: 'FieldValidationSuccess'
+   * Fired when a field validation succeeds (or no errors are found). Similar to `FieldValidationFailed`,
+   * this event is dispatched by your validator implementation.
+   *
+   * Data provided: A `CustomEvent` with `detail` containing `targetChildrenForm` (the HTML element)
+   * and potentially other data.
+   */
+  formValidate.form.on(FieldValidationSuccess, (event: JQuery.TriggeredEvent) => {
+    const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
+    console.log("Validation success for:", data.targetChildrenForm);
+    // In a real application, you might hide an error message here
+  });
+
+  /**
+   * Event Listener: 'input'
+   * Triggers when the value of an <input> or <textarea> element is changed.
+   *
+   * HTML Attribute requirement: The input field must have the attribute
+   * `event-validate-input="input"` for its ID to be included in `idsInput`.
+   */
+  formValidate.form.on('input', `${idsInput}`, (event: JQuery.Event | any) => {
+    const target = event.target;
+    console.log("Input event triggered for:", event);
+    // Clear any previous error messages when the user starts typing
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+      if (target) {
+        clearErrorInput(jQuery(target)); // Utility to visually clear error
+        formValidate.clearErrorDataChildren(); // Clear error data within FormValidate
+      }
+    }
+  });
+
+  /**
+   * Event Listener: 'change'
+   * Triggers when the value of an <input>, <select>, or <textarea> element changes
+   * and the element loses focus (for text inputs), or immediately for select/checkbox/radio.
+   *
+   * HTML Attribute requirement: The input field must have the attribute
+   * `event-validate-change="change"` for its ID to be included in `idsChange`.
+   */
+  formValidate.form.on('change', `${idsChange}`, (event: JQuery.ChangeEvent) => {
+    const target = event.target;
+    console.log("Change event triggered for:", event);
+    // Clear any previous error messages, especially relevant for select/checkbox/radio
+    if (target instanceof HTMLInputElement) { // Can also be HTMLSelectElement or HTMLTextAreaElement
+      if (target) {
+        clearErrorInput(jQuery(target)); // Utility to visually clear error
+        formValidate.clearErrorDataChildren(); // Clear error data within FormValidate
+      }
+    }
+  });
+});
+```
+
+---
+
+## How to Set Up Your HTML for `FormValidate`
+
+To make this JavaScript code work effectively, your HTML form fields need specific `id` attributes and custom `event-validate-*` attributes.
+
+**Required Attributes on Form Fields:**
+
+* **`id` Attribute**: Every field you want `FormValidate` to manage **must have a unique `id` attribute**. This is how `FormValidate` identifies and tracks individual fields.
+
+**Custom Attributes for Event-Driven Validation:**
+
+You'll use these attributes on your `input`, `select`, and `textarea` elements to tell `FormValidate` which DOM event should trigger validation for that specific field.
+
+* `event-validate-blur="blur"`: Add this attribute to fields that should be validated when they lose focus.
+    ```html
+    <input type="text" id="emailInput" name="email" event-validate-blur="blur" required>
+    ```
+* `event-validate-input="input"`: Add this attribute to fields that should be validated as the user types (real-time validation).
+    ```html
+    <textarea id="messageTextarea" name="message" event-validate-input="input"></textarea>
+    ```
+* `event-validate-change="change"`: Add this attribute to fields (especially `select`, `checkbox`, `radio`) that should be validated when their value changes.
+    ```html
+    <select id="countrySelect" name="country" event-validate-change="change">
+      <option value="">Select a Country</option>
+      <option value="us">United States</option>
+      <option value="ca">Canada</option>
+    </select>
+
+    <input type="checkbox" id="agreeTerms" name="terms" value="true" event-validate-change="change">
+    <label for="agreeTerms">I agree to the terms</label>
+    ```
+* `event-validate-focus="focus"`: Although not used in this specific snippet, you could also add this attribute for validation on focus, if needed.
+    ```html
+    <input type="text" id="focusField" name="focusTest" event-validate-focus="focus">
+    ```
+
+**For File Inputs (`<input type="file">`):**
+
+As per the `FormChildrenTypeFileValidate` documentation, file inputs require a `media-type` attribute:
+
+* `media-type="image" | "video" | "document"`: This attribute is **mandatory** for `type="file"` inputs and dictates the specific type of media validation to apply.
+    ```html
+    <input type="file" id="profilePicture" name="profile_picture" media-type="image" event-validate-change="change">
+    ```
+
+### Example HTML Structure
+
+```html
+<form id="form_validate" name="registrationForm">
+  <label for="firstName">First Name:</label>
+  <input type="text" id="firstName" name="first_name" event-validate-input="input" min-length="2" max-length="50" required>
+  <div class="error-message" id="error-firstName"></div>
+  <br>
+
+  <label for="lastName">Last Name:</label>
+  <input type="text" id="lastName" name="last_name" event-validate-blur="blur" min-length="2" max-length="50" required>
+  <div class="error-message" id="error-lastName"></div>
+  <br>
+
+  <label for="email">Email:</label>
+  <input type="email" id="email" name="email" event-validate-blur="blur" event-validate-input="input" required>
+  <div class="error-message" id="error-email"></div>
+  <br>
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" event-validate-blur="blur" min-length="8" required upper-case-allow="true" number-allow="true">
+  <div class="error-message" id="error-password"></div>
+  <br>
+
+  <label for="userType">User Type:</label>
+  <select id="userType" name="user_type" event-validate-change="change" required>
+    <option value="">-- Please select --</option>
+    <option value="admin">Administrator</option>
+    <option value="user">Regular User</option>
+  </select>
+  <div class="error-message" id="error-userType"></div>
+  <br>
+
+  <label for="profileImage">Profile Image:</label>
+  <input type="file" id="profileImage" name="profile_image" media-type="image" event-validate-change="change">
+  <div class="error-message" id="error-profileImage"></div>
+  <br>
+
+  <button type="submit">Submit</button>
+</form>
+```
+
+**Note**: The example assumes the existence of:
+* `formFormattingEvent`: An object with methods like `lastnameToUpperCase`, `capitalizeUsername`, `usernameFormatDom`.
+* `addHashToIds`: A function to prefix IDs with `#`.
+* `FieldValidationFailed`, `FieldValidationSuccess`: Custom event names (likely string constants).
+* `FieldValidationEventData`: An interface defining the structure of the data passed with validation events.
+* `addErrorMessageFieldDom`, `clearErrorInput`: Utility functions to interact with the DOM for displaying/clearing error messages.
+
+This setup provides a highly configurable and event-driven approach to form validation, allowing you to define validation triggers and rules directly within your HTML.
 ---
 
 
@@ -2393,7 +3192,77 @@ function MyUploaderComponent() {
 }
 ```
 
+````markdown
+### The Exception
+# Dom
+### `AttributeException`
 
+```typescript
+export class AttributeException extends Error
+```
+
+**Description:**
+
+This class defines a custom exception that is specifically intended to be thrown when a required attribute is missing from a Document Object Model (DOM) element. It extends the built-in `Error` class and includes contextual information about the missing attribute, the element it was expected on, and its parent container. Upon instantiation, it also logs the error message using the `Logger.error` method.
+
+**Constructor:**
+
+```typescript
+constructor(
+    private readonly attributeName: string,
+    private readonly childrenName: string,
+    private readonly parentName: string
+)
+```
+
+**Parameters:**
+
+  * `attributeName`: `string` - The name of the missing attribute (e.g., `'pattern'`, `'value'`, `'id'`).
+  * `childrenName`: `string` - The `name` or identifier of the DOM element that is missing the attribute.
+  * `parentName`: `string` - The `name` or identifier of the parent container of the DOM element where the attribute is missing (e.g., a form name).
+
+**Functionality:**
+
+  * **Custom Error Message:** When an `AttributeException` is created, it generates a descriptive error message that includes the name of the missing attribute, the name of the child element, and the name of the parent container. This message provides clear context about the error.
+  * **Correct Error Name:** The `name` property of the error object is explicitly set to `'AttributeException'`. This is helpful for identifying the type of error in `catch` blocks or during debugging.
+  * **Error Logging:** Upon instantiation, the constructor automatically logs the generated error message using the `Logger.error` method (assuming a `Logger` with an `error` method is available in the scope). This ensures that missing attribute errors are immediately recorded.
+  * **Prototype Correction:** The `Object.setPrototypeOf(this, AttributeException.prototype)` line is included to ensure that the prototype chain is correctly established, especially when the error might be caught in a plain JavaScript environment where class inheritance might not be fully handled as in TypeScript.
+
+**Example Usage:**
+
+```typescript
+import { Logger } from './logger'; // Assuming you have a logger module
+
+// Simulate a scenario where an input element is expected to have a 'pattern' attribute
+const inputElement = document.createElement('input');
+inputElement.name = 'myInput';
+const formName = 'myForm';
+
+if (!inputElement.getAttribute('pattern')) {
+    throw new AttributeException('pattern', inputElement.name, formName);
+}
+
+// In a catch block:
+try {
+    // ... some code that might throw AttributeException
+} catch (error) {
+    if (error instanceof AttributeException) {
+        console.error('Caught an AttributeException:', error.message);
+        // Handle the missing attribute error specifically
+    } else {
+        console.error('An unexpected error occurred:', error);
+    }
+}
+```
+
+**Purpose in Your Codebase:**
+
+This `AttributeException` class likely serves as a specific way to handle situations where certain HTML attributes, such as `pattern` in the context of input validation, are expected to be present on DOM elements but are not found. By throwing a custom exception, you can:
+
+  * **Clearly identify the type of error.**
+  * **Provide detailed information in error messages and logs.**
+  * **Implement specific error handling logic** in `catch` blocks based on the type of exception.
+````
 
 ## Contact Information
 

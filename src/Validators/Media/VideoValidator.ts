@@ -1,21 +1,21 @@
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import {OptionsMediaVideo } from './MediaValidatorInterface';
-interface VideoDimensions{
+import { MediaValidatorInterface, OptionsMediaVideo } from './InterfaceMedia';
+interface VideoDimensions {
     width: number;
     height: number
 }
-export class VideoValidator extends AbstractMediaValidator {
+export class VideoValidator extends AbstractMediaValidator implements MediaValidatorInterface {
     private m_dimension: Record<string, VideoDimensions>;
-	private static m_instance_media: VideoValidator;
-	private constructor() {
-		super();
+    private static m_instance_media: VideoValidator;
+    private constructor() {
+        super();
         this.m_dimension = {};
-	}
-	public static getInstance = (): VideoValidator => {
-		if (!VideoValidator.m_instance_media) {
-			VideoValidator.m_instance_media = new VideoValidator();
-		}
-		return VideoValidator.m_instance_media;
+    }
+    public static getInstance = (): VideoValidator => {
+        if (!VideoValidator.m_instance_media) {
+            VideoValidator.m_instance_media = new VideoValidator();
+        }
+        return VideoValidator.m_instance_media;
     }
     /**
      * Validates one or more video files based on various criteria such as file extension, size, MIME type,
@@ -53,7 +53,7 @@ export class VideoValidator extends AbstractMediaValidator {
      * @see {@link extensionValidate} for validating the extensions of the video files.
      * @see {@link mimeTypeFileValidate} for validating the MIME type of the video files.
      */
-	public fileValidator = async (
+    public fileValidator = async (
         medias: File | FileList,
         targetInputname: string = 'videofile',
         optionsmedia: OptionsMediaVideo = {
@@ -84,28 +84,28 @@ export class VideoValidator extends AbstractMediaValidator {
         }
         return this;
     };
-    protected signatureFileValidate=async (file: File, uint8Array?: Uint8Array): Promise<string | null>=> {
+    protected signatureFileValidate = async (file: File, uint8Array?: Uint8Array): Promise<string | null> => {
         return null;
     }
-	protected getContext(): string {
+    protected getContext(): string {
         return 'video';
-	}
-        /**
-     * Valide le type MIME d'un fichier pour vérifier s'il s'agit d'une vidéo.
-     * 
-     * Cette fonction vérifie si le type MIME du fichier est inclus dans la liste des types MIME acceptés pour les vidéos. 
-     * Si ce n'est pas le cas, elle retourne un message d'erreur avec la liste des types autorisés.
-     * 
-     * @param media Le fichier à valider.
-     * @param allowedMimeTypeAccept Liste des types MIME autorisés pour les vidéos.
-     * @returns Une promesse contenant une chaîne d'erreur ou null si le type MIME est valide.
-     */
+    }
+    /**
+ * Valide le type MIME d'un fichier pour vérifier s'il s'agit d'une vidéo.
+ * 
+ * Cette fonction vérifie si le type MIME du fichier est inclus dans la liste des types MIME acceptés pour les vidéos. 
+ * Si ce n'est pas le cas, elle retourne un message d'erreur avec la liste des types autorisés.
+ * 
+ * @param media Le fichier à valider.
+ * @param allowedMimeTypeAccept Liste des types MIME autorisés pour les vidéos.
+ * @returns Une promesse contenant une chaîne d'erreur ou null si le type MIME est valide.
+ */
     protected mimeTypeFileValidate(
         media: File,
         allowedMimeTypeAccept: string[] = [
-            "video/x-msvideo", "video/x-flv", "video/x-ms-wmv", "video/mp4", 
-            "video/quicktime", "video/x-matroska", "video/webm", "video/3gpp", 
-            "video/3gpp2", "video/x-m4v", "video/mpeg", "video/mp2t", "video/ogg", 
+            "video/x-msvideo", "video/x-flv", "video/x-ms-wmv", "video/mp4",
+            "video/quicktime", "video/x-matroska", "video/webm", "video/3gpp",
+            "video/3gpp2", "video/x-m4v", "video/mpeg", "video/mp2t", "video/ogg",
             "video/x-ms-asf", "application/vnd.rn-realmedia", "video/divx"
         ]
     ): Promise<string | null> {
@@ -129,50 +129,50 @@ export class VideoValidator extends AbstractMediaValidator {
         });
     }
     private metadataValidate = async (media: File, targetInputname: string, optionsvideo?: OptionsMediaVideo): Promise<this> => {
-    return new Promise<this>((resolve, reject) => {
-        // Création d'un élément vidéo pour analyser les métadonnées
-        const video = document.createElement('video') as HTMLVideoElement;
-        video.preload = "metadata";
-        video.onloadedmetadata = () => {
-            // Révoquer l'URL de l'objet pour libérer la mémoire
-            window.URL.revokeObjectURL(video.src);
-            // Vérification si la vidéo a une durée valide
-            console.log(video.duration )
-            if (video.duration < 0 || Number.isNaN(video.duration)) {
-                this.setValidatorStatus(false, 
-                    `The file "${media.name}" is not a valid video file or is corrupted.`, 
-                    targetInputname);
-                return reject();  // Rejeter la promesse en cas de fichier vidéo invalide
-            }
-            // Sauvegarder les dimensions de la vidéo pour utilisation future
-            this.m_dimension = {
-                ...this.m_dimension,
-                [media.name]: { width: video.videoWidth, height: video.videoHeight }
+        return new Promise<this>((resolve, reject) => {
+            // Création d'un élément vidéo pour analyser les métadonnées
+            const video = document.createElement('video') as HTMLVideoElement;
+            video.preload = "metadata";
+            video.onloadedmetadata = () => {
+                // Révoquer l'URL de l'objet pour libérer la mémoire
+                window.URL.revokeObjectURL(video.src);
+                // Vérification si la vidéo a une durée valide
+                console.log(video.duration)
+                if (video.duration < 0 || Number.isNaN(video.duration)) {
+                    this.setValidatorStatus(false,
+                        `The file "${media.name}" is not a valid video file or is corrupted.`,
+                        targetInputname);
+                    return reject();  // Rejeter la promesse en cas de fichier vidéo invalide
+                }
+                // Sauvegarder les dimensions de la vidéo pour utilisation future
+                this.m_dimension = {
+                    ...this.m_dimension,
+                    [media.name]: { width: video.videoWidth, height: video.videoHeight }
+                };
+                // Validation avec les options fournies si disponibles
+                if (optionsvideo) {
+                    // Validation de la hauteur
+                    this.heightValidate(media, targetInputname, optionsvideo.minHeight, optionsvideo.maxHeight)
+                        .then(() => {
+                            // Validation de la largeur
+                            return this.widthValidate(media, targetInputname, optionsvideo.minWidth, optionsvideo.maxWidth);
+                        })
+                        .then(() => resolve(this))  // Résoudre la promesse si toutes les validations passent
+                        .catch((error) => reject(error));  // Rejeter la promesse si une validation échoue
+                } else {
+                    // Résoudre immédiatement si aucune option n'est spécifiée
+                    resolve(this);
+                }
             };
-            // Validation avec les options fournies si disponibles
-            if (optionsvideo) {
-                // Validation de la hauteur
-                this.heightValidate(media, targetInputname, optionsvideo.minHeight, optionsvideo.maxHeight)
-                    .then(() => {
-                        // Validation de la largeur
-                        return this.widthValidate(media, targetInputname, optionsvideo.minWidth, optionsvideo.maxWidth);
-                    })
-                    .then(() => resolve(this))  // Résoudre la promesse si toutes les validations passent
-                    .catch((error) => reject(error));  // Rejeter la promesse si une validation échoue
-            } else {
-                // Résoudre immédiatement si aucune option n'est spécifiée
-                resolve(this);
-            }
-        };
-        // Gestion des erreurs de chargement
-        video.onerror = () => {
-            this.setValidatorStatus(false, 
-                `Failed to load the metadata for the video file "${media.name}". It might not be a valid video file.`, 
-                targetInputname);
-            reject();  // Rejeter la promesse en cas d'erreur de chargement
-        };
-        // Définir la source de la vidéo
-        video.src = URL.createObjectURL(media);
-    });
-};
+            // Gestion des erreurs de chargement
+            video.onerror = () => {
+                this.setValidatorStatus(false,
+                    `Failed to load the metadata for the video file "${media.name}". It might not be a valid video file.`,
+                    targetInputname);
+                reject();  // Rejeter la promesse en cas d'erreur de chargement
+            };
+            // Définir la source de la vidéo
+            video.src = URL.createObjectURL(media);
+        });
+    };
 }
