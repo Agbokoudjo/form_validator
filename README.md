@@ -3264,6 +3264,162 @@ This `AttributeException` class likely serves as a specific way to handle situat
   * **Implement specific error handling logic** in `catch` blocks based on the type of exception.
 ````
 
+---
+
+# `Logger` Class Documentation
+
+This documentation provides a guide to using the `Logger` class, a simple yet effective utility for managing console output based on your application's environment and debugging settings.
+
+---
+
+## Class `Logger`
+
+The `Logger` class is a **singleton** utility designed to provide controlled logging capabilities within your application. It allows you to output messages to the console (`log`, `warn`, `error`, `info`) while respecting different application environments (`dev`, `prod`, `test`) and a global debug flag.
+
+### Core Features:
+
+* **Singleton Pattern**: Ensures only one instance of the `Logger` exists throughout your application, providing a centralized logging configuration.
+* **Environment-Aware Logging**: Adjusts logging behavior based on the `APP_ENV` (Application Environment) property, allowing for verbose output in development and stricter control in production.
+* **Debug Control**: A `DEBUG` flag offers an additional layer of control over when messages are displayed.
+* **Timestamped Messages**: All log messages are automatically prefixed with an ISO timestamp and the log type for better traceability.
+
+### Properties
+
+* `APP_ENV: Env`
+    * **Description**: Defines the current application environment. It can be `"dev"`, `"prod"`, or `"test"`.
+    * **Default Value**: `"dev"`
+    * **Usage**: Controls which log messages are displayed. For instance, `info` messages might only appear in `dev` mode.
+
+* `DEBUG: boolean`
+    * **Description**: A global debug flag. When `true`, more verbose logging might occur. When `false`, certain log types might be suppressed, even in non-production environments.
+    * **Default Value**: `true`
+    * **Usage**: Use this to quickly toggle detailed logging on or off without changing `APP_ENV`.
+
+### Constructor
+
+The `Logger` class has a `private` constructor. This means you **cannot** directly create instances using `new Logger()`. This enforces the singleton pattern, ensuring you always work with the single, shared instance of the logger.
+
+### Public Static Methods
+
+Since `Logger` is a singleton with a private constructor, you interact with it entirely through its static methods.
+
+#### `static getInstance(): Logger`
+
+* **Description**: This is the **only way** to get an instance of the `Logger` class. It implements the singleton pattern, ensuring that if an instance already exists, it's returned; otherwise, a new one is created and returned.
+* **Usage**: You'll typically call this once at the beginning of your application or whenever you need to configure the logger's `APP_ENV` or `DEBUG` properties.
+    ```typescript
+    const logger = Logger.getInstance();
+    logger.APP_ENV = "prod"; // Set environment to production
+    logger.DEBUG = false;    // Disable debug output
+    ```
+
+#### `static log(...args: any[]): void`
+
+* **Description**: Logs a general message to the console using `console.log`.
+* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is not `"prod"`.
+* **Usage**: Use for general information, tracking flow, or debugging messages that are not critical errors.
+    ```typescript
+    Logger.log("User logged in:", userId);
+    ```
+
+#### `static warn(...args: any[]): void`
+
+* **Description**: Logs a warning message to the console using `console.warn`.
+* **Logging Conditions**: Messages are logged if `DEBUG` is `true` **OR** `APP_ENV` is not `"prod"`. This means warnings are more likely to appear than regular logs.
+* **Usage**: Use for potential issues, deprecated features, or situations that don't break the application but warrant attention.
+    ```typescript
+    Logger.warn("API response was slower than expected for endpoint:", url);
+    ```
+
+#### `static error(...args: any[]): void`
+
+* **Description**: Logs an error message to the console using `console.error`.
+* **Logging Conditions**: **Always** logs the message, regardless of `DEBUG` flag or `APP_ENV`. Errors are considered critical and should always be visible.
+* **Usage**: Use for critical failures, caught exceptions, or unexpected behavior that prevents an operation from completing successfully.
+    ```typescript
+    try {
+        // Some operation
+    } catch (e) {
+        Logger.error("Failed to process data:", e);
+    }
+    ```
+
+#### `static info(...args: any[]): void`
+
+* **Description**: Logs an informational message to the console using `console.info`.
+* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is `"dev"`. This makes `info` logs strictly for development-time debugging.
+* **Usage**: Use for highly detailed debugging information that you only want to see during active development.
+    ```typescript
+    Logger.info("Detailed debug info:", dataObject, "from function:", funcName);
+    ```
+
+---
+
+## How to Use the `Logger` Class
+
+### 1. Configure the Logger (Optional, but Recommended)
+
+At the very beginning of your application (e.g., `main.ts`, `app.ts`), get the logger instance and set its environment and debug flags.
+
+```typescript
+// app.ts or main.ts
+import { Logger } from './path/to/Logger'; // Adjust path as needed
+
+// Get the singleton instance
+const logger = Logger.getInstance();
+
+// Configure environment and debug mode
+// This could be based on environment variables (e.g., process.env.NODE_ENV)
+logger.APP_ENV = "dev"; // or "prod", "test"
+logger.DEBUG = true;   // or false
+
+console.log("Logger configured!");
+```
+
+### 2. Use Logging Methods Throughout Your Code
+
+Once configured, you can call the static logging methods from anywhere in your application. You don't need to pass the `logger` instance around; just import the `Logger` class.
+
+```typescript
+import { Logger } from './path/to/Logger'; // Adjust path as needed
+
+// In a service or component
+class UserService {
+    fetchUsers() {
+        Logger.log("Attempting to fetch users...");
+        fetch('/api/users')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                Logger.info("Users data received:", data);
+                // Process data
+            })
+            .catch(error => {
+                Logger.error("Error fetching users:", error);
+                Logger.warn("User fetch failed, showing fallback data.");
+            });
+    }
+}
+
+const userService = new UserService();
+userService.fetchUsers();
+
+// Example of different log outputs based on configuration:
+// If APP_ENV = "dev" and DEBUG = true:
+// 2024-05-27T10:00:00.000Z [LOG] Attempting to fetch users...
+// 2024-05-27T10:00:01.500Z [INFO] Users data received: [...]
+// (If an error occurs) 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
+// (If an error occurs) 2024-05-27T10:02:00.000Z [WARN] User fetch failed, showing fallback data.
+
+// If APP_ENV = "prod" and DEBUG = false:
+// (Only errors would be logged)
+// 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
+```
+
 ## Contact Information
 
 This file is part of the project by AGBOKOUDJO Franck.

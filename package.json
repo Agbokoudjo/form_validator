@@ -13,7 +13,7 @@
   "homepage": "https://github.com/Agbokoudjo/form_validator#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "keywords": [
     "jquery",
@@ -63,9 +63,9 @@
     "jquery": "^3.7.1",
     "lodash.debounce": "^4.0.8",
     "mammoth": "^1.9.0",
-    "papaparse": "^5.5.2",
+    "papaparse": "^5.5.3",
     "pdfjs-dist": "^5.2.133",
-    "sweetalert2": "^11.21.0",
+    "sweetalert2": "^11.22.0",
     "xlsx": "^0.18.5"
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"

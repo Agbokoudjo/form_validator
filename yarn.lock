@@ -795,9 +795,9 @@ __metadata:
     jquery: "npm:^3.7.1"
     lodash.debounce: "npm:^4.0.8"
     mammoth: "npm:^1.9.0"
-    papaparse: "npm:^5.5.2"
+    papaparse: "npm:^5.5.3"
     pdfjs-dist: "npm:^5.2.133"
-    sweetalert2: "npm:^11.21.0"
+    sweetalert2: "npm:^11.22.0"
     typescript: "npm:^5.8.3"
     vite: "npm:^6.3.5"
     xlsx: "npm:^0.18.5"
@@ -1793,10 +1793,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"papaparse@npm:^5.5.2":
-  version: 5.5.2
-  resolution: "papaparse@npm:5.5.2"
-  checksum: 10c0/83b8c0cf570395581a42331cd9231194dbba43bc8c608026739f5180827506575993dc788def039a9666bc103e2a96075de8732ea8a63e507b74c02aa757bcd5
+"papaparse@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "papaparse@npm:5.5.3"
+  checksum: 10c0/623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
   languageName: node
   linkType: hard
 
@@ -2224,10 +2224,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sweetalert2@npm:^11.21.0":
-  version: 11.21.0
-  resolution: "sweetalert2@npm:11.21.0"
-  checksum: 10c0/b87cdd75b5d2d7a97850ef7d5a7e6259aececcf55bc97896f7735488177824754f7b81cfcf334f21eaa2f2767dfb026ad9b4fc97504097e28887b41d914c6c45
+"sweetalert2@npm:^11.22.0":
+  version: 11.22.0
+  resolution: "sweetalert2@npm:11.22.0"
+  checksum: 10c0/b91be27e0d3d396b71e14b03fdcf46fc37bf0652eafc8a73722819def654761e6f48891ddaef308d4d26761f9be361843b08e3fdaeb94be63ae8f8a09e022d2a
   languageName: node
   linkType: hard
 
