@@ -1,5 +1,5 @@
-import Mammoth from 'mammoth';
-import Papa from 'papaparse';
+import * as Mammoth from 'mammoth';
+import * as Papa from 'papaparse';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
 import { AbstractMediaValidator } from './AbstractMediaValidator';
