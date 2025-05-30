@@ -34,46 +34,46 @@
           placeholder="Eg:AGBOKOUDJO" 
           id="lastname" 
           name="lastname"
-          event-validate-blur="blur"  
-          event-validate-input="input"
+          data-event-validate-blur="blur"  
+          data-event-validate-input="input"
           pattern="^[a-zA-ZÀ-ÿ\s]+$"
           required="true"
-           escapestrip-html-and-php-tags="true"
+           data-escapestrip-html-and-php-tags="true"
            max-length="100"
            min-length="3"
-          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          eg-await="AGBOKOUDJO"
+          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          data-eg-await="AGBOKOUDJO"
           /><br/>
            <label for="firstname">Firstnames</label><br/>
           <input type="text" class="form-control firstname"
           placeholder="Eg:Franck Empedocle Hounha" 
           id="firstname" 
           name="firstname"
-          event-validate-blur="blur"  
-          event-validate-input="input"
+          data-event-validate-blur="blur"  
+          data-event-validate-input="input"
           pattern="^[a-zA-ZÀ-ÿ\s]+$"
            required="true"
-           escapestrip-html-and-php-tags="true"
+           data-escapestrip-html-and-php-tags="true"
            max-length="200"
            min-length="3"
-          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          eg-await="Hounha Franck"
+          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          data-eg-await="Hounha Franck"
           /><br/>
           <label for="username">Fullname</label><br/>
           <input type="text" class="form-control username"
           placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
           id="username" 
           name="username"
-          position-lastname="right"
-          event-validate-blur="blur" 
-           event-validate-input="input"
+          data-position-lastname="right"
+          data-event-validate-blur="blur" 
+           data-event-validate-input="input"
            pattern="^[a-zA-ZÀ-ÿ\s]+$"
-            escapestrip-html-and-php-tags="true"
+            data-escapestrip-html-and-php-tags="true"
            max-length="200"
            min-length="6"
            required="true"
-          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          eg-await="AGABOKOUDJO Hounha Franck"
+          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          data-eg-await="AGABOKOUDJO Hounha Franck"
           /><br/>
           <hr/><br/>
            <label for="email">Email</label><br/>
@@ -81,29 +81,29 @@
           class="email form-control" 
           placeholder="Eg:franckagbokoudjo301@gmail.com" 
           id="email" name="email"
-          event-validate-blur="blur"  
-          event-validate-input="input"
+          data-event-validate-blur="blur"  
+          data-event-validate-input="input"
           required="true"
-           escapestrip-html-and-php-tags="false"
+           data-escapestrip-html-and-php-tags="false"
            max-length="180"
            min-length="6"
-          error-message-input="email is invalid"
-          eg-await="franckagbokoudjo301@gmail.com"
+          data-error-message-input="email is invalid"
+          data-eg-await="franckagbokoudjo301@gmail.com"
           /><br/>
           <label for="tel">Phone:</label>
             <input type="tel" class="tel form-control" 
           placeholder="Eg:+22967251886" 
           id="tel" name="tel"
-          event-validate-blur="blur" 
-           event-validate-input="input"
+          data-event-validate-blur="blur" 
+           data-event-validate-input="input"
            required="true"
            pattern="^([\+]{1})([0-9\s]{1,})+$"
-            escapestrip-html-and-php-tags="false"
+          data-escapestrip-html-and-php-tags="false"
            max-length="180"
            min-length="6"
-           error-message-input="The content of this field must contain only number ,one symbol +,
+           data-error-message-input="The content of this field must contain only number ,one symbol +,
            of spaces and must not null "
-            eg-await="+2290167251886"
+            data-eg-await="+2290167251886"
           /><br/>
           <label for="message" class="form-label">Message:</label>
           <textarea id="message"
@@ -112,17 +112,17 @@
            placeholder="write the message here" 
            rows="10"
             cols="5"
-           event-validate-blur="blur"  
-           event-validate-input="input"
-           pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
-            escapestrip-html-and-php-tags="false"
+           data-event-validate-blur="blur"  
+           data-event-validate-input="input"
+           data-pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
+            data-escapestrip-html-and-php-tags="false"
            max-length="100000"
            min-length="20"
            required
            >
           </textarea><br/>
            <label for="userType">User Type:</label>
-  <select id="userType" name="user_type" event-validate-change="change" required>
+  <select id="userType" name="user_type" data-event-validate-change="change" required>
     <option value="">-- Please select --</option>
     <option value="admin">Administrator</option>
     <option value="user">Regular User</option>
@@ -130,42 +130,44 @@
   <div class="error-message" id="error-userType"></div>
   <br>
            <label for="password">Password:</label>
-      <input type="password" id="password" name="password" event-validate-blur="blur" min-length="8" required upper-case-allow="true" number-allow="true">
+      <input type="password" id="password" name="password" 
+      data-event-validate-blur="blur" 
+      min-length="8" required data-upper-case-allow="true" data-number-allow="true">
           <hr/><br/>
           <strong class="text-center fw-bolder">File Validation</strong><br/>
           <label for="img">Uploader des images</label><br>
           <input type="file" class="images form-control" multiple 
           id="img" 
           name="images"
-          event-validate-blur="blur"  
-          event-validate-change="change"
-          media-type="image"
+          data-event-validate-blur="blur"  
+          data-event-validate-change="change"
+          data-media-type="image"
           /><br/>
            <label for="pdf">Uploader des documents pdf</label><br/>
           <input type="file" class="pdf form-control" 
           multiple 
-           event-validate-blur="blur"  
-           event-validate-change="change"
+           data-event-validate-blur="blur"  
+           data-event-validate-change="change"
               media-type="document"
-          allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
+          data-allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
             application/vnd.openxmlformats-officedocument.wordprocessingml.document,
             application/vnd.oasis.opendocument.text"
-          extensions="jpg,jpeg,png,webp"
+          data-extensions="jpg,jpeg,png,webp"
           id="pdf" name="pdf"/><br/>
            <label for="video">Uploader des medias video</label><br/>
           <input type="file" 
           class="video form-control" 
           multiple 
-           event-validate-blur="blur"  
-           event-validate-change="change"
+           data-event-validate-blur="blur"  
+           data-event-validate-change="change"
            id="video" 
-              media-type="video"
-             allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
+              data-media-type="video"
+             data-allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
             video/mp4, video/quicktime, video/x-matroska,
             video/webm, video/3gpp, video/3gpp2, video/x-m4v,
             video/mpeg, video/mp2t, video/ogg, video/x-ms-asf,
             application/vnd.rn-realmedia, video/divx"
-            extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
+            data-extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
             3g2, m4v, mpg, mpeg, ts, ogv, asf, rm, divx
             "
            name="video"/><br/>

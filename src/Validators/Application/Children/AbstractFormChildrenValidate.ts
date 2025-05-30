@@ -204,7 +204,7 @@ export abstract class AbstractFormChildrenValidate {
     * Defaults to "blur" if no `event-validate` attribute is found.
     */
     public eventValidate(): EventValidate {
-        return this.toConvertTypeEvent(this.getAttrChildren('event-validate') ?? 'blur');
+        return this.toConvertTypeEvent(this.getAttrChildren('data-event-validate') ?? 'blur');
     }
 
     /**
@@ -212,7 +212,7 @@ export abstract class AbstractFormChildrenValidate {
      * Defaults to "input" if no `event-clear-error` attribute is found.
      */
     public eventClearError(): EventValidate {
-        return this.toConvertTypeEvent(this.getAttrChildren('event-clear-error') ?? 'input');
+        return this.toConvertTypeEvent(this.getAttrChildren('data-event-clear-error') ?? 'input');
     }
 
     /**

@@ -190,7 +190,7 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
             maxLength: parseInt(this.getAttrChildren('max-length') ?? '1000', 10),
             minLength: parseInt(this.getAttrChildren('min-length') ?? '10', 10),
             typeInput: "textarea",
-            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('escapestrip-html-and-php-tags')),
+            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('data-escapestrip-html-and-php-tags')),
             requiredInput: toBoolean(this.getAttrChildren('required')),
             errorMessageInput: `The content you entered is invalid.  
                             Please ensure that your input complies with the required rules:
@@ -207,14 +207,14 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
     * Generates validation options for URL input fields.
     */
     private getOptionsValidateUrl(): URLOptions {
-        const allowed_protocoles = this.getAttrChildren('allowed-protocols');
+        const allowed_protocoles = this.getAttrChildren('data-allowed-protocols');
         return {
             allowedProtocols: allowed_protocoles ? allowed_protocoles.split(',') : ['https'],
-            requireTLD: toBoolean(this.getAttrChildren('required-tld')),
-            allowLocalhost: toBoolean(this.getAttrChildren('allow-localhost')),
-            allowIP: toBoolean(this.getAttrChildren('allow-ip')),
-            allowQueryParams: toBoolean(this.getAttrChildren('allow-query-params')),
-            allowHash: toBoolean(this.getAttrChildren('allow-hash')),
+            requireTLD: toBoolean(this.getAttrChildren('data-required-tld')),
+            allowLocalhost: toBoolean(this.getAttrChildren('data-allow-localhost')),
+            allowIP: toBoolean(this.getAttrChildren('data-allow-ip')),
+            allowQueryParams: toBoolean(this.getAttrChildren('data-allow-query-params')),
+            allowHash: toBoolean(this.getAttrChildren('data-allow-hash')),
             regexValidator: getInputPatternRegex(this._children, this.getAttrFormParent('name') ?? '[unknown form]', 'iu'),
             maxLength: parseInt(this.getAttrChildren('max-length') ?? '255', 10),
             minLength: parseInt(this.getAttrChildren('min-length') ?? '6', 10),
@@ -225,13 +225,13 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
      */
     private getOptionsValidateDate(): DateOptions {
         return {
-            format: this.getAttrChildren('format-date'),
-            minDate: this.getAttrChildren('min-date'),
-            maxDate: this.getAttrChildren('max-date'),
-            allowFuture: toBoolean(this.getAttrChildren('allow-future')),
-            allowPast: toBoolean(this.getAttrChildren('allow-past')),
-            maxLength: parseInt(this.getAttrChildren('max-length') ?? '21', 10),
-            minLength: parseInt(this.getAttrChildren('min-length') ?? '10', 10),
+            format: this.getAttrChildren('data-format-date'),
+            minDate: this.getAttrChildren('data-min-date'),
+            maxDate: this.getAttrChildren('data-max-date'),
+            allowFuture: toBoolean(this.getAttrChildren('data-allow-future')),
+            allowPast: toBoolean(this.getAttrChildren('data-allow-past')),
+            maxLength: parseInt(this.getAttrChildren('data-max-length') ?? '21', 10),
+            minLength: parseInt(this.getAttrChildren('data-min-length') ?? '10', 10),
             regexValidator: getInputPatternRegex(this._children, this.getAttrFormParent('name') ?? '[unknown form]', 'iu'),
         }
     }
@@ -251,7 +251,7 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
         })
         return {
             optionsChoices: options_choices,
-            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('escapestrip-html-and-php-tags'))
+            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('data-escapestrip-html-and-php-tags'))
         }
     }
     /**
@@ -281,10 +281,10 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
             maxLength: parseInt(this.getAttrChildren('max-length') ?? '255', 10),
             minLength: parseInt(this.getAttrChildren('min-length') ?? '1', 10),
             requiredInput: toBoolean(this.getAttrChildren('required')),
-            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('escapestrip-html-and-php-tags')),
-            errorMessageInput: this.getAttrChildren('error-message-input'),
+            escapestripHtmlAndPhpTags: toBoolean(this.getAttrChildren('data-escapestrip-html-and-php-tags')),
+            errorMessageInput: this.getAttrChildren('data-error-message-input'),
             typeInput: "text",
-            egAwait: this.getAttrChildren('eg-await')
+            egAwait: this.getAttrChildren('data-eg-await')
         }
     }
     /**
@@ -292,10 +292,10 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
     */
     private getOptionsValidatePassword(): PassworkRuleOptions {
         return {
-            upperCaseAllow: toBoolean(this.getAttrChildren('upper-case-allow')),
-            lowerCaseAllow: toBoolean(this.getAttrChildren('lower-case-allow')),
-            specialChar: toBoolean(this.getAttrChildren('special-char')),
-            numberAllow: toBoolean(this.getAttrChildren('number-allow')),
+            upperCaseAllow: toBoolean(this.getAttrChildren('data-upper-case-allow')),
+            lowerCaseAllow: toBoolean(this.getAttrChildren('data-lower-case-allow')),
+            specialChar: toBoolean(this.getAttrChildren('data-special-char')),
+            numberAllow: toBoolean(this.getAttrChildren('data-number-allow')),
             regexValidator: getInputPatternRegex(this._children, this.getAttrFormParent('name') ?? '[unknown form]', 'iu'),
             maxLength: parseInt(this.getAttrChildren('max-length') ?? '255', 10),
             minLength: parseInt(this.getAttrChildren('min-length') ?? '8', 10),
@@ -322,8 +322,8 @@ export class FormChildrenTypeNoFileValidate extends AbstractFormChildrenValidate
      * Constructs validation options for checkbox fields based on attributes from their container.
      */
     private getOptionsValidateCheckBox(): OptionsCheckbox {
-        const max_allowed = this.getAttrCheckboxContainer('max-allowed');
-        const min_allowed = this.getAttrCheckboxContainer('min-allowed');
+        const max_allowed = this.getAttrCheckboxContainer('data-max-allowed');
+        const min_allowed = this.getAttrCheckboxContainer('data-min-allowed');
         return {
             maxAllowed: max_allowed ? parseInt(max_allowed) : undefined,
             minAllowed: min_allowed ? parseInt(min_allowed) : undefined,
@@ -510,10 +510,10 @@ export class FormChildrenTypeFileValidate
         protected readonly mediaValidator: AbstractMediaValidator,
         protected optionsValidateMedia?: OptionsValidateTypeFile) {
         super(children);
-        if (!this.getAttrChildren('media-type')) {
-            throw new AttributeException('media-type', this.name, this.getAttrFormParent('name') ?? 'form');
+        if (!this.getAttrChildren('data-media-type')) {
+            throw new AttributeException('data-media-type', this.name, this.getAttrFormParent('name') ?? 'form');
         }
-        this._mediaType = this.getAttrChildren('media-type') as MediaType | undefined;
+        this._mediaType = this.getAttrChildren('data-media-type') as MediaType | undefined;
     }
     public isValid(): boolean { return this.mediaValidator.hasErrorsField(this.name); }
     public validate = async (): Promise<void> => {
@@ -524,7 +524,7 @@ export class FormChildrenTypeFileValidate
     public getOptionsValidate(): OptionsValidateTypeFile {
         if (!this.optionsValidateMedia) {
             if (!this._mediaType) {
-                throw new AttributeException('media-type', this.name, this.getAttrFormParent('name') ?? 'form');
+                throw new AttributeException('data-media-type', this.name, this.getAttrFormParent('name') ?? 'form');
             }
             switch (this._mediaType) {
                 case 'image':
@@ -548,31 +548,31 @@ export class FormChildrenTypeFileValidate
         return {
             ...this.getBaseOptionsValidate(),
             duration: parseInt(this.getAttrChildren('duration') ?? '10', 10),
-            minWidth: parseInt(this.getAttrChildren('min-width') ?? '10', 10),
-            maxWidth: parseInt(this.getAttrChildren('max-width') ?? '1600', 10),
-            minHeight: parseInt(this.getAttrChildren('min-height') ?? '10', 10),
-            maxHeight: parseInt(this.getAttrChildren('max-height') ?? '2500', 10),
-            unityDurationMedia: this.getAttrChildren('unity-duration-media')
+            minWidth: parseInt(this.getAttrChildren('data-min-width') ?? '10', 10),
+            maxWidth: parseInt(this.getAttrChildren('data-max-width') ?? '1600', 10),
+            minHeight: parseInt(this.getAttrChildren('data-min-height') ?? '10', 10),
+            maxHeight: parseInt(this.getAttrChildren('data-max-height') ?? '2500', 10),
+            unityDurationMedia: this.getAttrChildren('data-unity-duration-media')
         }
     }
     private getOptionsValidateImage(): OptionsImage {
         return {
             ...this.getBaseOptionsValidate(),
-            minWidth: parseInt(this.getAttrChildren('min-width') ?? '10', 10),
-            maxWidth: parseInt(this.getAttrChildren('max-width') ?? '1600', 10),
-            minHeight: parseInt(this.getAttrChildren('min-height') ?? '10', 10),
-            maxHeight: parseInt(this.getAttrChildren('max-height') ?? '2500', 10)
+            minWidth: parseInt(this.getAttrChildren('data-min-width') ?? '10', 10),
+            maxWidth: parseInt(this.getAttrChildren('data-max-width') ?? '1600', 10),
+            minHeight: parseInt(this.getAttrChildren('data-min-height') ?? '10', 10),
+            maxHeight: parseInt(this.getAttrChildren('data-max-height') ?? '2500', 10)
         }
     }
     private getBaseOptionsValidate(): OptionsFile {
-        const extensions_file = this.getAttrChildren('extentions');
+        const extensions_file = this.getAttrChildren('data-extentions');
         const allowedMimeTypeAccept_file = this.getAttrChildren('allowed-mime-type-accept');
         return {
             allowedMimeTypeAccept: allowedMimeTypeAccept_file ? allowedMimeTypeAccept_file.split(',') : undefined,
-            maxsizeFile: parseInt(this.getAttrChildren('maxsize-file') ?? '2', 10),
-            unityMaxSizeFile: this.getAttrChildren('unity-max-size-file'),
+            maxsizeFile: parseInt(this.getAttrChildren('data-maxsize-file') ?? '2', 10),
+            unityMaxSizeFile: this.getAttrChildren('data-unity-max-size-file'),
             extensions: extensions_file ? extensions_file.split(',') : undefined,
-            unityDimensions: this.getAttrChildren('unity-dimensions')
+            unityDimensions: this.getAttrChildren('data-unity-dimensions')
         }
     }
 

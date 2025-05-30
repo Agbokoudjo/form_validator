@@ -261,12 +261,12 @@ export function MyFormComponent() {
  */
 
 export function getInputPatternRegex(
-    children: HTMLElement | JQuery<HTMLElement | HTMLElement>,
+    children: HTMLElement | JQuery<HTMLElement>,
     formParentName: string,
     flag: string = 'i'
 ): RegExp | undefined {
-    if (children instanceof HTMLElement || children instanceof HTMLElement) {
-        children = jQuery<HTMLElement | HTMLElement>(children);
+    if (children instanceof HTMLElement) {
+        children = jQuery<HTMLElement>(children);
     }
     if (children.length <= 0) {
         Logger.warn(`The input element is not present in the DOM for ${formParentName}`);
@@ -281,7 +281,7 @@ export function getInputPatternRegex(
     }
 
     try {
-        const pattern = children.attr('pattern');
+        const pattern = children.attr('pattern') ?? children.attr('data-pattern');
         const fieldName = children.attr('name') ?? '[unknown name]';
 
         if (!pattern) {

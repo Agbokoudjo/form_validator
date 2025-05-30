@@ -215,9 +215,9 @@ export class FormValidate {
     public clearErrorDataChildren(): void { this._formChildrenValidate?.clearErrorField(); }
     private getValidatorInstance(target: HTMLFormChildrenElement): FormChildrenTypeFileValidate | FormChildrenTypeNoFileValidate {
         if (target instanceof HTMLInputElement && target.type === "file") {
-            const mediaType = jQuery(target).attr('media-type') as MediaType | undefined;
+            const mediaType = jQuery(target).attr('data-media-type') as MediaType | undefined;
             if (!mediaType) {
-                throw new AttributeException('media-type', target.name, this._form.attr('name') ?? 'form');
+                throw new AttributeException('data-media-type', target.name, this._form.attr('name') ?? 'form');
             }
             switch (mediaType) {
                 case "video":
@@ -250,7 +250,7 @@ export class FormValidate {
     public get idChildrenUsingEventBlur(): string[] {
         return this.childrens.filter((_index, children) => {
             if (children instanceof HTMLInputElement || children instanceof HTMLTextAreaElement) {
-                return jQuery(children).attr('event-validate-blur') === "blur";
+                return jQuery(children).attr('data-event-validate-blur') === "blur";
             }
             return false;
         })
@@ -260,7 +260,7 @@ export class FormValidate {
     public get idChildrenUsingEventInput(): string[] {
         return this.childrens.filter((_index, children) => {
             if (children instanceof HTMLInputElement || children instanceof HTMLTextAreaElement) {
-                return jQuery(children).attr('event-validate-input') === "input";
+                return jQuery(children).attr('data-event-validate-input') === "input";
             }
             return false;
         })
@@ -269,14 +269,14 @@ export class FormValidate {
     }
     public get idChildrenUsingEventChange(): string[] {
         return this.childrens.filter((_index, children) => {
-            return jQuery(children).attr('event-validate-change') === "change";
+            return jQuery(children).attr('data-event-validate-change') === "change";
         })
             .get()
             .map((el, _i) => el.id)
     }
     public get idChildrenUsingEventFocus(): string[] {
         return this.childrens.filter((_index, children) => {
-            return jQuery(children).attr('event-validate-focus') === "focus";
+            return jQuery(children).attr('data-event-validate-focus') === "focus";
         })
             .get()
             .map((el, _i) => el.id)

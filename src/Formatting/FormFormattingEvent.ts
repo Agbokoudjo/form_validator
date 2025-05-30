@@ -11,14 +11,14 @@ import { capitalizeString, escapeHtmlBalise, usernameFormat } from "../_Utils/st
  * For more information, please feel free to contact the author.
  */
 
-export interface OptionsFormattingEvent{
+export interface OptionsFormattingEvent {
     inputlastnameModule?: boolean;
     inputfirstnameModule?: boolean;
     usernameModule?: boolean;
     locales?: string | string[];
 }
 export class FormFormattingEvent {
-    private m_option_module:OptionsFormattingEvent;
+    private m_option_module: OptionsFormattingEvent;
     private static m_instance_formatting: FormFormattingEvent;
     private constructor() { this.m_option_module = {} }
     public static getInstance = (): FormFormattingEvent => {
@@ -29,12 +29,12 @@ export class FormFormattingEvent {
     }
     public init = (subject: any,
         separator_toString?: string,
-        finale_separator_toString?:string,
+        finale_separator_toString?: string,
         option_module: OptionsFormattingEvent = {
-        inputlastnameModule: true,
-        inputfirstnameModule: true,
-        usernameModule: true,
-    }): this => {
+            inputlastnameModule: true,
+            inputfirstnameModule: true,
+            usernameModule: true,
+        }): this => {
         this.m_option_module = option_module;
         if (this.m_option_module.inputlastnameModule === true) {
             this.lastnameToUpperCase(subject, this.m_option_module.locales);
@@ -64,7 +64,7 @@ export class FormFormattingEvent {
      * @throws {Error} If the `.lastname` input field does not exist in the provided subject.
      */
 
-    public lastnameToUpperCase(subject:HTMLElement|Document, locales?: string | string[]):void {
+    public lastnameToUpperCase(subject: HTMLElement | Document, locales?: string | string[]): void {
         let target: HTMLInputElement;
         let lastname: string | undefined;
         const lastnameInput = jQuery('input.lastname', subject);
@@ -72,12 +72,12 @@ export class FormFormattingEvent {
             throw new Error(`The input field dedicated to entering the last name with the CSS selector .lastname does not exist.  
             Did you forget to add "lastname" to the class attribute of the input field?`);
         }
-        lastnameInput.off("blur").on("blur", function (event:JQuery.BlurEvent){
+        lastnameInput.off("blur").on("blur", function (event: JQuery.BlurEvent) {
             target = event.target as HTMLInputElement;
             lastname = jQuery(target).val();
-            if(!lastname){return }
-                lastname=escapeHtmlBalise(lastname) as string
-                jQuery(target).val(lastname.toLocaleUpperCase(locales))
+            if (!lastname) { return }
+            lastname = escapeHtmlBalise(lastname) as string
+            jQuery(target).val(lastname.toLocaleUpperCase(locales))
         })
     }
     /**
@@ -104,23 +104,23 @@ export class FormFormattingEvent {
     public capitalizeUsername(subject: any,
         separator_toString: string = " ",
         finale_separator_toString: string = " ",
-        locales?: string | string[]): void{
-         let target: HTMLInputElement;
-        let username: string | undefined;  
+        locales?: string | string[]): void {
+        let target: HTMLInputElement;
+        let username: string | undefined;
         if (!this.hasExistElement('input.firstname', subject)) {
             throw new Error(`The input field for entering first names with the CSS selector '.firstname' does not exist.  
             Did you forget to add 'firstname' to the class attribute of the input field?`);
         }
         jQuery('input.firstname', subject)
-        .off("blur")
-        .on("blur", function (event: JQuery.BlurEvent) {
-            target = event.target as HTMLInputElement;
-            username = jQuery(target).val()?.toString().trim();
-            if (!username) return;
-            jQuery(target).val(
-                capitalizeString(username, separator_toString, finale_separator_toString, true, locales)
-            );
-        });
+            .off("blur")
+            .on("blur", function (event: JQuery.BlurEvent) {
+                target = event.target as HTMLInputElement;
+                username = jQuery(target).val()?.toString().trim();
+                if (!username) return;
+                jQuery(target).val(
+                    capitalizeString(username, separator_toString, finale_separator_toString, true, locales)
+                );
+            });
     }
     /**
      * Automatically formats the input field for first and last names by applying the correct formatting.
@@ -135,12 +135,12 @@ export class FormFormattingEvent {
      * @throws {Error} If no `input.username` field is found within the `subject`.
      */
 
-    public usernameFormatDom=(
+    public usernameFormatDom = (
         subject: any,
         separator_toString: string = " ",
         finale_separator_toString: string = " ",
         locales?: string | string[]
-    ): void=>{
+    ): void => {
         let target: HTMLInputElement;
         let username: string | undefined;
         if (!this.hasExistElement('input.username', subject)) {
@@ -151,18 +151,18 @@ export class FormFormattingEvent {
                 By default, the value is "left".`
             );
         }
-         // Attachement de l'événement de manière optimisée (délégation)
+        // Attachement de l'événement de manière optimisée (délégation)
         jQuery(subject).on("blur", "input.username", (event: JQuery.BlurEvent) => {
             target = event.target as HTMLInputElement;
             username = jQuery(target).val() as string;
             if (!username) return;
             jQuery(target).val(usernameFormat(
-                username, jQuery(target).attr('position-lastname') as 'left' | 'right',
+                username, jQuery(target).attr('data-position-lastname') as 'left' | 'right',
                 separator_toString, finale_separator_toString, locales
             ));
-    });
+        });
     }
-    protected hasExistElement(selector_css: string, subject: Document|HTMLElement): boolean{
+    protected hasExistElement(selector_css: string, subject: Document | HTMLElement): boolean {
         const elmt = jQuery(selector_css, subject);
         return elmt.length !== 0;
     }
