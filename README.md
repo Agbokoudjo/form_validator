@@ -1,25 +1,301 @@
-##
-
+--- 
 - This file is part of the project by AGBOKOUDJO Franck.
 -
 - (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
 - Phone: +229 01 67 25 18 86
-- LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
+- LinkedIn:<https://www.linkedin.com/in/internationales-web-services-120520193>
 - Company: INTERNATIONALES WEB SERVICES
 -
 - For more information, please feel free to contact the author.
+---
 
-##
+# Sommary
 
-# Form Validator
+- [Sommary](#sommary)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Dom](#dom)
+    - [`getInputPatternRegex`](#getinputpatternregex)
+    - [`addErrorMessageFieldDom`](#adderrormessagefielddom)
+      - [Parameters](#parameters)
+      - [Details](#details)
+      - [Example](#example)
+    - [`handleErrorsManyForm` Function](#handleerrorsmanyform-function)
+  - [**How to Integrate and Use These Functions**](#how-to-integrate-and-use-these-functions)
+  - [Validators](#validators)
+    - [Input Validation Class Documentation](#input-validation-class-documentation)
+      - [Overview](#overview)
+  - [Methods and Explanations](#methods-and-explanations)
+    - [1. `allTypesValidator` Method](#1-alltypesvalidator-method)
+    - [2. `textValidator` Method](#2-textvalidator-method)
+    - [3. `emailValidator` Method](#3-emailvalidator-method)
+    - [4. `telValidator` Method](#4-telvalidator-method)
+    - [5. `passwordValidator` Method](#5-passwordvalidator-method)
+    - [6. `urlValidator` Method](#6-urlvalidator-method)
+    - [7. `dateValidator` Method](#7-datevalidator-method)
+    - [`selectValidator` Method](#selectvalidator-method)
+      - [**Parameters**](#parameters-1)
+      - [**Functionality**](#functionality)
+      - [**Return Value**](#return-value)
+      - [Example Usage](#example-usage)
+      - [Conclusion](#conclusion)
+    - [ImageValidator Class Documentation](#imagevalidator-class-documentation)
+      - [Overview](#overview-1)
+      - [Supported Formats](#supported-formats)
+      - [Methods](#methods)
+      - [`getInstance(): ImageValidator`](#getinstance-imagevalidator)
+      - [`fileValidator(medias: File | FileList, targetInputname: string = 'photofile', optionsimg: OptionsImage): Promise<this>`](#filevalidatormedias-file--filelist-targetinputname-string--photofile-optionsimg-optionsimage-promisethis)
+      - [`signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null>`](#signaturefilevalidatefile-file-uint8array-uint8array-promisestring--null)
+      - [`mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[]): Promise<string | null>`](#mimetypefilevalidatefile-file-allowedmimetypeaccept-string-promisestring--null)
+      - [`getFileDimensions(file: File): Promise<{ width: number; height: number; }>`](#getfiledimensionsfile-file-promise-width-number-height-number-)
+      - [`detecteMimetype(hexasignatureFile: string, uint8Array: Uint8Array): string | null`](#detectemimetypehexasignaturefile-string-uint8array-uint8array-string--null)
+      - [`getExtensions(allowedMimeTypes: string[]): string[]`](#getextensionsallowedmimetypes-string-string)
+      - [Usage Example](#usage-example)
+    - [DocumentValidator Class Documentation](#documentvalidator-class-documentation)
+  - [Class Definition](#class-definition)
+  - [Properties](#properties)
+    - [`mimeTypeMap: Record<string, string[]>`](#mimetypemap-recordstring-string)
+    - [`signatureHexadecimalFormatDocument: Record<string, string[]>`](#signaturehexadecimalformatdocument-recordstring-string)
+    - [`private static m_instance_doc_validator: DocumentValidator`](#private-static-m_instance_doc_validator-documentvalidator)
+    - [`getInstanceDocValidator(): DocumentValidator`](#getinstancedocvalidator-documentvalidator)
+    - [`fileValidator(medias: File | FileList, targetInputname: string, optionsdoc: OptionsFile): Promise<this>`](#filevalidatormedias-file--filelist-targetinputname-string-optionsdoc-optionsfile-promisethis)
+      - [Returns](#returns)
+    - [`validate(file: File, formatValidator: string): Promise<string | null>`](#validatefile-file-formatvalidator-string-promisestring--null)
+    - [`readFileAsUint8Array(file: File): Promise<Uint8Array>`](#readfileasuint8arrayfile-file-promiseuint8array)
+    - [`validateSignature(file: File, formatValidator: string, uint8Array: Uint8Array): boolean`](#validatesignaturefile-file-formatvalidator-string-uint8array-uint8array-boolean)
+      - [Parameters](#parameters-2)
+    - [`validatePdf(file: File, uint8Array: Uint8Array): Promise<string | null>`](#validatepdffile-file-uint8array-uint8array-promisestring--null)
+    - [`validateExcel(file: File, uint8Array: Uint8Array): Promise<string | null>`](#validateexcelfile-file-uint8array-uint8array-promisestring--null)
+    - [`validateText(file: File): Promise<string | null>`](#validatetextfile-file-promisestring--null)
+    - [`validateCsv(file: File): Promise<string | null>`](#validatecsvfile-file-promisestring--null)
+    - [`detecteMimetype(filename: string, hexasignatureFile: string, uint8Array: Uint8Array): this`](#detectemimetypefilename-string-hexasignaturefile-string-uint8array-uint8array-this)
+    - [`getExtensions(allowedMimeTypeAccept: string[]): string[]`](#getextensionsallowedmimetypeaccept-string-string)
+  - [VideoValidator Class](#videovalidator-class)
+  - [Usage](#usage)
+    - [Constructor](#constructor)
+      - [`fileValidator(medias, targetInputname, optionsmedia)`](#filevalidatormedias-targetinputname-optionsmedia)
+      - [`mimeTypeFileValidate(media, allowedMimeTypeAccept)`](#mimetypefilevalidatemedia-allowedmimetypeaccept)
+      - [`metadataValidate(media, targetInputname, optionsvideo)`](#metadatavalidatemedia-targetinputname-optionsvideo)
+    - [Example with Detailed Validation](#example-with-detailed-validation)
+    - [Error Handling](#error-handling)
+    - [Import Example](#import-example)
+    - [`FormChildrenTypeNoFileValidate` Class Documentation](#formchildrentypenofilevalidate-class-documentation)
+  - [`FormChildrenValidateInterface` Interface](#formchildrenvalidateinterface-interface)
+    - [`getOptionsValidate(): OptionsValidate`](#getoptionsvalidate-optionsvalidate)
+      - [`validate(): Promise<void>`](#validate-promisevoid)
+      - [`eventValidate(): EventValidate`](#eventvalidate-eventvalidate)
+      - [`eventClearError(): EventValidate`](#eventclearerror-eventvalidate)
+      - [`clearErrorField(): void`](#clearerrorfield-void)
+  - [`FormChildrenTypeNoFileValidate` Class](#formchildrentypenofilevalidate-class)
+    - [Validation Attributes (via HTML Attributes) and Default Values](#validation-attributes-via-html-attributes-and-default-values)
+    - [**Attributes for Checkbox/Radio Containers (on the parent element with the group ID)**](#attributes-for-checkboxradio-containers-on-the-parent-element-with-the-group-id)
+    - [Implemented Methods](#implemented-methods)
+      - [`getOptionsValidate(): OptionsValidateNoTypeFile`](#getoptionsvalidate-optionsvalidatenotypefile)
+      - [`protected getFormError(): FormErrorInterface`](#protected-getformerror-formerrorinterface)
+      - [`private hasContainerCheckbox(): boolean`](#private-hascontainercheckbox-boolean)
+      - [`private hasContainerRadio(): boolean`](#private-hascontainerradio-boolean)
+      - [`private getAttrCheckboxContainer(attributeName: string): string | undefined`](#private-getattrcheckboxcontainerattributename-string-string--undefined)
+      - [`private getAttrRadioContainer(attributeName: string): string | undefined`](#private-getattrradiocontainerattributename-string-string--undefined)
+      - [`private getOptionsValidateTextarea(): OptionsInputField`](#private-getoptionsvalidatetextarea-optionsinputfield)
+      - [`private getOptionsValidateUrl(): URLOptions`](#private-getoptionsvalidateurl-urloptions)
+      - [`private getOptionsValidateDate(): DateOptions`](#private-getoptionsvalidatedate-dateoptions)
+      - [`private getOptionsValidateSelect(): SelectOptions`](#private-getoptionsvalidateselect-selectoptions)
+      - [`private getOptionsValidateNumber(): NumberOptions`](#private-getoptionsvalidatenumber-numberoptions)
+      - [`private getOptionsValidateSimpleText(): OptionsInputField`](#private-getoptionsvalidatesimpletext-optionsinputfield)
+      - [`private getOptionsValidatePassword(): PassworkRuleOptions`](#private-getoptionsvalidatepassword-passworkruleoptions)
+      - [`private getOptionsValidateCheckBox(): OptionsCheckbox`](#private-getoptionsvalidatecheckbox-optionscheckbox)
+      - [`private getOptionsValidateRadio(): OptionsRadio`](#private-getoptionsvalidateradio-optionsradio)
+- [`FormChildrenTypeFileValidate` Class Documentation](#formchildrentypefilevalidate-class-documentation)
+  - [Class `FormChildrenTypeFileValidate`](#class-formchildrentypefilevalidate)
+    - [Private Helper Methods for Option Derivation](#private-helper-methods-for-option-derivation)
+      - [`private getOptionsValidateVideo(): OptionsMediaVideo`](#private-getoptionsvalidatevideo-optionsmediavideo)
+      - [`private getOptionsValidateImage(): OptionsImage`](#private-getoptionsvalidateimage-optionsimage)
+      - [`private getBaseOptionsValidate(): OptionsFile`](#private-getbaseoptionsvalidate-optionsfile)
+  - [`FormValidate` Class Documentation](#formvalidate-class-documentation)
+  - [Class `FormValidate`](#class-formvalidate)
+    - [Key Internal Attributes](#key-internal-attributes)
+    - [Public Methods](#public-methods)
+      - [`autoValidateAllFields(): Promise<void>`](#autovalidateallfields-promisevoid)
+      - [`validateChildrenForm(target: HTMLFormChildrenElement): Promise<void>`](#validatechildrenformtarget-htmlformchildrenelement-promisevoid)
+      - [`buildValidators(): FormChildrenValidateInterface[]`](#buildvalidators-formchildrenvalidateinterface)
+      - [`clearErrorDataChildren(): void`](#clearerrordatachildren-void)
+    - [Private Helper Method](#private-helper-method)
+      - [`private getValidatorInstance(target: HTMLFormChildrenElement): FormChildrenTypeFileValidate | FormChildrenTypeNoFileValidate`](#private-getvalidatorinstancetarget-htmlformchildrenelement-formchildrentypefilevalidate--formchildrentypenofilevalidate)
+    - [Public Getters](#public-getters)
+      - [`childrens: JQuery<HTMLFormChildrenElement>`](#childrens-jqueryhtmlformchildrenelement)
+      - [`idChildrenUsingEventBlur: string[]`](#idchildrenusingeventblur-string)
+      - [`idChildrenUsingEventInput: string[]`](#idchildrenusingeventinput-string)
+      - [`idChildrenUsingEventChange: string[]`](#idchildrenusingeventchange-string)
+      - [`idChildrenUsingEventFocus: string[]`](#idchildrenusingeventfocus-string)
+      - [`idChildrens: string[]`](#idchildrens-string)
+      - [`form: JQuery<HTMLFormElement>`](#form-jqueryhtmlformelement)
+    - [Using the `FormValidate` Class in Practice](#using-the-formvalidate-class-in-practice)
+  - [Code Breakdown and Usage](#code-breakdown-and-usage)
+  - [How to Set Up Your HTML for `FormValidate`](#how-to-set-up-your-html-for-formvalidate)
+- [string function and formatting](#string-function-and-formatting)
+  - [FormFormattingEvent Library](#formformattingevent-library)
+    - [1. Convert Last Name to Uppercase](#1-convert-last-name-to-uppercase)
+    - [2. Capitalize Username](#2-capitalize-username)
+    - [3. Format Username Dom](#3-format-username-dom)
+  - [Notes](#notes)
+  - [License](#license)
+  - [Contributing](#contributing)
+  - [📖 Description](#-description)
+  - [🛠️ Function Usage](#️-function-usage)
+    - [📌 Signature](#-signature)
+    - [📌 Parameters](#-parameters)
+  - [📤 Return Value](#-return-value)
+  - [📌 Example Usage](#-example-usage)
+    - [🟢 Escaping a Single String](#-escaping-a-single-string)
+    - [🟢 Processing an Array of Strings](#-processing-an-array-of-strings)
+    - [🟢 Escaping an Object](#-escaping-an-object)
+    - [🟢 Keeping HTML Tags but Escaping Special Characters](#-keeping-html-tags-but-escaping-special-characters)
+  - [🔥 Error Handling](#-error-handling)
+  - [💡 Additional Notes](#-additional-notes)
+  - [🛠️ Related Functions](#️-related-functions)
+    - [`ucfirst` Function](#ucfirst-function)
+    - [`nl2br` Function](#nl2br-function)
+    - [`capitalizeString` Function](#capitalizestring-function)
+    - [`usernameFormat` Function](#usernameformat-function)
+    - [`toBoolean`](#toboolean)
+    - [`addHashToIds`](#addhashtoids)
+      - [Parameters](#parameters-3)
+      - [Returns](#returns-1)
+      - [Example](#example-1)
+- [`Logger` Class Documentation](#logger-class-documentation)
+  - [Class `Logger`](#class-logger)
+    - [Core Features:](#core-features)
+    - [Properties](#properties-1)
+    - [Constructor](#constructor-1)
+    - [Public Static Methods](#public-static-methods)
+      - [`static getInstance(): Logger`](#static-getinstance-logger)
+      - [`static log(...args: any[]): void`](#static-logargs-any-void)
+      - [`static warn(...args: any[]): void`](#static-warnargs-any-void)
+      - [`static error(...args: any[]): void`](#static-errorargs-any-void)
+      - [`static info(...args: any[]): void`](#static-infoargs-any-void)
+  - [How to Use the `Logger` Class](#how-to-use-the-logger-class)
+    - [1. Configure the Logger (Optional, but Recommended)](#1-configure-the-logger-optional-but-recommended)
+    - [2. Use Logging Methods Throughout Your Code](#2-use-logging-methods-throughout-your-code)
+- [The Exception](#the-exception)
+    - [`AttributeException`](#attributeexception)
+- [URL Utility Functions](#url-utility-functions)
+  - [Features](#features-1)
+    - [`addParamToUrl`](#addparamtourl)
+      - [Parameters](#parameters-4)
+      - [Return](#return)
+      - [Example Usage](#example-usage-1)
+    - [`buildUrlFromForm`](#buildurlfromform)
+      - [Parameters](#parameters-5)
+      - [Return](#return-1)
+      - [Example Usage](#example-usage-2)
+    - [**httpFetchHandler Function**](#httpfetchhandler-function)
+    - [**Parameters**](#parameters-6)
+    - [**Return Value**](#return-value-1)
+    - [**Function Workflow**](#function-workflow)
+    - [**Example Usage**](#example-usage-3)
+    - [`mapStatusToResponseType(status: number): 'success' | 'info' | 'warning' | 'error'`](#mapstatustoresponsetypestatus-number-success--info--warning--error)
+      - [Parameters:](#parameters-7)
+      - [Returns:](#returns-2)
+      - [Example usage:](#example-usage-4)
+- [`ApiError` Class Documentation](#apierror-class-documentation)
+  - [**Class: `ApiError`**](#class-apierror)
+    - [**Constructor:**](#constructor-2)
+      - [**Parameters:**](#parameters-8)
+      - [**Description:**](#description)
+      - [**Parameters:**](#parameters-9)
+      - [**Returns:**](#returns-3)
+      - [**Example Usage:**](#example-usage-5)
+      - [**`name`**](#name)
+      - [**Description:**](#description-1)
+      - [**Returns:**](#returns-4)
+      - [**Example Usage:**](#example-usage-6)
+      - [**`allViolations`**](#allviolations)
+      - [**Description:**](#description-2)
+      - [**Returns:**](#returns-5)
+      - [**Example Usage:**](#example-usage-7)
+  - [**Use Cases**](#use-cases)
+    - [**1. Handling Field Validation Errors**](#1-handling-field-validation-errors)
+    - [**2. General Error Handling**](#2-general-error-handling)
+  - [Overview](#overview-2)
+  - [Usage in React](#usage-in-react)
+    - [1. **Handling API Errors in React**](#1-handling-api-errors-in-react)
+    - [Example Usage in a React Component](#example-usage-in-a-react-component)
+    - [How It Works:](#how-it-works)
+    - [Key Benefits:](#key-benefits)
+  - [**Conclusion**](#conclusion-1)
+  - [Chunked file upload management](#chunked-file-upload-management)
+  - [`ChunkSizeConfiguration` Interface](#chunksizeconfiguration-interface)
+    - [Configuration Properties:](#configuration-properties)
+      - [`defaultChunkSizeMo: number`](#defaultchunksizemo-number)
+      - [`slowSpeedThresholdMbps: number`](#slowspeedthresholdmbps-number)
+      - [`verySlowSpeedChunkSizeMo: number`](#veryslowspeedchunksizemo-number)
+      - [`fileSizeThresholds: { maxSizeMo: number; chunkSizeMo: number; }[]`](#filesizethresholds--maxsizemo-number-chunksizemo-number-)
+    - [`calculateUploadChunkSize` Function](#calculateuploadchunksize-function)
+      - [Parameters:](#parameters-10)
+      - [Returns:](#returns-6)
+      - [Functionality:](#functionality-1)
+      - [Example Usage:](#example-usage-8)
+    - [`createChunkFormData` Function](#createchunkformdata-function)
+      - [Parameters:](#parameters-11)
+      - [Returns:](#returns-7)
+      - [Functionality:](#functionality-2)
+      - [Example Usage:](#example-usage-9)
+    - [`ChunkMediaDetailInterface`](#chunkmediadetailinterface)
+      - [Properties:](#properties-2)
+- [](#)
+- [](#-1)
+      - [Constructor:](#constructor-3)
+      - [Properties (Getters):](#properties-getters)
+      - [Methods:](#methods-1)
+      - [Purpose:](#purpose)
+    - [Media Upload/Download Events](#media-uploaddownload-events)
+      - [`MEDIA_CHUNK_UPLOAD_STARTED`](#media_chunk_upload_started)
+      - [`MEDIA_CHUNK_UPLOAD_FAILED`](#media_chunk_upload_failed)
+      - [`MEDIA_CHUNK_UPLOAD_STATUS`](#media_chunk_upload_status)
+      - [`MEDIA_CHUNK_UPLOAD_SUCCESS`](#media_chunk_upload_success)
+      - [`MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE`](#media_chunk_upload_maxretry_expire)
+      - [`DOWNLOAD_MEDIA_COMPLETE`](#download_media_complete)
+      - [`DOWNLOAD_MEDIA_FAILURE`](#download_media_failure)
+      - [`MEDIA_CHUNK_UPLOAD_RESUME`](#media_chunk_upload_resume)
+      - [`DOWNLOAD_MEDIA_RESUME`](#download_media_resume)
+      - [`MEDIA_METADATA_SAVE_SUCCESS`](#media_metadata_save_success)
+    - [`updateProgressBarHTMLNotified` Function](#updateprogressbarhtmlnotified-function)
+      - [Parameters:](#parameters-12)
+      - [Returns:](#returns-8)
+      - [Functionality:](#functionality-3)
+      - [Usage Notes:](#usage-notes)
+    - [`CustomEventOptions` Interface](#customeventoptions-interface)
+      - [Properties:](#properties-3)
+    - [`emitEvent` Function](#emitevent-function)
+      - [Parameters:](#parameters-13)
+      - [Functionality:](#functionality-4)
+      - [Example Usage:](#example-usage-10)
+  - [Function `uploadedMediaInChunks`](#function-uploadedmediainchunks)
+    - [Parameters](#parameters-14)
+    - [Backend Expected Data (JSON)](#backend-expected-data-json)
+    - [Dispatched Events](#dispatched-events)
+  - [Function `uploadedMedia`](#function-uploadedmedia)
+    - [Parameters](#parameters-15)
+    - [Workflow](#workflow)
+    - [Dispatched Event](#dispatched-event)
+  - [Class `MediaUploadEventListener`](#class-mediauploadeventlistener)
+    - [Inheritance](#inheritance)
+    - [Constructor](#constructor-4)
+    - [Method `eventMediaListenerAll`](#method-eventmedialistenerall)
+    - [Event Handling Methods](#event-handling-methods)
+    - [Utility Methods](#utility-methods)
+    - [Usage](#usage-1)
+  - [Contact Information](#contact-information)
+## Introduction
 
-# 📌 Form Validator
+📌 Form Validator
 
 **Form Validator** is a powerful JavaScript/TypeScript library designed to validate various types of fields in HTML forms. It supports input fields such as `text`, `email`, `tel`, `password`, as well as file types like `images`, `PDFs`, `Word documents`, `CSV`, `Excel`, and more. The library offers customizable configurations to suit different validation needs.
 
 ---
 
-## 🚀 Features
+## Features
 
 ✅ **Validation of input fields** (`text`, `email`, `password`, `tel`): Managed by the `FormInputValidator` class.  
 ✅ **File validation** (`images`, `PDFs`, `Word`, `CSV`, `Excel`): Controlled by `ImageValidator` and `DocumentsValidator`.  
@@ -29,749 +305,176 @@
 
 ---
 
-## 📦 Installation
+## Installation
 
-You can install `Form Validator` via **npm**:
+You can install `Form Validator`
 
-```sh
+```bash
 yarn add @wlindabla/form_validator
+  or 
+npm i @wlindabla/form_validator
+```
 
----
-
-## 📋 Formulaire HTML
+📋 Formulaire HTML
 
 ```html
-<div class="container" id="app">
-       <div id="app-header"></div>
-       <hr/><br/>
-      <div class="form-group text-center">
-        <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
-        <form class="form">
-          <label for="lastname">Lastname</label><br/>
-          <input type="text" class="form-control lastname"
-          placeholder="Eg:AGBOKOUDJO" id="lastname" name="lastname"/><br/>
-           <label for="firstname">Firstnames</label><br/>
-          <input type="text" class="form-control firstname"
-          placeholder="Eg:Franck Empedocle Hounha" id="firstname" name="firstname"/><br/>
-          <label for="username">Fullname</label><br/>
-          <input type="text" class="form-control username"
+ <div class="form-group text-center">
+    <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
+     <form class="form" method="post" action="test" name="form_validate" id="form_validate">
+      <label for="lastname">Lastname</label><br/>
+      <input type="text" 
+        class="form-control lastname"
+        placeholder="Eg:AGBOKOUDJO" 
+        id="lastname" 
+        name="lastname"
+        event-validate-blur="blur"  
+        event-validate-input="input"
+        pattern="^[a-zA-ZÀ-ÿ\s]+$"
+        required="true"
+          escapestrip-html-and-php-tags="true"
+          max-length="100"
+          min-length="3"
+        error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+        eg-await="AGBOKOUDJO"
+      /><br/>
+        <label for="firstname">Firstnames</label><br/>
+      <input type="text" class="form-control firstname"
+          placeholder="Eg:Franck Empedocle Hounha" 
+          id="firstname" 
+          name="firstname"
+          event-validate-blur="blur"  
+          event-validate-input="input"
+          pattern="^[a-zA-ZÀ-ÿ\s]+$"
+            required="true"
+            escapestrip-html-and-php-tags="true"
+            max-length="200"
+            min-length="3"
+          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          eg-await="Hounha Franck"
+      /><br/>
+      <label for="username">Fullname</label><br/>
+      <input type="text" class="form-control username"
           placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
-          id="username" name="username"
+          id="username" 
+          name="username"
           position-lastname="right"
+          event-validate-blur="blur" 
+            event-validate-input="input"
+            pattern="^[a-zA-ZÀ-ÿ\s]+$"
+            escapestrip-html-and-php-tags="true"
+            max-length="200"
+            min-length="6"
+            required="true"
+          error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+          eg-await="AGABOKOUDJO Hounha Franck"
+      /><br/>
+      <hr/><br/>
+        <label for="email">Email</label><br/>
+      <input type="email" 
+          class="email form-control" 
+          placeholder="Eg:franckagbokoudjo301@gmail.com" 
+          id="email" name="email"
+          event-validate-blur="blur"  
+          event-validate-input="input"
+          required="true"
+            escapestrip-html-and-php-tags="false"
+            max-length="180"
+            min-length="6"
+          error-message-input="email is invalid"
+          eg-await="franckagbokoudjo301@gmail.com"
           /><br/>
-          <hr/><br/>
-           <label for="email">Email</label><br/>
-          <input type="email" class="email form-control" 
-          placeholder="Eg:franckagbokoudjo301@gmail.com" id="email" name="email"/><br/>
           <label for="tel">Phone:</label>
             <input type="tel" class="tel form-control" 
-          placeholder="Eg:+22967251886" id="tel" name="tel"/><br/>
-          <label for="message" class="form-label">Message:</label>
-          <textarea id="message"
+          placeholder="Eg:+22967251886" 
+          id="tel" name="tel"
+          event-validate-blur="blur" 
+            event-validate-input="input"
+            required="true"
+            pattern="^([\+]{1})([0-9\s]{1,})+$"
+            escapestrip-html-and-php-tags="false"
+            max-length="180"
+            min-length="6"
+            error-message-input="The content of this field must contain only number ,one symbol +,
+            of spaces and must not null "
+            eg-await="+2290167251886"
+      /><br/>
+      <label for="message" class="form-label">Message:</label>
+      <textarea id="message"
+          name="message"
           class="form-control" 
-           placeholder="write the message here" rows="10" cols="5">
-
-          </textarea>
-          <hr/><br/>
-          <strong class="text-center fw-bolder">File Validation</strong><br/>
-          <label for="img">Uploader des images</label><br/>
-          <input type="file" class="images form-control" multiple 
-          placeholder="choose images many or one" id="img" 
-          name="images"/><br/>
-           <label for="pdf">Uploader des documents pdf</label><br/>
-          <input type="file" class="pdf form-control" multiple 
-          placeholder="choose pdf many or one" id="pdf" name="pdf"/><br/>
-          
-          <button type="submit" class="btn-submit btn ">Valider</button>
-        </form>
-      </div>
-    </div>
+            placeholder="write the message here" 
+            rows="10"
+            cols="5"
+            event-validate-blur="blur"  
+            event-validate-input="input"
+            pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
+            escapestrip-html-and-php-tags="false"
+            max-length="100000"
+            min-length="20"
+            required
+        >
+        <br>
+      </textarea>
+      
+      <hr/><br/>
+        <label for="password">Password:</label>
+      <input type="password" id="password" name="password" event-validate-blur="blur" min-length="8" required upper-case-allow="true" number-allow="true">
+      <div class="error-message" id="error-password"></div>
+      <br>
+       <label for="userType">User Type:</label>
+  <select id="userType" name="user_type" event-validate-change="change" required>
+    <option value="">-- Please select --</option>
+    <option value="admin">Administrator</option>
+    <option value="user">Regular User</option>
+  </select>
+  <div class="error-message" id="error-userType"></div>
+  <br>
+      <strong class="text-center fw-bolder">File Validation</strong><br/>
+      <label for="img">Uploader des images</label><br>
+      <input type="file" class="images form-control" multiple 
+          id="img" 
+          name="images"
+          event-validate-blur="blur"  
+          event-validate-change="change"
+          media-type="image"
+      /><br/>
+        <label for="pdf">Uploader des documents pdf</label><br/>
+      <input type="file" class="pdf form-control" 
+          multiple 
+            event-validate-blur="blur"  
+            event-validate-change="change"
+              media-type="document"
+          allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+            application/vnd.oasis.opendocument.text"
+          extensions="jpg,jpeg,png,webp"
+          id="pdf" name="pdf"/><br/>
+            <label for="video">Uploader des medias video</label><br/>
+          <input type="file" 
+          class="video form-control" 
+          multiple 
+            event-validate-blur="blur"  
+            event-validate-change="change"
+            id="video" 
+              media-type="video"
+              allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
+            video/mp4, video/quicktime, video/x-matroska,
+            video/webm, video/3gpp, video/3gpp2, video/x-m4v,
+            video/mpeg, video/mp2t, video/ogg, video/x-ms-asf,
+            application/vnd.rn-realmedia, video/divx"
+            extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
+            3g2, m4v, mpg, mpeg, ts, ogv, asf, rm, divx
+            "
+            name="video"/><br/>
+      <button type="submit" class="btn-submit btn">Valider</button>
+    </form>
+  </div>
 ```
 
----
+## Dom
 
-## 🛠️ Script de Validation avec `jQuery` et `TypeScript`
+This section describes a set of utility functions designed to manage and display form validation errors in your web application. These functions provide a structured way to highlight invalid input fields and present corresponding error messages to the user.
 
-```typescript
-import jQuery from "jquery";
-import { debounce } from "lodash";
-import {
-  clearErrorInput,
-  serviceInternclass,
-} from "@wlindabla/form_validator";
-import {FormInputValidator} from "@wlindabla/form_validator";
-import {DocumentValidator} from "@wlindabla/form_validator";
-import {ImageValidator} from "@wlindabla/form_validator";
-import {FormFormattingEvent} from "@wlindabla/form_validator";
-const formInputValidator = FormInputValidator.getInstance();
-const documentValidator = DocumentValidator.getInstance();
-const videoValidator = VideoValidator.getInstance();
-const formFormattingEvent = FormFormattingEvent.getInstance();
-const imageValidator = ImageValidator.getInstance();
-```
----
-
-  
-
-```md
-# 📝 Code Explanation  
-
-# FormFormattingEvent Library
-
-## Overview
-The `FormFormattingEvent` library provides utility functions to format user input in forms, such as transforming last names to uppercase, capitalizing usernames, and ensuring a standardized username format.
-
-## Installation
-Ensure that your project supports ES6 module imports. You can import the library as follows:
-
-```javascript
-import {FormFormattingEvent} from "@wlindabla/form_validator";
-const formFormattingEvent = FormFormattingEvent.getInstance();
-```
-
-## Usage
-
-### 1. Convert Last Name to Uppercase
-The `lastnameToUpperCase` function ensures that the last name is converted to uppercase.
-
-**Syntax:**
-```javascript
-formFormattingEvent.lastnameToUpperCase(element, locale);
-```
-
-**Example:**
-```javascript
-jQuery(function validateInput() {
-  formFormattingEvent.lastnameToUpperCase(this, 'en');
-});
-```
-
-### 2. Capitalize Username
-The `capitalizeUsername` function capitalizes the first letter of each word in the username while maintaining a proper name format.
-
-**Syntax:**
-```javascript
-formFormattingEvent.capitalizeUsername(element, separator, finalSeparator, locale);
-```
-
-**Example:**
-```javascript
-jQuery(function validateInput() {
-  formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');
-});
-```
-
-### 3. Format Username Dom
-The `usernameFormatDom` function applies complete formatting to the username field, ensuring proper capitalization and spacing.
-
-**Syntax:**
-```javascript
-formFormattingEvent.usernameFormatDom(element, separator, finalSeparator, locale);
-```
-
-**Example:**
-```javascript
-jQuery(function validateInput() {
-  formFormattingEvent.usernameFormatDom(this, " ", " ", 'en');
-});
-```
-
-## Notes
-- These functions are designed to be used within a jQuery context.
-- Ensure that your form elements trigger these functions appropriately on user input events such as `blur` or `change`.
-
-
-## License
-This library is licensed under MIT. Feel free to use and modify it as needed.
-
-## Contributing
-If you find any issues or have suggestions for improvements, feel free to submit a pull request or open an issue on the repository.
-
----
-
-# 📌 `escapeHtmlBalise` – Escape HTML Content Securely
-
-## 📖 Description
-
-The `escapeHtmlBalise` function is a utility designed to sanitize and escape HTML characters in strings, arrays, and objects. It ensures that any potential HTML content is either removed or converted into a safe format to prevent XSS (Cross-Site Scripting) attacks.
-
----
-
-Then, import the function into your project:
-
-```ts
-import { escapeHtmlBalise } from "@wlindabla/form_validator";
-```
-
----
-
-## 🛠️ Function Usage
-
-### 📌 Signature
-```ts
-escapeHtmlBalise(
-    content: string | string[] | Record<string, any>,
-    stripHtmlTags: boolean = true
-): string | string[] | Record<string, any>
-```
-
-### 📌 Parameters
-
-| Parameter        | Type                            | Default | Description |
-|-----------------|--------------------------------|---------|-------------|
-| `content`       | `string | string[] | Record<string, any>` | - | The input data to be escaped. It can be a string, an array of strings, or an object containing strings. |
-| `stripHtmlTags` | `boolean`                      | `true`  | If `true`, HTML tags are removed. If `false`, tags are preserved but escaped. |
-
----
-
-## 📤 Return Value
-
-The function returns:
-- A **string** if the input is a single string.
-- An **array of strings** if the input is an array.
-- An **object with all values escaped** if the input is an object.
-
----
-
-## 📌 Example Usage
-
-### 🟢 Escaping a Single String
-```ts
-const unsafeString = "<script>alert('XSS Attack!')</script>";
-const safeString = escapeHtmlBalise(unsafeString);
-console.log(safeString); 
-// Output: alert('XSS Attack!')
-```
-
-### 🟢 Processing an Array of Strings
-```ts
-const unsafeArray = ["<b>Bold</b>", "<i>Italic</i>", "<script>maliciousCode()</script>"];
-const safeArray = escapeHtmlBalise(unsafeArray);
-console.log(safeArray);
-// Output: ["Bold", "Italic", "maliciousCode()"]
-```
-
-### 🟢 Escaping an Object
-```ts
-const unsafeObject = {
-    name: "<h1>John Doe</h1>",
-    bio: "<p>Hello <script>alert('Hacked!')</script></p>"
-};
-const safeObject = escapeHtmlBalise(unsafeObject);
-console.log(safeObject);
-// Output: { name: "John Doe", bio: "Hello alert('Hacked!')" }
-```
-
-### 🟢 Keeping HTML Tags but Escaping Special Characters
-```ts
-const unsafeString = "<b>Important</b>";
-const safeString = escapeHtmlBalise(unsafeString, false);
-console.log(safeString);
-// Output: "&lt;b&gt;Important&lt;/b&gt;"
-```
-
----
-
-## 🔥 Error Handling
-
-If `escapeHtmlBalise` is called with `null`, `undefined`, or an empty object, it throws the following error:
-
-```ts
-throw new Error("I expected a string no empty,array or object but it is not yet");
-```
-
----
-
-## 💡 Additional Notes
-
-- This function **does not decode** escaped characters (e.g., `&lt;` stays `&lt;`).
-- When `stripHtmlTags` is set to `false`, HTML tags remain but are encoded.
-
----
-
-## 🛠️ Related Functions
-
-- `formFormattingEvent.lastnameToUpperCase(this, 'en');`
-- `formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');`
-- `formFormattingEvent.usernameFormatDom(this," "," ","en");`
-
----
-
----
-
-### `ucfirst` Function
-
-The `ucfirst` function capitalizes the first letter of a word and converts the rest to lowercase.
-
-#### Parameters
-
-- **`str`** (`string`): The input string to transform. This is the word or phrase on which the function will operate.
-- **`escapeHtmlBalise_string`** (`boolean`, optional, default value: `true`): If `true`, the HTML tags in the string will be escaped before applying the transformation. If `false`, the HTML tags will be left as they are.
-- **`locales`** (`string | string[]`, optional): Defines the locale(s) to use for capitalization (e.g., `'fr'` for French, `'en'` for English). If not specified, the default locale will be used.
-
-#### Returns
-
-The function returns a formatted string where the first letter is uppercase and the rest are lowercase. For example, "agbokoudjo" becomes "Agbokoudjo".
-
-#### Example Usage
-
-```typescript
-import { ucfirst } from '@wlindabla/form_validator';
-
-const result = ucfirst("agbokoudjo"); 
-console.log(result); // Outputs "Agbokoudjo"
-
-const resultWithHtmlEscape = ucfirst("<b>agbokoudjo</b>", true);
-console.log(resultWithHtmlEscape); // Outputs "&lt;b&gt;Agbokoudjo&lt;/b&gt;"
-
-const resultWithCustomLocale = ucfirst("agbokoudjo", true, 'fr');
-console.log(resultWithCustomLocale); // Outputs "Agbokoudjo"
-```
-
----
-
----
-
-### `nl2br` Function
-
-This function automatically adds line breaks (`<br>`) to a string wherever there are newlines.
-
-#### Parameters
-
-- **`str`** (`string`): The input string to which line breaks will be added.
-
-#### Returns
-
-The function returns the string with `<br>` inserted wherever newlines exist.
-
-#### Example Usage
-
-```typescript
-import { nl2br } from '@wlindabla/form_validator';
-
-const result = nl2br("Hello\nWorld");
-console.log(result); // Outputs "Hello<br>World"
-```
-
----
-
-### `capitalizeString` Function
-
-The `capitalizeString` function capitalizes the first letter of each word in a string and converts the rest to lowercase. It's ideal for formatting names or titles.
-
-#### Parameters
-
-- **`data`** (`string`): The string to be transformed.
-- **`separator_toString`** (`string`, optional, default value: `" "`): The separator used to split the string into words.
-- **`finale_separator_toString`** (`string`, optional, default value: `" "`): The separator used to join the formatted words.
-- **`escapeHtmlBalise_string`** (`boolean`, optional, default value: `true`): If `true`, HTML tags in the string will be escaped.
-- **`locales`** (`string | string[]`, optional): The locale(s) used for the capitalization.
-
-#### Returns
-
-The function returns a string where the first letter of each word is capitalized, and the rest are in lowercase.
-
-#### Example Usage
-
-```typescript
-import { capitalizeString } from '@wlindabla/form_validator';
-
-const result = capitalizeString("hounha franck empedocle");
-console.log(result); // Outputs "Hounha Franck Empedocle"
-
-const resultWithCustomSeparator = capitalizeString("hounha, franck, empedocle", ",");
-console.log(resultWithCustomSeparator); // Outputs "Hounha, Franck, Empedocle"
-```
-
----
-
-### `usernameFormat` Function
-
-This function formats a full name by capitalizing the first letter of each first name and last name, while placing the last name either at the beginning or the end of the string.
-
-#### Parameters
-
-- **`value_username`** (`string`): The full name to format (e.g., first name and last name).
-- **`position_lastname`** (`"left" | "right"`, optional, default value: `"left"`): The position of the last name in the formatted string (`"left"` places the last name first, `"right"` places it last).
-- **`separator_toString`** (`string`, optional, default value: `" "`): The separator used to split the string into words.
-- **`finale_separator_toString`** (`string`, optional, default value: `" "`): The separator used to join the formatted words.
-- **`locales`** (`string | string[]`, optional): The locale(s) used for uppercase formatting.
-
-#### Returns
-
-The function returns the formatted full name, with the last name placed according to the `position_lastname` argument. It capitalizes the first letter of each first name and last name.
-
-#### Example Usage
-
-```typescript
-import { usernameFormat } from '@wlindabla/form_validator';
-
-const resultLeft = usernameFormat("Agbokoudjo hounha franck empedocle", "left");
-console.log(resultLeft); // Outputs "AGBOKOUDJO Hounha Franck Empedocle"
-
-const resultRight = usernameFormat("hounha franck empedocle Agbokoudjo", "right");
-console.log(resultRight); // Outputs "Hounha Franck Empedocle AGBOKOUDJO"
-```
-
-
-````markdown
-### `toBoolean`
-
-```typescript
-export function toBoolean(value: string | null | undefined): boolean
-````
-
-**Description:**
-
-This function converts a string value to its boolean representation. It recognizes a specific set of truthy and falsy string values. For any other string input, it logs a warning and defaults to returning `false`.
-
-**Parameters:**
-
-  * `value`: `string | null | undefined` - The string to be converted to a boolean. The function also handles `null` and `undefined` inputs by returning `false`.
-
-**Truthy Values (case-insensitive and trimmed):**
-
-  * `"true"`
-  * `"1"`
-  * `"yes"`
-
-**Falsy Values (case-insensitive and trimmed):**
-
-  * `"false"`
-  * `"0"`
-  * `"no"`
-
-**Returns:**
-
-  * `boolean`: The boolean representation of the input string. Returns `true` if the normalized (trimmed and lowercased) input is one of the recognized truthy values. Returns `false` if the normalized input is one of the recognized falsy values, or if the input is `null`, `undefined`, or any other unrecognized string.
-
-**Warning:**
-
-  * If the input `value` is a string that does not match any of the recognized truthy or falsy values, a warning message is logged using `Logger.warn`, indicating the unrecognized string. The function then returns `false`.
-
-**Example Usage:**
-
-```typescript
-import { toBoolean } from './utils'; // Assuming your function is in utils.ts
-import { Logger } from './logger';   // Assuming you have a logger module
-
-console.log(toBoolean("true"));   // Output: true
-console.log(toBoolean("1"));      // Output: true
-console.log(toBoolean("yes"));    // Output: true
-console.log(toBoolean("FALSE"));  // Output: false
-console.log(toBoolean("0"));      // Output: false
-console.log(toBoolean("No"));     // Output: false
-console.log(toBoolean("  true ")); // Output: true (trimmed)
-console.log(toBoolean("maybe"));   // Output: false (and logs a warning)
-console.log(toBoolean(null));      // Output: false
-console.log(toBoolean(undefined)); // Output: false
-console.log(toBoolean(""));        // Output: false (and logs a warning)
-```
-
-```
-```
----
-My apologies! It seems I misunderstood the core of your request and didn't provide the markdown formatting as explicitly as you needed for a direct copy-paste into your `README.md`.
-
-You're absolutely right! You want the complete markdown block that you can just drop into your file.
-
-Here's the documentation for your `addHashToIds` function, fully formatted in Markdown, ready for your `README.md`:
-
----
-
-```markdown
-### `addHashToIds`
-
-This function takes an array of strings (typically IDs) and returns a new array where each string is prefixed with a hash symbol (`#`). This is commonly useful when preparing IDs for use as CSS selectors or URL fragments.
-
-```typescript
-export function addHashToIds(ids: string[]): string[]
-```
-
-#### Parameters
-
-* `ids` (string[]): An array of strings that represent identifiers.
-
-#### Returns
-
-* `string[]`: A new array where each original `id` string is now prefixed with `#`.
-
-#### Example
-
-```typescript
-import { addHashToIds } from './path/to/your/module'; // Adjust the import path as needed
-
-const myRawIds = ["header", "navigation", "footer"];
-const hashedIds = addHashToIds(myRawIds);
-
-console.log(hashedIds); 
-// Expected output: ["#header", "#navigation", "#footer"]
-```
-
----
-```
-
-```markdown
-# URL Utility Functions
-
-This module contains utility functions to manipulate URLs by adding query parameters or creating URLs from form data.
-
-## Features
-
-### `addParamToUrl`
-
-This function adds query parameters to an existing URL. It also allows you to return the modified URL either as a string or as an instance of the `URL` object.
-
-#### Parameters
-
-- **`urlparam`** (`string | URL`): The URL to which parameters should be added. This can be a string representing a URL or an instance of the `URL` object.
-- **`addparamUrlDependencie`** (`Record<string, any> | null`, optional, default: `null`): An object representing the URL parameters to add, in key-value pairs. If `null`, no additional parameters will be added.
-- **`returnUrl`** (`boolean`, optional, default: `true`): If `true`, the function returns the modified URL as a string. If `false`, it returns an instance of the `URL` object.
-- **`baseUrl`** (`string | URL | undefined`, optional, default: `window.location.origin`): The base URL to use for the given `urlparam`. By default, it uses the current window's origin.
-
-#### Return
-
-The function returns either:
-- A **string** representing the modified URL (if `returnUrl = true`), or
-- An **instance of the `URL` object** representing the modified URL (if `returnUrl = false`).
-
-#### Example Usage
-
-```typescript
-import { addParamToUrl } from '@wlindabla/form_validator';
-
-// Adding parameters to a given URL
-const updatedUrl = addParamToUrl('https://example.com', { page: 2, sort: 'asc' });
-console.log(updatedUrl); // Logs the URL with the new parameters as a string
-
-// Returning a URL instance
-const urlInstance = addParamToUrl('https://example.com', { page: 2 }, false);
-console.log(urlInstance instanceof URL); // Logs 'true'
-```
-
----
-
-### `buildUrlFromForm`
-
-This function creates a URL by extracting parameters from an HTML form and adding additional parameters to it.
-
-#### Parameters
-
-- **`formElement`** (`HTMLFormElement`): The form element from which the data will be extracted to build the URL.
-- **`form_action`** (`string | null`, optional, default: `null`): The form action URL to use as the base for the URL. If not specified, the action URL of the `formElement` is used.
-- **`addparamUrlDependencie`** (`Record<string, any> | null`, optional): An object representing additional parameters to add to the URL, in key-value pairs.
-- **`returnUrl`** (`boolean`, optional, default: `true`): If `true`, the function returns the URL as a string. If `false`, it returns an instance of the `URL` object.
-- **`baseUrl`** (`string | URL | undefined`, optional, default: `window.location.origin`): The base URL to use for the constructed URL.
-
-#### Return
-
-The function returns either:
-- A **string** representing the constructed URL with the form parameters and additional parameters (if `returnUrl = true`), or
-- An **instance of the `URL` object** representing the constructed URL (if `returnUrl = false`).
-
-#### Example Usage
-
-```typescript
-import { buildUrlFromForm } from '@wlindabla/form_validator';
-
-// Assuming we have a form element in our HTML
-const form = document.querySelector('form') as HTMLFormElement;
-const additionalParams = { userId: 123 };
-
-// Building the URL from the form data and adding additional parameters
-const formUrl = buildUrlFromForm(form, null, additionalParams);
-console.log(formUrl); // Logs the URL with form parameters and additional parameters
-```
-
----
-
-
-```
-
----
----
-### **httpFetchHandler Function**
-The `httpFetchHandler` function is an asynchronous utility for making HTTP requests with built-in timeout handling, retry attempts, and automatic response parsing.
-
-### **Parameters**
-| Parameter       | Type                                  | Default Value    | Description |
-|----------------|--------------------------------------|-----------------|-------------|
-| `url`          | `string | URL`                      | **Required**     | The API endpoint to send the request to. |
-| `methodSend`   | `string`                             | `"GET"`          | The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.). |
-| `data`         | `any`                                | `null`           | The data to send in the request body (supports JSON and FormData). |
-| `optionsheaders` | `HeadersInit`                     | `{ 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }` | Custom headers for the request. |
-| `timeout`      | `number`                             | `5000` (5 sec)   | The maximum time (in milliseconds) before the request is aborted. |
-| `retryCount`   | `number`                             | `3`              | Number of times to retry the request if it fails. |
-| `responseType` | `'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | 'stream'` | `'json'`          | The expected response format. |
-
-### **Return Value**
-The function returns a `Promise` that resolves to the requested data in the specified `responseType`.
-
-### **Function Workflow**
-1. **FormData Handling**  
-   - If `data` is an instance of `FormData`, it automatically manages headers.
-   - The `"Content-Type"` header is **removed** to let the browser set it correctly.
-
-2. **Headers Handling**  
-   - If the headers are a `HeadersInit` object, they are converted to a mutable object using:  
-     ```ts
-     Object.fromEntries(new Headers(optionsheaders).entries());
-     ```
-   - This avoids `TypeScript` errors when modifying headers.
-
-3. **Data Handling with `JSON.stringify`**  
-   - When sending `JSON` data, the function **automatically converts it** using `JSON.stringify(data)`.  
-   - **Important:** Do not manually stringify the data before passing it, to avoid double encoding.  
-   - Example:  
-     ```ts
-     httpFetchHandler({ url: "/api", methodSend: "POST", data: { name: "John" } });
-     ```
-     ✅ The function internally does:  
-     ```ts
-     JSON.stringify({ name: "John" });
-     ```
-
-4. **Request Timeout Handling**  
-   - Uses `AbortController` to automatically cancel requests after `timeout` milliseconds.
-
-5. **Retry Mechanism**  
-   - If the request fails, the function retries up to `retryCount` times before throwing an error.
-
-### **Example Usage**
-```ts
-import { httpFetchHandler } from '@wlindabla/form_validator';
-const response = await httpFetchHandler({
-  url: "https://api.example.com/data",
-  methodSend: "POST",
-  data: { username: "Alice" },
-  responseType: "json"
-});
-
-console.log(response); // Parsed JSON response
-```
-
----
-
-### `mapStatusToResponseType(status: number): 'success' | 'info' | 'warning' | 'error'`
-
-This function maps an HTTP status code to a response type, which helps in categorizing the status for easier handling in the application. The response type is returned based on the HTTP status code provided as input.
-
-#### Parameters:
-- `status` (number): The HTTP status code received from an API response. This value is used to determine the appropriate response type.
-
-#### Returns:
-- **'success'**: For status codes in the 200–299 range, indicating successful requests (e.g., `200 OK`, `201 Created`).
-- **'info'**: For status codes in the 100–199 range, indicating informational responses (e.g., `100 Continue`, `101 Switching Protocols`).
-- **'warning'**: For status codes in the 300–399 range, indicating redirection responses (e.g., `301 Moved Permanently`, `302 Found`).
-- **'error'**: For status codes in the 400–499 range, indicating client errors (e.g., `404 Not Found`, `401 Unauthorized`), and for status codes in the 500–599 range, indicating server errors (e.g., `500 Internal Server Error`, `503 Service Unavailable`).
-
-If the status code is not covered by the defined ranges, it defaults to `'error'` for safety.
-
-#### Example usage:
-```typescript
-const responseType = mapStatusToResponseType(200);
-console.log(responseType); // 'success'
-
-const responseType = mapStatusToResponseType(404);
-console.log(responseType); // 'error'
-
----
-
-## **Form Error Handling Functions**
-
-This section describes three functions used to manage form errors and display validation messages in your web application. These functions help in handling error messages dynamically, showing validation feedback for input fields, and ensuring proper form submission behavior.
-
-### **1. `serviceInternclass`**
-
-The `serviceInternclass` function handles error messages for the input field and manages the submit button's state based on whether the input field is valid or not.
-
-#### **Usage:**
-import {
-  clearErrorInput,
-  serviceInternclass,
-} from "@wlindabla/form_validator/_fonction/function_dom";
-This function checks if the input field is valid. If it's not, it disables the submit button and hides it. If the field is valid, the submit button is enabled and displayed.
-
-- **Parameters:**
-  - `input_field` (`JQuery<HTMLInputElement | HTMLTextAreaElement>`): The input field (either `<input>` or `<textarea>`) to validate.
-  - `errorhandle` (`FormErrorInterface`): An instance of the form error handler that provides validation logic for the field.
-
-- **Example:**
-
-```ts
-const inputField = jQuery('#username');  // Input field with id 'username'.
-const errorHandle = new FormErrorInterface();  // Form error handler instance.
-
-serviceInternclass(inputField, errorHandle);  // Validate the field and handle button state.
-```
-
----
-
-### **2. `addErrorMessageFieldDom`**
-
-The `addErrorMessageFieldDom` function displays error messages associated with a specific input field in the DOM.
-
-#### **Usage:**
-
-This function checks if there are any error messages for the field. If errors are present, it appends them to the field and adds a class (`is-invalid`) to indicate validation failure.
-
-- **Parameters:**
-  - `fieldId` (`string`): The unique ID of the field where the error messages will be displayed.
-  - `errorhandle` (`FormErrorInterface`): An instance of the error handler that provides error messages for the field.
-
-- **Example:**
-
-```ts
-const fieldId = 'username';  // ID of the input field.
-const errorHandle = new FormErrorInterface();  // Form error handler instance.
-
-addErrorMessageFieldDom(fieldId, errorHandle);  // Display error messages for the field.
-```
-
----
-
-### **3. `handleErrorsManyForm`**
-
-The `handleErrorsManyForm` function manages errors for multiple fields within a form and displays them next to the respective input fields.
-
-#### **Usage:**
-
-This function loops through a list of errors, adds the `is-invalid` class to the fields with errors, and appends the error messages next to them. It’s particularly useful for handling form-wide validation at once.
-
-- **Parameters:**
-  - `formName` (`string`): The name of the form.
-  - `formId` (`string`): The ID of the form.
-  - `errors` (`Record<string, string>`): An object where the keys are field names, and the values are corresponding error messages.
-
-- **Example:**
-
-```ts
-const formName = 'registrationForm';  // Name of the form.
-const formId = 'regForm';  // ID of the form.
-const errors = {
-    username: 'Username is required.',
-    email: 'Email is not valid.',
-};
-
-handleErrorsManyForm(formName, formId, errors);  // Handle and display errors for multiple fields.
-```
-
----
-
-## **How to Use These Functions**
-
-1. **Install and Import**  
-   Ensure you have jQuery and the necessary error handler class (`FormErrorInterface`) available in your project.
-
-2. **Initialize and Use the Functions**  
-   For each form field that you need to validate, call `serviceInternclass` or `addErrorMessageFieldDom`. For handling multiple fields at once, use `handleErrorsManyForm`.
-
-3. **Customize Error Handling**  
-   Customize the error messages and validation logic within the `FormErrorInterface` class according to your needs.
-
----
-
-````markdown
 ### `getInputPatternRegex`
 
 ```typescript
@@ -779,8 +482,8 @@ export function getInputPatternRegex(
     children: HTMLInputElement | HTMLTextAreaElement,
     formParentName: string,
     flag: string = 'i'
-): RegExp | null
-````
+): RegExp | undefined
+```
 
 **Description:**
 
@@ -808,10 +511,10 @@ While this function internally depends on jQuery, **it can still be used within 
 
 **Returns:**
 
-  * `RegExp | null`: A `RegExp` object created from the `pattern` attribute and the provided flags. Returns `null` in the following cases:
-      * The provided `children` element is not present in the DOM (jQuery selection is empty).
-      * The provided `flag` string contains invalid regular expression flags.
-      * The `children` element does not have a `pattern` attribute.
+  * `RegExp |undefined`: A `RegExp` object created from the `pattern` attribute and the provided flags. Returns `undefined`  in the following cases:
+    * The provided `children` element is not present in the DOM (jQuery selection is empty).
+    * The provided `flag` string contains invalid regular expression flags.
+    * The `children` element does not have a `pattern` attribute.
 
 **Error Handling:**
 
@@ -822,7 +525,7 @@ While this function internally depends on jQuery, **it can still be used within 
 
 **Example Usage (including React context):**
 
-```typescript jsx
+```tsx
 import React, { useRef } from 'react';
 import { getInputPatternRegex } from './utils'; // Assuming your function is in utils.ts
 
@@ -852,27 +555,166 @@ function MyFormComponent() {
 export default MyFormComponent;
 ```
 
-```
-```
 ---
 
-# Input Validation Class Documentation
+### `addErrorMessageFieldDom`
 
-## Overview
+```typescript
+export function addErrorMessageFieldDom(
+    elmtfield: JQuery<HTMLFormChildrenElement>,
+    errormessagefield?: string[],
+    className_container_ErrorMessage: string = "border border-3 border-light"
+): void
+```
+
+This function is responsible for dynamically adding error messages directly into the DOM, associated with a specific form field. It creates a dedicated container for error messages, applies an `is-invalid` class to the field for visual feedback, and then appends the provided error messages.
+
+#### Parameters
+
+* `elmtfield`: A **JQuery object** representing the form field (e.g., `<input>`, `<select>`, `<textarea>`) to which the error messages will be added. This element **must** have an `id` attribute.
+
+* `errormessagefield`: An **optional array of strings**. Each string in this array will be displayed as an individual error message. If this array is empty or not provided, no error messages will be added.
+* `className_container_ErrorMessage`: An **optional string** representing the CSS classes to be applied to the `div` element that will contain the error messages. The default value is `"border border-3 border-light"`.
+
+#### Details
+
+1.  **Retrieves Field ID**:
+  
+ The function first extracts the `id` attribute from `elmtfield`. This `id` is crucial for uniquely identifying the error message container.
+1.  **Checks for Error Messages** 
+  The process only continues if `errormessagefield` is provided and contains one or more error messages.
+2.  **Creates Error Container** 
+  
+    A new `div` element is generated. This `div` will have the classes specified by `className_container_ErrorMessage` and an `id` constructed as `container-div-error-message-{fieldId}`.
+3.  **Applies `is-invalid` Class**: If the `elmtfield` does not already possess the `is-invalid` CSS class, it is added. This class is widely used in CSS frameworks (like Bootstrap) to visually indicate an invalid input state.
+4.  **Generates Error Message DOM**: For each string in the `errormessagefield` array, a helper function (presumed to be `createSmallErrorMessage`) is called. This helper function is expected to return a DOM element (e.g., a `<small>` tag) formatted to display an individual error message.
+
+5.  **Appends Error Messages**:
+  
+ All the generated error message DOM elements are then appended as children to the `containerDivErrorMessage`.
+6.  **Inserts into DOM**: Finally, the entire `containerDivErrorMessage` is inserted into the DOM immediately after the `elmtfield`, ensuring the error messages are visible in close proximity to the problematic input.
+
+#### Example
+
+```typescript
+// Assuming an input field with id="user_email" exists in the DOM:
+// <input type="email" id="user_email" name="email" class="form-control">
+
+// Call addErrorMessageFieldDom to display errors for 'user_email'
+addErrorMessageFieldDom($('#user_email'), [
+  'This field is required.',
+  'Must be a valid email address.'
+]);
+
+// This will add a div with the specified border classes and two <small> error messages
+// after the #user_email input, and also add the 'is-invalid' class to #user_email.
+```
+
+### `handleErrorsManyForm` Function
+
+```typescript
+export function handleErrorsManyForm(
+    formName: string,
+    formId: string,
+    errors: Record<string, string[]>
+): void
+```
+
+This function is designed to efficiently process and display multiple validation error messages across various fields within a single form. It iterates through a provided object of errors, intelligently identifies the corresponding HTML form fields, applies visual invalid states, and then leverages `addErrorMessageFieldDom` to present the specific error messages for each field.
+
+  Parameters
+
+* `formName`: A **string** representing the logical name of the form (e.g., "userRegistration", "productEdit"). This `formName` is used as a prefix in conjunction with the error keys to construct the expected `id` of the HTML form elements (e.g., `formName_fieldName`).
+* `formId`: A **string** representing the actual `id` attribute of the HTML form element. While provided as a parameter, this particular `formId` is not directly used within the current function's logic for locating individual fields. However, it can be valuable for broader form management and context within other parts of your application.
+* `errors`: A **Record (or dictionary/hash map)** where:
+    * **Keys**: Represent field identifiers (e.g., "email", "address.street", "passwordConfirmation"). These keys are expected to align with the latter part of your field `id`s after the `formName` prefix.
+    * **Values**: Are **arrays of strings**, with each string being an individual validation error message associated with the corresponding field.
+
+  Details
+
+1.  **Early Exit for No Errors**: The function performs an initial check: if the `errors` object is empty (i.e., `Object.keys(errors).length === 0`), it means there are no errors to display, and the function returns immediately without any further processing.
+2.  **Iteration Through Errors**: It then iterates through each `key` (which represents a field identifier) present in the `errors` object.
+3.  **Dynamic Field ID Construction**: For each error `key`, the function dynamically constructs the expected `id` of the corresponding HTML form element. It concatenates the `formName` with the `key`, replacing any periods (`.`) within the `key` with underscores (`_`). This is a common and robust convention for matching server-side validation error keys to client-side HTML element IDs.
+    * **Example**: If `formName` is `"userForm"` and an error `key` is `"address.city"`, the constructed `fieldId` will be `"userForm_address_city"`.
+4.  **Element Discovery**: Using jQuery, the function attempts to find the HTML element in the DOM that matches the constructed `fieldId`.
+5.  **Handling Missing Elements**: If `jQuery` does not find an element for a given `fieldId` (i.e., `element.length` is `0`), a warning message is logged using `Logger.warn`. The function then skips to the next error in the loop, preventing potential runtime errors and ensuring robustness.
+6.  **Applying `is-invalid` Class**: If the element is successfully found, the `is-invalid` CSS class is added to it. This provides immediate visual feedback to the user that the field contains invalid input.
+7.  **Displaying Specific Error Messages**: Finally, the function calls `addErrorMessageFieldDom`, passing the found `element` and the array of specific error messages (`errors[key]`) associated with that field. This delegates the actual rendering of the error messages to the dedicated `addErrorMessageFieldDom` function.
+
+  Example
+
+```typescript
+// Assume the following HTML structure for a registration form:
+// <form id="registrationForm">
+//   <input type="text" id="regForm_username" name="username">
+//   <input type="email" id="regForm_email" name="email">
+//   <input type="password" id="regForm_password" name="password">
+//   <input type="password" id="regForm_password_confirm" name="passwordConfirm">
+// </form>
+
+// And you receive the following validation errors from a server API:
+const validationErrors = {
+  'username': ['Username is required.', 'Username must be at least 5 characters.'],
+  'email': ['Invalid email format.'],
+  'password.confirm': ['Passwords do not match.'] // Note the dot notation for nested fields
+};
+
+// Call handleErrorsManyForm to display these errors on the 'registrationForm'
+handleErrorsManyForm(
+  'regForm', // formName prefix used in IDs
+  'registrationForm', // formId (actual ID of the form element, though not directly used in this func)
+  validationErrors
+);
+
+// After execution:
+// - #regForm_username will have 'is-invalid' class and two error messages below it.
+// - #regForm_email will have 'is-invalid' class and one error message below it.
+// - #regForm_password_confirm will have 'is-invalid' class and one error message below it.
+```
+
+## **How to Integrate and Use These Functions**
+
+1.  **Prerequisites**:
+    * Ensure that **jQuery** is included and available in your project, as these functions heavily rely on it.
+    * Confirm that the `Logger` object (used in `handleErrorsManyForm` for warnings) is defined and accessible if you intend to use its logging capabilities.
+    * Make sure the `createSmallErrorMessage` helper function (used by `addErrorMessageFieldDom`) is defined and returns appropriate DOM elements for displaying individual error messages.
+
+2.  **Implementation**:
+    * **Single Field Errors**: For displaying errors on individual fields, directly call `addErrorMessageFieldDom` when you have a specific field element and its corresponding error messages.
+    * **Multiple Form Field Errors**: When you receive a collection of errors for multiple fields within a form (e.g., from a server-side validation response), use `handleErrorsManyForm`. Provide the common `formName` prefix used in your field IDs and the `errors` object.
+
+3.  **Customization**:
+  
+    * **Styling**:
+  
+    *  Adjust the `className_container_ErrorMessage` parameter in `addErrorMessageFieldDom` (or modify its default value) to match your application's CSS framework or styling conventions for error message containers.
+    * **Error Message Presentation**: Customize the `createSmallErrorMessage` function to control how individual error messages are rendered (e.g., using different HTML tags, icons, or specific styling).
+  
+    * **Field ID Naming**: Ensure that your HTML form field `id`s consistently follow the `formName_fieldName` convention if you plan to use `handleErrorsManyForm` effectively with its automatic ID construction.
+
+## Validators
+
+### Input Validation Class Documentation
+
+#### Overview
+
 This TypeScript class provides a flexible and reusable validation system for different types of input fields. It includes various validation methods to ensure data integrity and security when handling user input.
 
 ## Methods and Explanations
 
 ### 1. `allTypesValidator` Method
+
 This is the main entry point for validating different types of input fields.
 
 **Parameters:**
+
 - `datainput`: The value to be validated.
 - `targetInputname`: The name of the input field.
 - `type_field`: The type of input field (e.g., email, password, text, etc.).
 - `options_validator`: Validation options that vary depending on the field type.
 
 **Functionality:**
+
 - Uses a `switch` statement to determine the field type.
 - Calls the appropriate validation method (e.g., `emailValidator`, `textValidator`, etc.).
 - Ensures that the provided validation options are correct before executing validation.
@@ -881,14 +723,17 @@ This is the main entry point for validating different types of input fields.
 ---
 
 ### 2. `textValidator` Method
+
 Validates **text input fields** according to specified rules.
 
 **Parameters:**
+
 - `datainput`: The text input value.
 - `targetInputname`: The name of the input field.
 - `optionsinputtext`: A configuration object specifying validation rules.
 
 **Validation Steps:**
+
 1. **Sanitization:** Trims the input and removes HTML and PHP tags if `escapestripHtmlAndPhpTags` is `true`.
 2. **Regex Check:** Ensures the text matches the allowed character set (default: only letters and spaces).
 3. **Length Validation:** Ensures the text meets the `minLength` and `maxLength` constraints.
@@ -897,14 +742,17 @@ Validates **text input fields** according to specified rules.
 ---
 
 ### 3. `emailValidator` Method
+
 Validates an **email address**.
 
 **Parameters:**
+
 - `datavalueemail`: The email input value.
 - `targetInputnameemail`: The name of the input field.
 - `optionsinputemail`: A configuration object specifying validation rules.
 
 **Functionality:**
+
 - Calls `textValidator` with an **email regex pattern**.
 - Ensures the email format is valid (e.g., `example@domain.com`).
 - Checks **length constraints** (default: 6 to 180 characters).
@@ -913,14 +761,17 @@ Validates an **email address**.
 ---
 
 ### 4. `telValidator` Method
+
 Validates a **telephone number**.
 
 **Parameters:**
+
 - `data_tel`: The phone number input.
 - `targetInputname`: The name of the input field.
 - `optionsinputTel`: A configuration object specifying validation rules.
 
 **Functionality:**
+
 - Calls `textValidator` with a **phone number regex**.
 - Ensures it follows a valid format (e.g., `+229016725186`).
 - Checks **length constraints** (default: 8 to 80 characters).
@@ -929,14 +780,17 @@ Validates a **telephone number**.
 ---
 
 ### 5. `passwordValidator` Method
+
 Validates **password inputs** based on security rules.
 
 **Parameters:**
+
 - `datainput`: The password input.
 - `targetInputname`: The name of the input field.
 - `optionsinputtext`: A configuration object specifying password constraints.
 
 **Validation Steps:**
+
 1. **Trimming:** Removes extra spaces.
 2. **Character Requirements:**
    - **Uppercase letter** check.
@@ -950,14 +804,17 @@ Validates **password inputs** based on security rules.
 ---
 
 ### 6. `urlValidator` Method
+
 Validates a **URL input**.
 
 **Parameters:**
+
 - `urlData`: The URL string to validate.
 - `targetInputname`: The name of the input field.
 - `url_options`: A configuration object specifying URL constraints.
 
 **Validation Steps:**
+
 1. **Regex Validation:** Ensures the URL follows a valid format.
 2. **Protocol Check:** Ensures the URL uses an allowed protocol (e.g., `http`, `https`, `ftp`).
 3. **TLD Requirement:** Ensures the hostname contains a top-level domain (TLD) if required.
@@ -965,49 +822,55 @@ Validates a **URL input**.
 5. **IP Restriction:** Ensures IP addresses are disallowed if `allowIP` is `false`.
 6. **Query Parameter & Fragment Check:** Ensures query parameters (`?key=value`) and fragments (`#section`) are allowed or blocked.
 
----
-
 ### 7. `dateValidator` Method
+
 Validates a **date input**.
 
 **Parameters:**
+
 - `date_input`: The date string.
 - `targetInputname`: The name of the input field.
 - `date_options`: A configuration object specifying date constraints.
 
 **Validation Steps:**
+
 1. **Required Check:** Ensures the field is filled if `requiredInput` is `true`.
 2. **Regex Validation:** Ensures the date follows a valid format (default: `YYYY-MM-DD`).
 3. **Custom Date Range:** Can enforce a valid date range (e.g., no future dates allowed).
-
---- 
-
----
 
 ### `selectValidator` Method  
 
 This method validates whether a selected value exists within the available choices of a select field. If the selected value is not found in the given options, an error message is generated.  
 
 #### **Parameters**  
+
 - **`value_index` (string)** – The selected value that needs to be validated.  
 - **`targetInputname` (string)** – The name of the input field being validated.  
 - **`options_select` (SelectOptions)** – An object containing the list of valid options (`optionsChoices`).  
 
 #### **Functionality**  
+
 1. It checks if `value_index` exists in `options_select.optionsChoices`.  
 2. If the value is not found, it updates the validator status with an error message.  
 3. Finally, it calls the `textValidator` method to apply additional text-based validation on the selected value.  
 
 #### **Return Value**  
+
 - Returns the instance of the current class (`this`) to allow method chaining.  
 
----
-# Example Usage
+#### Example Usage
+
 ```typescript
+import jQuery from "jquery";
+import { debounce } from "lodash";
+import {
+  clearErrorInput,
+  addErrorMessageFieldDom,
+} from "@wlindabla/form_validator";
+import {FormInputValidator} from "@wlindabla/form_validator";
+const formInputValidator = FormInputValidator.getInstance();
+
 jQuery(function validateInput() {
-  formFormattingEvent.lastnameToUpperCase(this, 'en');
-  formFormattingEvent.capitalizeUsername(this, " ", " ", 'en')
-  formFormattingEvent.usernameFormatDom(this," "," ","en")
       jQuery(this).on('blur','#username,#email,#tel,#message',(event: JQuery.BlurEvent)=>{
         const target = jQuery<HTMLTextAreaElement | HTMLInputElement>(event.target)!;
         console.log(target.val())
@@ -1058,20 +921,22 @@ jQuery(function validateInput() {
                 })
             }
             if (!formInputValidator.hasErrorsField(target.attr('name') as string)) {
-              serviceInternclass(jQuery(target), formInputValidator);
+              addErrorMessageFieldDom(jQuery(target), formInputValidator.getErrorMessageField(target.attr('name')));
             }
           }
       })
       jQuery(this).on('input', '#username,#email,#tel,#message',(event: JQuery.Event|any) => {
     const target = event.target as HTMLInputElement|HTMLTextAreaElement;
         if (target) {
-      clearErrorInput(jQuery(target), formInputValidator);
+      clearErrorInput(jQuery(target));
     }
   });
-    })
+  })
 ```
 Would you like me to adjust the wording or add more details? 😊
-## Conclusion
+
+#### Conclusion
+
 This class provides a **robust and reusable validation system** for multiple input types. Each validator:
 - Uses **regular expressions** for pattern matching.
 - Enforces **minimum and maximum lengths**.
@@ -1081,21 +946,26 @@ This class provides a **robust and reusable validation system** for multiple inp
 
 This allows the validation logic to be easily integrated into **form validation systems** in **TypeScript-based** projects. 🚀
 
+### ImageValidator Class Documentation
 
-# ImageValidator Class Documentation
+#### Overview
 
-## Overview
 The `ImageValidator` class is responsible for validating image files based on different criteria such as MIME type, file signature, dimensions, and file size. It extends the `AbstractMediaValidator` class and follows a singleton pattern to ensure only one instance of the class is used throughout the application.
 
-## Features
-- **Singleton Pattern:** Ensures a single instance of the `ImageValidator` class.
+Features
+
+- **Singleton Pattern:** 
+
+- Ensures a single instance of the `ImageValidator` class.
+  
 - **File Signature Validation:** Prevents disguised files by checking hexadecimal signatures.
 - **MIME Type Validation:** Ensures that the uploaded file matches the expected MIME type.
 - **File Size Validation:** Checks that the file does not exceed the allowed maximum size.
 - **Image Dimensions Validation:** Ensures that images meet the required width and height constraints.
 - **Allowed Extensions Validation:** Ensures only specified image formats are accepted.
 
-## Supported Formats
+#### Supported Formats
+
 The `ImageValidator` class supports the following image formats:
 
 | Format | Hexadecimal Signature |
@@ -1108,12 +978,14 @@ The `ImageValidator` class supports the following image formats:
 | WEBP | `52494646` |
 | SVG | `3c3f786d6c2076657273696f6e3d`, `3c737667` |
 
-## Methods
+#### Methods
 
-### `getInstance(): ImageValidator`
+#### `getInstance(): ImageValidator`
+
 Returns the singleton instance of the `ImageValidator` class.
 
-### `fileValidator(medias: File | FileList, targetInputname: string = 'photofile', optionsimg: OptionsImage): Promise<this>`
+#### `fileValidator(medias: File | FileList, targetInputname: string = 'photofile', optionsimg: OptionsImage): Promise<this>`
+
 Validates an image file or a list of image files against the specified options.
 
 - **Parameters:**
@@ -1122,7 +994,8 @@ Validates an image file or a list of image files against the specified options.
   - `optionsimg`: Configuration options including allowed MIME types, max file size, and dimension constraints.
 - **Returns:** A promise resolving to the `ImageValidator` instance.
 
-### `signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null>`
+#### `signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null>`
+
 Validates the file signature to ensure it is not disguised as another file type.
 
 - **Parameters:**
@@ -1130,7 +1003,8 @@ Validates the file signature to ensure it is not disguised as another file type.
   - `uint8Array`: Optional binary representation of the file.
 - **Returns:** A promise resolving to an error message if the validation fails, otherwise `null`.
 
-### `mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[]): Promise<string | null>`
+#### `mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[]): Promise<string | null>`
+
 Validates the MIME type of the file against allowed MIME types.
 
 - **Parameters:**
@@ -1138,14 +1012,16 @@ Validates the MIME type of the file against allowed MIME types.
   - `allowedMimeTypeAccept`: List of accepted MIME types.
 - **Returns:** A promise resolving to an error message if the validation fails, otherwise `null`.
 
-### `getFileDimensions(file: File): Promise<{ width: number; height: number; }>`
+#### `getFileDimensions(file: File): Promise<{ width: number; height: number; }>`
+
 Retrieves the dimensions of the image file.
 
 - **Parameters:**
   - `file`: The image file.
 - **Returns:** A promise resolving to an object containing `width` and `height`.
 
-### `detecteMimetype(hexasignatureFile: string, uint8Array: Uint8Array): string | null`
+#### `detecteMimetype(hexasignatureFile: string, uint8Array: Uint8Array): string | null`
+
 Determines the actual MIME type of an image file based on its hexadecimal signature.
 
 - **Parameters:**
@@ -1153,19 +1029,21 @@ Determines the actual MIME type of an image file based on its hexadecimal signat
   - `uint8Array`: The binary representation of the file.
 - **Returns:** The true MIME type of the file or `null` if unknown.
 
-### `getExtensions(allowedMimeTypes: string[]): string[]`
+#### `getExtensions(allowedMimeTypes: string[]): string[]`
+
 Converts a list of MIME types to their corresponding file extensions.
 
 - **Parameters:**
   - `allowedMimeTypes`: List of allowed MIME types.
 - **Returns:** An array of valid file extensions.
 
-## Usage Example
+#### Usage Example
+
 ```typescript
 import {ImageValidator} from "@wlindabla/form_validator";
 const imageValidator = ImageValidator.getInstance();
 
-jQuery(function documentLoad() {
+jQuery(function imageLoad() {
   const imagesAll = jQuery<HTMLInputElement>('input#img');
   let instance = imageValidator;
   const validateImage = debounce(async (event: JQuery.BlurEvent) => {
@@ -1173,7 +1051,7 @@ jQuery(function documentLoad() {
     if (target && target.files && target.files.length > 0) {
       instance = await imageValidator.fileValidator(target.files as FileList, target.name);
       if (!instance.hasErrorsField(target.name)) {
-        serviceInternclass(jQuery(target), instance);
+        addErrorMessageFieldDom(jQuery(target), instance.getErrorMessageField);
       }
     }
   }, 300); // Délai de 300ms
@@ -1182,17 +1060,19 @@ jQuery(function documentLoad() {
   imagesAll?.on('change', (event: JQuery.ChangeEvent) => {
     const target = event.target as HTMLInputElement;
     if (target) {
-      clearErrorInput(jQuery(target), instance);
+      clearErrorInput(jQuery(target));
     }
   });
 ```
 
-# DocumentValidator Class Documentation
+### DocumentValidator Class Documentation
 
-## Overview
+ Overview
+
 `DocumentValidator` is a singleton class that extends `AbstractMediaValidator` and implements `MediaValidatorInterface`. It is responsible for validating different types of document files based on their MIME types and hexadecimal signatures. It supports file types including PDFs, Word documents, Excel sheets, OpenDocument formats, text files, and CSVs.
 
-## Features
+ Features
+
 - **Singleton Pattern**: Ensures a single instance of `DocumentValidator`.
 - **MIME Type Validation**: Checks if the uploaded file matches the allowed MIME types.
 - **Hexadecimal Signature Validation**: Validates file format based on magic numbers.
@@ -1201,13 +1081,17 @@ jQuery(function documentLoad() {
 - **Error Handling**: Provides detailed error messages when validation fails.
 
 ## Class Definition
+
 ```typescript
 class DocumentValidator extends AbstractMediaValidator implements MediaValidatorInterface
 ```
 
 ## Properties
+
 ### `mimeTypeMap: Record<string, string[]>`
+
 Defines the MIME types for supported document formats:
+
 ```typescript
 {
     pdf: ['application/pdf'],
@@ -1223,7 +1107,9 @@ Defines the MIME types for supported document formats:
 ```
 
 ### `signatureHexadecimalFormatDocument: Record<string, string[]>`
+
 Defines the hexadecimal signatures for different document formats:
+
 ```typescript
 {
     pdf:  ['25504446'],
@@ -1233,11 +1119,15 @@ Defines the hexadecimal signatures for different document formats:
 ```
 
 ### `private static m_instance_doc_validator: DocumentValidator`
+
 Singleton instance of the `DocumentValidator` class.
 
-## Methods
+  Methods
+
 ### `getInstanceDocValidator(): DocumentValidator`
+
 Returns the singleton instance of `DocumentValidator`.
+
 ```typescript
 public static getInstanceDocValidator = (): DocumentValidator => {
     if (!DocumentValidator.m_instance_doc_validator) {
@@ -1248,68 +1138,84 @@ public static getInstanceDocValidator = (): DocumentValidator => {
 ```
 
 ### `fileValidator(medias: File | FileList, targetInputname: string, optionsdoc: OptionsFile): Promise<this>`
+
 Validates a single or multiple files.
 
-#### Parameters:
+Parameters
+
 - `medias`: File or FileList to be validated.
 - `targetInputname`: Input name associated with the file (default: `doc`).
 - `optionsdoc`: Options specifying allowed MIME types.
 
-#### Returns:
+#### Returns
+
 - A `Promise<this>` indicating validation success or failure.
 
 ### `validate(file: File, formatValidator: string): Promise<string | null>`
+
 Validates a file based on its format.
 
-#### Parameters:
+Parameters
+
 - `file`: The file to validate.
 - `formatValidator`: The format to validate against (pdf, word, excel, csv, text).
 
-#### Returns:
+Returns
+
 - A `Promise<string | null>`, returning an error message if validation fails, otherwise `null`.
 
 ### `readFileAsUint8Array(file: File): Promise<Uint8Array>`
+
 Reads a file as a `Uint8Array`.
 
-#### Parameters:
+ Parameters
+
 - `file`: The file to read.
 
-#### Returns:
+ Returns
+
 - A `Promise<Uint8Array>` containing the file data.
 
 ### `validateSignature(file: File, formatValidator: string, uint8Array: Uint8Array): boolean`
+
 Validates a file’s signature.
 
-#### Parameters:
+#### Parameters
+
 - `file`: The file to validate.
 - `formatValidator`: Format category (pdf, word, excel, etc.).
 - `uint8Array`: The binary data of the file.
 
-#### Returns:
+ Returns
+
 - `boolean`: `true` if valid, otherwise `false`.
 
 ### `validatePdf(file: File, uint8Array: Uint8Array): Promise<string | null>`
+
 Validates a PDF file using `pdfjsLib`.
 
-### `validateWord(file: File, uint8Array: Uint8Array): Promise<string | null>`
-Validates a Word document using `Mammoth`.
-
 ### `validateExcel(file: File, uint8Array: Uint8Array): Promise<string | null>`
+
 Validates an Excel file using `XLSX`.
 
 ### `validateText(file: File): Promise<string | null>`
+
 Checks if a text file is not empty.
 
 ### `validateCsv(file: File): Promise<string | null>`
+
 Parses and validates a CSV file using `Papa.parse`.
 
 ### `detecteMimetype(filename: string, hexasignatureFile: string, uint8Array: Uint8Array): this`
+
 Detects the MIME type based on the file’s signature.
 
 ### `getExtensions(allowedMimeTypeAccept: string[]): string[]`
+
 Retrieves allowed extensions based on the MIME type map.
 
-## Example Usage
+ Example Usage
+
 ```typescript
 import {DocumentValidator} from "@wlindabla/form_validator";
 const documentValidator = DocumentValidator.getInstance();
@@ -1341,17 +1247,15 @@ const documentValidator = DocumentValidator.getInstance();
 });
 ```
 
-## Conclusion
+Conclusion
+
 The `DocumentValidator` class provides a robust and extensible way to validate document files in a web application. With support for various document formats, signature verification, and content parsing, it ensures that only valid files are processed.
 
-
----
-
-# VideoValidator Class
+## VideoValidator Class
 
 The `VideoValidator` class is a utility for validating video files based on various criteria such as file extension, size, MIME type, and video metadata (dimensions, duration). This class is designed to ensure that uploaded video files meet specific validation requirements before being processed further.
 
-## Features
+  Features
 
 - **Singleton Design Pattern**: The class follows the singleton pattern, ensuring only one instance of the validator is used throughout your application.
   
@@ -1364,8 +1268,8 @@ The `VideoValidator` class is a utility for validating video files based on vari
 - **Error Handling**: The class provides detailed error messages to notify the user when a file does not pass the validation checks.
 
 ## Usage
-
-### Example
+  
+  Example
 
 Here’s an example of how to use the `VideoValidator` class to validate video files:
 
@@ -1410,7 +1314,7 @@ In this example, the `fileValidator` method validates the files selected in the 
 
 The constructor is private, so the class cannot be instantiated directly. Instead, use the static `getInstance()` method to get the singleton instance.
 
-### Methods
+  Methods
 
 #### `fileValidator(medias, targetInputname, optionsmedia)`
 
@@ -1454,10 +1358,6 @@ If the validation fails, the class will throw an error, including the file name 
 - "Video file size exceeds the allowed limit."
 - "Video dimensions do not meet the required size."
 
-## Installation
-
-To use this library in your project, you can import the `VideoValidator` class directly or install it as a package (if published).
-
 ### Import Example
 
 ```javascript
@@ -1465,15 +1365,7 @@ import {VideoValidator} from "@wlindabla/form_validator";
 const videoValidator = VideoValidator.getInstance();
 ```
 
----
-
-
----
-
----
----
-
-# `FormChildrenTypeNoFileValidate` Class Documentation
+### `FormChildrenTypeNoFileValidate` Class Documentation
 
 This documentation provides a detailed explanation of the `FormChildrenValidateInterface` and its implementation, the `FormChildrenTypeNoFileValidate` class. These components are designed to handle the validation of HTML form fields that are not of type `file`.
 
@@ -1482,15 +1374,15 @@ This documentation provides a detailed explanation of the `FormChildrenValidateI
 ## `FormChildrenValidateInterface` Interface
 
 This interface defines the contract for any form field validation component. It ensures that any class implementing it provides a standard set of methods for managing validation, retrieving validation options, and interacting with validation events.
+ 
+ Methods
 
-### Methods
-
-#### `isValid(): boolean`
+  `isValid(): boolean`
 
 * **Description:** Checks if the form field is currently valid, meaning it has no recorded validation errors.
 * **Usage:** Use this method to determine the validity state of a field without triggering a new validation. It's useful for quick checks of the current state.
 
-#### `getOptionsValidate(): OptionsValidate`
+### `getOptionsValidate(): OptionsValidate`
 
 * **Description:** Retrieves the specific validation options configured for the form field. These options define the rules and criteria for validation to be applied.
 * **Usage:** This method is primarily used internally by the validation process to get the rules to apply. It can also be useful if you need to inspect a field's default or custom validation options.
@@ -1521,7 +1413,7 @@ This interface defines the contract for any form field validation component. It 
 
 This class implements the `FormChildrenValidateInterface` for HTML form fields that are not of type `file`. It manages the logic for retrieving validation options based on the HTML input type and uses a form input validator (`FormInputValidator`) to perform the actual checks.
 
-### Constructor
+ Constructor
 
 ```typescript
 constructor(
@@ -1567,7 +1459,7 @@ This class deduces validation options by reading attributes directly from the HT
 | `max`                             | `number`                              | Maximum allowed numeric value.                                      | `undefined`                                                  |
 | `step`                            | `number`                              | Number increment/decrement step.                                    | `undefined`                                                  |
 
-**Attributes for Checkbox/Radio Containers (on the parent element with the group ID)**
+### **Attributes for Checkbox/Radio Containers (on the parent element with the group ID)**
 
 | HTML Attribute (on the container) | Field Type (HTML `type` of the input) | Description                                                | Default Value |
 | :-------------------------------- | :------------------------------------ | :--------------------------------------------------------- | :------------ |
@@ -1577,12 +1469,12 @@ This class deduces validation options by reading attributes directly from the HT
 
 ### Implemented Methods
 
-#### `validate(): Promise<void>`
+ `validate(): Promise<void>`
 
 * **Description:** Validates the current value of the field using the injected `FormInputValidator` instance.
 * **Usage:** This method is the cornerstone of validation. It's called to execute all validation rules defined by the retrieved `OptionsValidate`. It emits a validation event after execution.
 
-#### `isValid(): boolean`
+  `isValid(): boolean`
 
 * **Description:** Checks the field's error state by consulting the `FormInputValidator` instance.
 * **Usage:** Allows you to know if the field currently has errors without triggering a new validation.
@@ -1618,33 +1510,35 @@ This class deduces validation options by reading attributes directly from the HT
 * **Usage:** Internal method to extract the `required` rule from the container.
 
 #### `private getOptionsValidateTextarea(): OptionsInputField`
+
 #### `private getOptionsValidateUrl(): URLOptions`
+
 #### `private getOptionsValidateDate(): DateOptions`
+
 #### `private getOptionsValidateSelect(): SelectOptions`
+
 #### `private getOptionsValidateNumber(): NumberOptions`
+
 #### `private getOptionsValidateSimpleText(): OptionsInputField`
+
 #### `private getOptionsValidatePassword(): PassworkRuleOptions`
+
 #### `private getOptionsValidateCheckBox(): OptionsCheckbox`
+
 #### `private getOptionsValidateRadio(): OptionsRadio`
 
 * **Description:** These private methods are responsible for constructing the validation options objects (`OptionsInputField`, `URLOptions`, etc.) for each HTML input type. They read the corresponding attributes from the HTML element (`this._children` or its container) and apply default values if the attributes are not found.
 * **Usage:** They are called by `getOptionsValidate()` to provide the specific validation rules for the field type.
-
----
-
----
-
+  
 # `FormChildrenTypeFileValidate` Class Documentation
 
 This documentation provides a comprehensive explanation of the `FormChildrenTypeFileValidate` class, designed for the specific validation of HTML form fields of type `file`. This class extends `AbstractFormChildrenValidate` and implements `FormChildrenValidateInterface`, ensuring adherence to a standard validation contract while providing specialized media file validation capabilities.
-
----
 
 ## Class `FormChildrenTypeFileValidate`
 
 This class specializes in handling validation for file input elements (`<input type="file">`). It leverages an `AbstractMediaValidator` to perform the actual file-specific checks based on various attributes defined directly on the HTML input element.
 
-### Constructor
+ Constructor
 
 ```typescript
 constructor(
@@ -1660,7 +1554,7 @@ constructor(
 
 **Important Note**: The constructor explicitly checks for the presence of a `media-type` attribute on the input element. If this attribute is missing, it will throw an `AttributeException`, as this attribute is crucial for determining the type of media validation to perform (e.g., image, document, video).
 
-### Validation Attributes (via HTML Attributes) and Default Values
+  Validation Attributes (via HTML Attributes) and Default Values
 
 This class determines validation rules by reading attributes directly from the HTML `input` element (`children`). If an attribute is not specified, a sensible default value is applied.
 
@@ -1680,29 +1574,29 @@ This class determines validation rules by reading attributes directly from the H
 | `unity-duration-media`        | Video      | The unit for `duration` (e.g., `seconds`, `minutes`). | `undefined` |
 | `event-clear-error`           | All file types | The DOM event that triggers the clearing of errors for the field. | `'change'` |
 
-### Implemented Methods
+Implemented Methods
 
-#### `isValid(): boolean`
+ `isValid(): boolean`
 
 * **Description:** Checks if the file input field is currently valid, meaning it has no recorded validation errors from the `mediaValidator`.
 * **Usage:** Use this method to quickly ascertain the current validity status of the file field without re-running the full validation.
 
-#### `validate(): Promise<void>`
+ `validate(): Promise<void>`
 
 * **Description:** Initiates the asynchronous validation process for the file input. It checks if a file (or files) has been selected. If so, it passes the file(s) and the relevant validation options to the `mediaValidator`. After validation, it emits an event.
 * **Usage:** This is the primary method to call when you need to validate the selected file(s), typically on form submission or when the file input's value changes.
 
-#### `getOptionsValidate(): OptionsValidateTypeFile`
+ `getOptionsValidate(): OptionsValidateTypeFile`
 
 * **Description:** Retrieves the validation options for the current media type. If `optionsValidateMedia` were passed to the constructor, they are used. Otherwise, this method **dynamically constructs default validation options** based on the `_mediaType` determined from the `media-type` HTML attribute. It supports `image`, `document`, and `video` types.
 * **Usage:** This method is critical for adapting the validation behavior to the specific media type, reading configuration directly from the DOM attributes. It will throw an error if an unsupported `media-type` is provided.
 
-#### `protected getFormError(): FormErrorInterface`
+ `protected getFormError(): FormErrorInterface`
 
 * **Description:** Returns the instance of `AbstractMediaValidator` which is responsible for managing validation errors for this field.
 * **Usage:** This protected method provides internal access to the error handling mechanism.
 
-#### `public eventClearError(): EventValidate`
+ `public eventClearError(): EventValidate`
 
 * **Description:** Returns the event that triggers the clearing of validation errors for this field. By default, this is the `'change'` event of the input, but it can be customized via the `event-clear-error` HTML attribute.
 * **Usage:** Allows external components to subscribe to this event to clear error messages or reset the field's visual state when appropriate.
@@ -1726,20 +1620,15 @@ The following private methods are responsible for building the specific validati
 * **Description:** This method serves as a base to construct common file validation options (`OptionsFile`) applicable to all media types (image, document, video). It reads attributes such as `extentions`, `allowedMimeTypeAccept`, `maxsizeFile`, `unityMaxSizeFile`, and `unityDimensions`.
 * **Usage:** Called by `getOptionsValidateVideo()` and `getOptionsValidateImage()` to ensure common file validation rules are always included.
 
----
----
-
-# `FormValidate` Class Documentation
+## `FormValidate` Class Documentation
 
 This documentation provides an in-depth look at the `FormValidate` class, a central component for managing and orchestrating the validation of form fields within your application. It streamlines the process of attaching validation logic to various form elements and provides convenient methods for triggering validation and retrieving field IDs based on desired DOM events.
-
----
 
 ## Class `FormValidate`
 
 The `FormValidate` class serves as a robust controller for form validation. It initializes by identifying all relevant form fields within a specified HTML form and then dynamically creates appropriate validator instances (`FormChildrenTypeNoFileValidate` or `FormChildrenTypeFileValidate`) for each field. This class also helps in organizing form field IDs based on the DOM events that should trigger their validation, simplifying event listener setup.
 
-### Constructor
+  Constructor
 
 ```typescript
 constructor(formCssSelector: string = "form")
@@ -1780,7 +1669,8 @@ The constructor performs the following key steps:
 
 * **Description**: Validates a *specific* form field based on the provided target HTML element. It gets the appropriate validator instance for the `target` and runs its `validate()` method.
 * **Usage**: This method is ideal for real-time, field-specific validation, such as when a user types in a field (`input` event) or leaves a field (`blur` event).
-    ```typescript
+  
+```typescript
     const myFormValidator = new FormValidate('#myForm');
     const emailInput = document.getElementById('email') as HTMLInputElement;
 
@@ -1792,7 +1682,7 @@ The constructor performs the following key steps:
             // Handle invalid field (e.g., display error message)
         }
     });
-    ```
+```
 
 #### `buildValidators(): FormChildrenValidateInterface[]`
 
@@ -1823,33 +1713,37 @@ The constructor performs the following key steps:
 
 * **Description**: Returns an array of `id`s for form fields that have the `event-validate-blur="blur"` HTML attribute.
 * **Usage**: Facilitates attaching blur event listeners to specific fields.
-    ```html
+
+```html
     <input type="text" id="myInput" event-validate-blur="blur">
-    ```
+```
 
 #### `idChildrenUsingEventInput: string[]`
 
 * **Description**: Returns an array of `id`s for form fields that have the `event-validate-input="input"` HTML attribute.
 * **Usage**: Facilitates attaching input event listeners for real-time validation as the user types.
-    ```html
+    
+```html
     <input type="text" id="myTextArea" event-validate-input="input">
-    ```
+```
 
 #### `idChildrenUsingEventChange: string[]`
 
 * **Description**: Returns an array of `id`s for form fields that have the `event-validate-change="change"` HTML attribute.
 * **Usage**: Facilitates attaching change event listeners, particularly useful for `select` elements, checkboxes, and radio buttons.
-    ```html
+  
+```html
     <select id="mySelect" event-validate-change="change"></select>
-    ```
+```
 
 #### `idChildrenUsingEventFocus: string[]`
 
 * **Description**: Returns an array of `id`s for form fields that have the `event-validate-focus="focus"` HTML attribute.
 * **Usage**: Facilitates attaching focus event listeners, though validation on focus is less common. Can be used for specific UI behaviors.
-    ```html
+  
+```html
     <input type="text" id="myFocusInput" event-validate-focus="focus">
-    ```
+```
 
 #### `idChildrens: string[]`
 
@@ -1861,16 +1755,11 @@ The constructor performs the following key steps:
 * **Description**: Returns the jQuery object representing the HTML form associated with this `FormValidate` instance.
 * **Usage**: Provides direct access to the form element itself for DOM manipulation or event handling.
 
-
----
-
-# Using the `FormValidate` Class in Practice
+### Using the `FormValidate` Class in Practice
 
 This section demonstrates how to integrate and use the `FormValidate` class within a jQuery `$(function)` block to manage form validation dynamically based on user interactions.
 
----
-
-## Overview
+ Overview
 
 The provided code snippet illustrates a common pattern for setting up client-side form validation. It leverages the `FormValidate` class to:
 
@@ -1883,16 +1772,6 @@ The provided code snippet illustrates a common pattern for setting up client-sid
 
 ```javascript
 jQuery(function validateInput() {
-  /**
-   * Text input formatting
-   */
-  // Example usage of an external 'formFormattingEvent' object
-  // These methods modify the input field's value directly,
-  // typically converting text to a desired format.
-  formFormattingEvent.lastnameToUpperCase(this, 'en');
-  formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');
-  formFormattingEvent.usernameFormatDom(this, " ", " ", "en");
-
   /**
    * Initialize FormValidate for a specific form
    * The '#form_validate' selector targets the HTML form with id="form_validate"
@@ -1998,8 +1877,6 @@ jQuery(function validateInput() {
 });
 ```
 
----
-
 ## How to Set Up Your HTML for `FormValidate`
 
 To make this JavaScript code work effectively, your HTML form fields need specific `id` attributes and custom `event-validate-*` attributes.
@@ -2013,15 +1890,20 @@ To make this JavaScript code work effectively, your HTML form fields need specif
 You'll use these attributes on your `input`, `select`, and `textarea` elements to tell `FormValidate` which DOM event should trigger validation for that specific field.
 
 * `event-validate-blur="blur"`: Add this attribute to fields that should be validated when they lose focus.
-    ```html
+
+```html
     <input type="text" id="emailInput" name="email" event-validate-blur="blur" required>
-    ```
+```
+
 * `event-validate-input="input"`: Add this attribute to fields that should be validated as the user types (real-time validation).
-    ```html
+
+```html
     <textarea id="messageTextarea" name="message" event-validate-input="input"></textarea>
-    ```
+```
+
 * `event-validate-change="change"`: Add this attribute to fields (especially `select`, `checkbox`, `radio`) that should be validated when their value changes.
-    ```html
+
+```html
     <select id="countrySelect" name="country" event-validate-change="change">
       <option value="">Select a Country</option>
       <option value="us">United States</option>
@@ -2030,61 +1912,22 @@ You'll use these attributes on your `input`, `select`, and `textarea` elements t
 
     <input type="checkbox" id="agreeTerms" name="terms" value="true" event-validate-change="change">
     <label for="agreeTerms">I agree to the terms</label>
-    ```
+```
+
 * `event-validate-focus="focus"`: Although not used in this specific snippet, you could also add this attribute for validation on focus, if needed.
-    ```html
+
+```html
     <input type="text" id="focusField" name="focusTest" event-validate-focus="focus">
-    ```
+```
 
 **For File Inputs (`<input type="file">`):**
 
 As per the `FormChildrenTypeFileValidate` documentation, file inputs require a `media-type` attribute:
 
 * `media-type="image" | "video" | "document"`: This attribute is **mandatory** for `type="file"` inputs and dictates the specific type of media validation to apply.
-    ```html
-    <input type="file" id="profilePicture" name="profile_picture" media-type="image" event-validate-change="change">
-    ```
-
-### Example HTML Structure
-
+  
 ```html
-<form id="form_validate" name="registrationForm">
-  <label for="firstName">First Name:</label>
-  <input type="text" id="firstName" name="first_name" event-validate-input="input" min-length="2" max-length="50" required>
-  <div class="error-message" id="error-firstName"></div>
-  <br>
-
-  <label for="lastName">Last Name:</label>
-  <input type="text" id="lastName" name="last_name" event-validate-blur="blur" min-length="2" max-length="50" required>
-  <div class="error-message" id="error-lastName"></div>
-  <br>
-
-  <label for="email">Email:</label>
-  <input type="email" id="email" name="email" event-validate-blur="blur" event-validate-input="input" required>
-  <div class="error-message" id="error-email"></div>
-  <br>
-
-  <label for="password">Password:</label>
-  <input type="password" id="password" name="password" event-validate-blur="blur" min-length="8" required upper-case-allow="true" number-allow="true">
-  <div class="error-message" id="error-password"></div>
-  <br>
-
-  <label for="userType">User Type:</label>
-  <select id="userType" name="user_type" event-validate-change="change" required>
-    <option value="">-- Please select --</option>
-    <option value="admin">Administrator</option>
-    <option value="user">Regular User</option>
-  </select>
-  <div class="error-message" id="error-userType"></div>
-  <br>
-
-  <label for="profileImage">Profile Image:</label>
-  <input type="file" id="profileImage" name="profile_image" media-type="image" event-validate-change="change">
-  <div class="error-message" id="error-profileImage"></div>
-  <br>
-
-  <button type="submit">Submit</button>
-</form>
+    <input type="file" id="profilePicture" name="profile_picture" media-type="image" event-validate-change="change">
 ```
 
 **Note**: The example assumes the existence of:
@@ -2095,8 +1938,767 @@ As per the `FormChildrenTypeFileValidate` documentation, file inputs require a `
 * `addErrorMessageFieldDom`, `clearErrorInput`: Utility functions to interact with the DOM for displaying/clearing error messages.
 
 This setup provides a highly configurable and event-driven approach to form validation, allowing you to define validation triggers and rules directly within your HTML.
+
+
+# string function and formatting
+
+## FormFormattingEvent Library
+
+ Overview
+
+The `FormFormattingEvent` library provides utility functions to format user input in forms, such as transforming last names to uppercase, capitalizing usernames, and ensuring a standardized username format.
+
+Installation
+
+Ensure that your project supports ES6 module imports. You can import the library as follows:
+
+```javascript
+import {FormFormattingEvent} from "@wlindabla/form_validator";
+const formFormattingEvent = FormFormattingEvent.getInstance();
+```
+
+Usage
+
+### 1. Convert Last Name to Uppercase
+
+The `lastnameToUpperCase` function ensures that the last name is converted to uppercase.
+
+**Syntax:**
+
+```javascript
+formFormattingEvent.lastnameToUpperCase(element, locale);
+```
+
+**Example:**
+
+```javascript
+jQuery(function validateInput() {
+  formFormattingEvent.lastnameToUpperCase(this, 'en');
+});
+```
+
+### 2. Capitalize Username
+
+The `capitalizeUsername` function capitalizes the first letter of each word in the username while maintaining a proper name format.
+
+**Syntax:**
+
+```javascript
+formFormattingEvent.capitalizeUsername(element, separator, finalSeparator, locale);
+```
+
+**Example:**
+
+```javascript
+jQuery(function validateInput() {
+  formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');
+});
+```
+
+### 3. Format Username Dom
+
+The `usernameFormatDom` function applies complete formatting to the username field, ensuring proper capitalization and spacing.
+
+**Syntax:**
+
+```javascript
+formFormattingEvent.usernameFormatDom(element, separator, finalSeparator, locale);
+```
+
+**Example:**
+
+```javascript
+jQuery(function validateInput() {
+  formFormattingEvent.usernameFormatDom(this, " ", " ", 'en');
+});
+```
+
+## Notes
+
+- These functions are designed to be used within a jQuery context.
+- Ensure that your form elements trigger these functions appropriately on user input events such as `blur` or `change`.
+
+## License
+
+This library is licensed under MIT. Feel free to use and modify it as needed.
+
+## Contributing
+
+If you find any issues or have suggestions for improvements, feel free to submit a pull request or open an issue on the repository.
+
+📌 `escapeHtmlBalise` – Escape HTML Content Securely
+
+## 📖 Description
+
+The `escapeHtmlBalise` function is a utility designed to sanitize and escape HTML characters in strings, arrays, and objects. It ensures that any potential HTML content is either removed or converted into a safe format to prevent XSS (Cross-Site Scripting) attacks.
+
 ---
 
+Then, import the function into your project:
+
+```ts
+import { escapeHtmlBalise } from "@wlindabla/form_validator";
+```
+
+---
+
+## 🛠️ Function Usage
+
+### 📌 Signature
+
+```ts
+escapeHtmlBalise(
+    content: string | string[] | Record<string, any>,
+    stripHtmlTags: boolean = true
+): string | string[] | Record<string, any>
+```
+
+### 📌 Parameters
+
+| Parameter        | Type                            | Default | Description |
+|-----------------|--------------------------------|---------|-------------|
+| `content`       | `string | string[] | Record<string, any>` | - | The input data to be escaped. It can be a string, an array of strings, or an object containing strings. |
+| `stripHtmlTags` | `boolean`                      | `true`  | If `true`, HTML tags are removed. If `false`, tags are preserved but escaped. |
+
+---
+
+## 📤 Return Value
+
+The function returns:
+
+- A **string** if the input is a single string.
+  
+- An **array of strings** if the input is an array.
+- An **object with all values escaped** if the input is an object.
+
+---
+
+## 📌 Example Usage
+
+### 🟢 Escaping a Single String
+
+```ts
+const unsafeString = "<script>alert('XSS Attack!')</script>";
+const safeString = escapeHtmlBalise(unsafeString);
+console.log(safeString); 
+// Output: alert('XSS Attack!')
+```
+
+### 🟢 Processing an Array of Strings
+
+```ts
+const unsafeArray = ["<b>Bold</b>", "<i>Italic</i>", "<script>maliciousCode()</script>"];
+const safeArray = escapeHtmlBalise(unsafeArray);
+console.log(safeArray);
+// Output: ["Bold", "Italic", "maliciousCode()"]
+```
+
+### 🟢 Escaping an Object
+
+```ts
+const unsafeObject = {
+    name: "<h1>John Doe</h1>",
+    bio: "<p>Hello <script>alert('Hacked!')</script></p>"
+};
+const safeObject = escapeHtmlBalise(unsafeObject);
+console.log(safeObject);
+// Output: { name: "John Doe", bio: "Hello alert('Hacked!')" }
+```
+
+### 🟢 Keeping HTML Tags but Escaping Special Characters
+
+```ts
+const unsafeString = "<b>Important</b>";
+const safeString = escapeHtmlBalise(unsafeString, false);
+console.log(safeString);
+// Output: "&lt;b&gt;Important&lt;/b&gt;"
+```
+
+---
+
+## 🔥 Error Handling
+
+If `escapeHtmlBalise` is called with `null`, `undefined`, or an empty object, it throws the following error:
+
+```ts
+throw new Error("I expected a string no empty,array or object but it is not yet");
+```
+
+---
+
+## 💡 Additional Notes
+
+- This function **does not decode** escaped characters (e.g., `&lt;` stays `&lt;`).
+- When `stripHtmlTags` is set to `false`, HTML tags remain but are encoded.
+
+---
+
+## 🛠️ Related Functions
+
+- `formFormattingEvent.lastnameToUpperCase(this, 'en');`
+- `formFormattingEvent.capitalizeUsername(this, " ", " ", 'en');`
+- `formFormattingEvent.usernameFormatDom(this," "," ","en");`
+
+### `ucfirst` Function
+
+The `ucfirst` function capitalizes the first letter of a word and converts the rest to lowercase.
+
+ Parameters
+
+- **`str`** (`string`): The input string to transform. This is the word or phrase on which the function will operate.
+- **`escapeHtmlBalise_string`** (`boolean`, optional, default value: `true`): If `true`, the HTML tags in the string will be escaped before applying the transformation. If `false`, the HTML tags will be left as they are.
+- **`locales`** (`string | string[]`, optional): Defines the locale(s) to use for capitalization (e.g., `'fr'` for French, `'en'` for English). If not specified, the default locale will be used.
+
+  Returns
+
+The function returns a formatted string where the first letter is uppercase and the rest are lowercase. For example, "agbokoudjo" becomes "Agbokoudjo".
+
+Example Usage
+
+```typescript
+import { ucfirst } from '@wlindabla/form_validator';
+
+const result = ucfirst("agbokoudjo"); 
+console.log(result); // Outputs "Agbokoudjo"
+
+const resultWithHtmlEscape = ucfirst("<b>agbokoudjo</b>", true);
+console.log(resultWithHtmlEscape); // Outputs "&lt;b&gt;Agbokoudjo&lt;/b&gt;"
+
+const resultWithCustomLocale = ucfirst("agbokoudjo", true, 'fr');
+console.log(resultWithCustomLocale); // Outputs "Agbokoudjo"
+```
+
+### `nl2br` Function
+
+This function automatically adds line breaks (`<br>`) to a string wherever there are newlines.
+
+Parameters
+
+- **`str`** (`string`): The input string to which line breaks will be added.
+
+Returns
+
+The function returns the string with `<br>` inserted wherever newlines exist.
+
+Example Usage
+
+```typescript
+import { nl2br } from '@wlindabla/form_validator';
+
+const result = nl2br("Hello\nWorld");
+console.log(result); // Outputs "Hello<br>World"
+```
+
+### `capitalizeString` Function
+
+The `capitalizeString` function capitalizes the first letter of each word in a string and converts the rest to lowercase. It's ideal for formatting names or titles.
+
+Parameters
+
+- **`data`** (`string`): The string to be transformed.
+- **`separator_toString`** (`string`, optional, default value: `" "`): The separator used to split the string into words.
+- **`finale_separator_toString`** (`string`, optional, default value: `" "`): The separator used to join the formatted words.
+- **`escapeHtmlBalise_string`** (`boolean`, optional, default value: `true`): If `true`, HTML tags in the string will be escaped.
+- **`locales`** (`string | string[]`, optional): The locale(s) used for the capitalization.
+
+ Returns
+
+The function returns a string where the first letter of each word is capitalized, and the rest are in lowercase.
+
+ Example Usage
+
+```typescript
+import { capitalizeString } from '@wlindabla/form_validator';
+
+const result = capitalizeString("hounha franck empedocle");
+console.log(result); // Outputs "Hounha Franck Empedocle"
+
+const resultWithCustomSeparator = capitalizeString("hounha, franck, empedocle", ",");
+console.log(resultWithCustomSeparator); // Outputs "Hounha, Franck, Empedocle"
+```
+
+### `usernameFormat` Function
+
+This function formats a full name by capitalizing the first letter of each first name and last name, while placing the last name either at the beginning or the end of the string.
+
+ Parameters
+
+- **`value_username`** (`string`): The full name to format (e.g., first name and last name).
+- **`position_lastname`** (`"left" | "right"`, optional, default value: `"left"`): The position of the last name in the formatted string (`"left"` places the last name first, `"right"` places it last).
+- **`separator_toString`** (`string`, optional, default value: `" "`): The separator used to split the string into words.
+- **`finale_separator_toString`** (`string`, optional, default value: `" "`): The separator used to join the formatted words.
+- **`locales`** (`string | string[]`, optional): The locale(s) used for uppercase formatting.
+
+ Returns
+
+The function returns the formatted full name, with the last name placed according to the `position_lastname` argument. It capitalizes the first letter of each first name and last name.
+
+ Example Usage
+
+```typescript
+import { usernameFormat } from '@wlindabla/form_validator';
+const resultLeft = usernameFormat("Agbokoudjo hounha franck empedocle", "left");
+console.log(resultLeft); // Outputs "AGBOKOUDJO Hounha Franck Empedocle"
+
+const resultRight = usernameFormat("hounha franck empedocle Agbokoudjo", "right");
+console.log(resultRight); // Outputs "Hounha Franck Empedocle AGBOKOUDJO"
+```
+
+### `toBoolean`
+
+```typescript
+export function toBoolean(value: string | null | undefined): boolean
+````
+
+**Description:**
+
+This function converts a string value to its boolean representation. It recognizes a specific set of truthy and falsy string values. For any other string input, it logs a warning and defaults to returning `false`.
+
+**Parameters:**
+
+  * `value`: `string | null | undefined` - The string to be converted to a boolean. The function also handles `null` and `undefined` inputs by returning `false`.
+
+**Truthy Values (case-insensitive and trimmed):**
+
+  * `"true"`
+  * `"1"`
+  * `"yes"`
+
+**Falsy Values (case-insensitive and trimmed):**
+
+  * `"false"`
+  * `"0"`
+  * `"no"`
+
+**Returns:**
+
+  * `boolean`: The boolean representation of the input string. Returns `true` if the normalized (trimmed and lowercased) input is one of the recognized truthy values. Returns `false` if the normalized input is one of the recognized falsy values, or if the input is `null`, `undefined`, or any other unrecognized string.
+
+**Warning:**
+
+  * If the input `value` is a string that does not match any of the recognized truthy or falsy values, a warning message is logged using `Logger.warn`, indicating the unrecognized string. The function then returns `false`.
+
+**Example Usage:**
+
+```typescript
+import { toBoolean } from './utils'; // Assuming your function is in utils.ts
+
+
+console.log(toBoolean("true"));   // Output: true
+console.log(toBoolean("1"));      // Output: true
+console.log(toBoolean("yes"));    // Output: true
+console.log(toBoolean("FALSE"));  // Output: false
+console.log(toBoolean("0"));      // Output: false
+console.log(toBoolean("No"));     // Output: false
+console.log(toBoolean("  true ")); // Output: true (trimmed)
+console.log(toBoolean("maybe"));   // Output: false (and logs a warning)
+console.log(toBoolean(null));      // Output: false
+console.log(toBoolean(undefined)); // Output: false
+console.log(toBoolean(""));        // Output: false (and logs a warning)
+```
+
+### `addHashToIds`
+
+This function takes an array of strings (typically IDs) and returns a new array where each string is prefixed with a hash symbol (`#`). This is commonly useful when preparing IDs for use as CSS selectors or URL fragments.
+
+```typescript
+export function addHashToIds(ids: string[]): string[]
+```
+
+#### Parameters
+
+* `ids` (string[]): An array of strings that represent identifiers.
+
+#### Returns
+
+* `string[]`: A new array where each original `id` string is now prefixed with `#`.
+
+#### Example
+
+```typescript
+import { addHashToIds } from './path/to/your/module'; // Adjust the import path as needed
+
+const myRawIds = ["header", "navigation", "footer"];
+const hashedIds = addHashToIds(myRawIds);
+
+console.log(hashedIds); 
+// Expected output: ["#header", "#navigation", "#footer"]
+```
+
+# `Logger` Class Documentation
+
+This documentation provides a guide to using the `Logger` class, a simple yet effective utility for managing console output based on your application's environment and debugging settings.
+
+## Class `Logger`
+
+The `Logger` class is a **singleton** utility designed to provide controlled logging capabilities within your application. It allows you to output messages to the console (`log`, `warn`, `error`, `info`) while respecting different application environments (`dev`, `prod`, `test`) and a global debug flag.
+
+### Core Features:
+
+* **Singleton Pattern**: Ensures only one instance of the `Logger` exists throughout your application, providing a centralized logging configuration.
+* **Environment-Aware Logging**: Adjusts logging behavior based on the `APP_ENV` (Application Environment) property, allowing for verbose output in development and stricter control in production.
+* **Debug Control**: A `DEBUG` flag offers an additional layer of control over when messages are displayed.
+* **Timestamped Messages**: All log messages are automatically prefixed with an ISO timestamp and the log type for better traceability.
+
+### Properties
+
+* `APP_ENV: Env`
+    * **Description**: Defines the current application environment. It can be `"dev"`, `"prod"`, or `"test"`.
+    * **Default Value**: `"dev"`
+    * **Usage**: Controls which log messages are displayed. For instance, `info` messages might only appear in `dev` mode.
+
+* `DEBUG: boolean`
+    * **Description**: A global debug flag. When `true`, more verbose logging might occur. When `false`, certain log types might be suppressed, even in non-production environments.
+    * **Default Value**: `true`
+    * **Usage**: Use this to quickly toggle detailed logging on or off without changing `APP_ENV`.
+
+### Constructor
+
+The `Logger` class has a `private` constructor. This means you **cannot** directly create instances using `new Logger()`. This enforces the singleton pattern, ensuring you always work with the single, shared instance of the logger.
+
+### Public Static Methods
+
+Since `Logger` is a singleton with a private constructor, you interact with it entirely through its static methods.
+
+#### `static getInstance(): Logger`
+
+* **Description**: This is the **only way** to get an instance of the `Logger` class. It implements the singleton pattern, ensuring that if an instance already exists, it's returned; otherwise, a new one is created and returned.
+* **Usage**: You'll typically call this once at the beginning of your application or whenever you need to configure the logger's `APP_ENV` or `DEBUG` properties.
+    ```typescript
+    const logger = Logger.getInstance();
+    logger.APP_ENV = "prod"; // Set environment to production
+    logger.DEBUG = false;    // Disable debug output
+    ```
+
+#### `static log(...args: any[]): void`
+
+* **Description**: Logs a general message to the console using `console.log`.
+* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is not `"prod"`.
+* **Usage**: Use for general information, tracking flow, or debugging messages that are not critical errors.
+    ```typescript
+    Logger.log("User logged in:", userId);
+    ```
+
+#### `static warn(...args: any[]): void`
+
+* **Description**: Logs a warning message to the console using `console.warn`.
+* **Logging Conditions**: Messages are logged if `DEBUG` is `true` **OR** `APP_ENV` is not `"prod"`. This means warnings are more likely to appear than regular logs.
+* **Usage**: Use for potential issues, deprecated features, or situations that don't break the application but warrant attention.
+    ```typescript
+    Logger.warn("API response was slower than expected for endpoint:", url);
+    ```
+
+#### `static error(...args: any[]): void`
+
+* **Description**: Logs an error message to the console using `console.error`.
+* **Logging Conditions**: **Always** logs the message, regardless of `DEBUG` flag or `APP_ENV`. Errors are considered critical and should always be visible.
+* **Usage**: Use for critical failures, caught exceptions, or unexpected behavior that prevents an operation from completing successfully.
+    ```typescript
+    try {
+        // Some operation
+    } catch (e) {
+        Logger.error("Failed to process data:", e);
+    }
+    ```
+
+#### `static info(...args: any[]): void`
+
+* **Description**: Logs an informational message to the console using `console.info`.
+* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is `"dev"`. This makes `info` logs strictly for development-time debugging.
+* **Usage**: Use for highly detailed debugging information that you only want to see during active development.
+    ```typescript
+    Logger.info("Detailed debug info:", dataObject, "from function:", funcName);
+    ```
+
+---
+
+## How to Use the `Logger` Class
+
+### 1. Configure the Logger (Optional, but Recommended)
+
+At the very beginning of your application (e.g., `main.ts`, `app.ts`), get the logger instance and set its environment and debug flags.
+
+```typescript
+// app.ts or main.ts
+import { Logger } from '@wlindabla/form_validator'; // Adjust path as needed
+
+// Get the singleton instance
+const logger = Logger.getInstance();
+
+// Configure environment and debug mode
+// This could be based on environment variables (e.g., process.env.NODE_ENV)
+logger.APP_ENV = "dev"; // or "prod", "test"
+logger.DEBUG = true;   // or false
+
+console.log("Logger configured!");
+```
+
+### 2. Use Logging Methods Throughout Your Code
+
+Once configured, you can call the static logging methods from anywhere in your application. You don't need to pass the `logger` instance around; just import the `Logger` class.
+
+```typescript
+import { Logger } from '@wlindabla/form_validator'; 
+
+// In a service or component
+class UserService {
+    fetchUsers() {
+        Logger.log("Attempting to fetch users...");
+        fetch('/api/users')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                Logger.info("Users data received:", data);
+                // Process data
+            })
+            .catch(error => {
+                Logger.error("Error fetching users:", error);
+                Logger.warn("User fetch failed, showing fallback data.");
+            });
+    }
+}
+
+const userService = new UserService();
+userService.fetchUsers();
+
+// Example of different log outputs based on configuration:
+// If APP_ENV = "dev" and DEBUG = true:
+// 2024-05-27T10:00:00.000Z [LOG] Attempting to fetch users...
+// 2024-05-27T10:00:01.500Z [INFO] Users data received: [...]
+// (If an error occurs) 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
+// (If an error occurs) 2024-05-27T10:02:00.000Z [WARN] User fetch failed, showing fallback data.
+
+// If APP_ENV = "prod" and DEBUG = false:
+// (Only errors would be logged)
+// 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
+```
+
+# The Exception
+
+### `AttributeException`
+
+```typescript
+export class AttributeException extends Error
+```
+
+**Description:**
+
+This class defines a custom exception that is specifically intended to be thrown when a required attribute is missing from a Document Object Model (DOM) element. It extends the built-in `Error` class and includes contextual information about the missing attribute, the element it was expected on, and its parent container. Upon instantiation, it also logs the error message using the `Logger.error` method.
+
+**Constructor:**
+
+```typescript
+constructor(
+    private readonly attributeName: string,
+    private readonly childrenName: string,
+    private readonly parentName: string
+)
+```
+
+**Parameters:**
+
+  * `attributeName`: `string` - The name of the missing attribute (e.g., `'pattern'`, `'value'`, `'id'`).
+  * `childrenName`: `string` - The `name` or identifier of the DOM element that is missing the attribute.
+  * `parentName`: `string` - The `name` or identifier of the parent container of the DOM element where the attribute is missing (e.g., a form name).
+
+**Functionality:**
+
+  * **Custom Error Message:** When an `AttributeException` is created, it generates a descriptive error message that includes the name of the missing attribute, the name of the child element, and the name of the parent container. This message provides clear context about the error.
+  * **Correct Error Name:** The `name` property of the error object is explicitly set to `'AttributeException'`. This is helpful for identifying the type of error in `catch` blocks or during debugging.
+  * **Error Logging:** Upon instantiation, the constructor automatically logs the generated error message using the `Logger.error` method (assuming a `Logger` with an `error` method is available in the scope). This ensures that missing attribute errors are immediately recorded.
+  * **Prototype Correction:** The `Object.setPrototypeOf(this, AttributeException.prototype)` line is included to ensure that the prototype chain is correctly established, especially when the error might be caught in a plain JavaScript environment where class inheritance might not be fully handled as in TypeScript.
+
+**Example Usage:**
+
+```typescript
+import { Logger } from './logger'; // Assuming you have a logger module
+
+// Simulate a scenario where an input element is expected to have a 'pattern' attribute
+const inputElement = document.createElement('input');
+inputElement.name = 'myInput';
+const formName = 'myForm';
+
+if (!inputElement.getAttribute('pattern')) {
+    throw new AttributeException('pattern', inputElement.name, formName);
+}
+
+// In a catch block:
+try {
+    // ... some code that might throw AttributeException
+} catch (error) {
+    if (error instanceof AttributeException) {
+        console.error('Caught an AttributeException:', error.message);
+        // Handle the missing attribute error specifically
+    } else {
+        console.error('An unexpected error occurred:', error);
+    }
+}
+```
+
+**Purpose in Your Codebase:**
+
+This `AttributeException` class likely serves as a specific way to handle situations where certain HTML attributes, such as `pattern` in the context of input validation, are expected to be present on DOM elements but are not found. By throwing a custom exception, you can:
+
+  * **Clearly identify the type of error.**
+  * **Provide detailed information in error messages and logs.**
+  * **Implement specific error handling logic** in `catch` blocks based on the type of exception.
+````
+
+# URL Utility Functions
+
+This module contains utility functions to manipulate URLs by adding query parameters or creating URLs from form data.
+
+## Features
+
+### `addParamToUrl`
+
+This function adds query parameters to an existing URL. It also allows you to return the modified URL either as a string or as an instance of the `URL` object.
+
+#### Parameters
+
+- **`urlparam`** (`string | URL`): The URL to which parameters should be added. This can be a string representing a URL or an instance of the `URL` object.
+- **`addparamUrlDependencie`** (`Record<string, any> | null`, optional, default: `null`): An object representing the URL parameters to add, in key-value pairs. If `null`, no additional parameters will be added.
+- **`returnUrl`** (`boolean`, optional, default: `true`): If `true`, the function returns the modified URL as a string. If `false`, it returns an instance of the `URL` object.
+- **`baseUrl`** (`string | URL | undefined`, optional, default: `window.location.origin`): The base URL to use for the given `urlparam`. By default, it uses the current window's origin.
+
+#### Return
+
+The function returns either:
+- A **string** representing the modified URL (if `returnUrl = true`), or
+- An **instance of the `URL` object** representing the modified URL (if `returnUrl = false`).
+
+#### Example Usage
+
+```typescript
+import { addParamToUrl } from '@wlindabla/form_validator';
+
+// Adding parameters to a given URL
+const updatedUrl = addParamToUrl('https://example.com', { page: 2, sort: 'asc' });
+console.log(updatedUrl); // Logs the URL with the new parameters as a string
+
+// Returning a URL instance
+const urlInstance = addParamToUrl('https://example.com', { page: 2 }, false);
+console.log(urlInstance instanceof URL); // Logs 'true'
+```
+
+### `buildUrlFromForm`
+
+This function creates a URL by extracting parameters from an HTML form and adding additional parameters to it.
+
+#### Parameters
+
+- **`formElement`** (`HTMLFormElement`): The form element from which the data will be extracted to build the URL.
+- **`form_action`** (`string | null`, optional, default: `null`): The form action URL to use as the base for the URL. If not specified, the action URL of the `formElement` is used.
+- **`addparamUrlDependencie`** (`Record<string, any> | null`, optional): An object representing additional parameters to add to the URL, in key-value pairs.
+- **`returnUrl`** (`boolean`, optional, default: `true`): If `true`, the function returns the URL as a string. If `false`, it returns an instance of the `URL` object.
+- **`baseUrl`** (`string | URL | undefined`, optional, default: `window.location.origin`): The base URL to use for the constructed URL.
+
+#### Return
+
+The function returns either:
+- A **string** representing the constructed URL with the form parameters and additional parameters (if `returnUrl = true`), or
+- An **instance of the `URL` object** representing the constructed URL (if `returnUrl = false`).
+
+#### Example Usage
+
+```typescript
+import { buildUrlFromForm } from '@wlindabla/form_validator';
+
+// Assuming we have a form element in our HTML
+const form = document.querySelector('form') as HTMLFormElement;
+const additionalParams = { userId: 123 };
+
+// Building the URL from the form data and adding additional parameters
+const formUrl = buildUrlFromForm(form, null, additionalParams);
+console.log(formUrl); // Logs the URL with form parameters and additional parameters
+```
+
+### **httpFetchHandler Function**
+The `httpFetchHandler` function is an asynchronous utility for making HTTP requests with built-in timeout handling, retry attempts, and automatic response parsing.
+
+### **Parameters**
+| Parameter       | Type                                  | Default Value    | Description |
+|----------------|--------------------------------------|-----------------|-------------|
+| `url`          | `string | URL`                      | **Required**     | The API endpoint to send the request to. |
+| `methodSend`   | `string`                             | `"GET"`          | The HTTP method (`GET`, `POST`, `PUT`, `DELETE`, etc.). |
+| `data`         | `any`                                | `null`           | The data to send in the request body (supports JSON and FormData). |
+| `optionsheaders` | `HeadersInit`                     | `{ 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }` | Custom headers for the request. |
+| `timeout`      | `number`                             | `5000` (5 sec)   | The maximum time (in milliseconds) before the request is aborted. |
+| `retryCount`   | `number`                             | `3`              | Number of times to retry the request if it fails. |
+| `responseType` | `'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | 'stream'` | `'json'`          | The expected response format. |
+
+### **Return Value**
+The function returns a `Promise` that resolves to the requested data in the specified `responseType`.
+
+### **Function Workflow**
+1. **FormData Handling**  
+   - If `data` is an instance of `FormData`, it automatically manages headers.
+   - The `"Content-Type"` header is **removed** to let the browser set it correctly.
+
+2. **Headers Handling**  
+   - If the headers are a `HeadersInit` object, they are converted to a mutable object using:  
+     ```ts
+     Object.fromEntries(new Headers(optionsheaders).entries());
+     ```
+   - This avoids `TypeScript` errors when modifying headers.
+
+3. **Data Handling with `JSON.stringify`**  
+   - When sending `JSON` data, the function **automatically converts it** using `JSON.stringify(data)`.  
+   - **Important:** Do not manually stringify the data before passing it, to avoid double encoding.  
+   - Example:  
+     ```ts
+     httpFetchHandler({ url: "/api", methodSend: "POST", data: { name: "John" } });
+     ```
+     ✅ The function internally does:  
+     ```ts
+     JSON.stringify({ name: "John" });
+     ```
+
+4. **Request Timeout Handling**  
+   - Uses `AbortController` to automatically cancel requests after `timeout` milliseconds.
+
+5. **Retry Mechanism**  
+   - If the request fails, the function retries up to `retryCount` times before throwing an error.
+
+### **Example Usage**
+```ts
+import { httpFetchHandler } from '@wlindabla/form_validator';
+const response = await httpFetchHandler({
+  url: "https://api.example.com/data",
+  methodSend: "POST",
+  data: { username: "Alice" },
+  responseType: "json"
+});
+
+console.log(response); // Parsed JSON response
+```
+### `mapStatusToResponseType(status: number): 'success' | 'info' | 'warning' | 'error'`
+
+This function maps an HTTP status code to a response type, which helps in categorizing the status for easier handling in the application. The response type is returned based on the HTTP status code provided as input.
+
+#### Parameters:
+- `status` (number): The HTTP status code received from an API response. This value is used to determine the appropriate response type.
+
+#### Returns:
+- **'success'**: For status codes in the 200–299 range, indicating successful requests (e.g., `200 OK`, `201 Created`).
+- **'info'**: For status codes in the 100–199 range, indicating informational responses (e.g., `100 Continue`, `101 Switching Protocols`).
+- **'warning'**: For status codes in the 300–399 range, indicating redirection responses (e.g., `301 Moved Permanently`, `302 Found`).
+- **'error'**: For status codes in the 400–499 range, indicating client errors (e.g., `404 Not Found`, `401 Unauthorized`), and for status codes in the 500–599 range, indicating server errors (e.g., `500 Internal Server Error`, `503 Service Unavailable`).
+
+If the status code is not covered by the defined ranges, it defaults to `'error'` for safety.
+
+#### Example usage:
+```typescript
+const responseType = mapStatusToResponseType(200);
+console.log(responseType); // 'success'
+
+const responseType = mapStatusToResponseType(404);
+console.log(responseType); // 'error'
+```
 
 # `ApiError` Class Documentation
 
@@ -2133,10 +2735,6 @@ constructor(data: Record<string, unknown>, status: number)
 - **`status`**: The HTTP status code returned from the API, indicating the response status (e.g., 400 for bad request, 422 for unprocessable entity).
   - Type: `number`
 
----
-
-### **Methods**
-
 #### **`violationsFor(field: string): string[]`**
 ```typescript
 violationsFor(field: string): string[]
@@ -2164,9 +2762,6 @@ const apiError = new ApiError({
 const usernameViolations = apiError.violationsFor("username");
 console.log(usernameViolations); // ["Username is required"]
 ```
-
----
-
 #### **`name`**
 ```typescript
 get name(): string
@@ -2187,9 +2782,6 @@ const apiError = new ApiError({
 
 console.log(apiError.name); // "Validation Error One or more fields are invalid"
 ```
-
----
-
 #### **`allViolations`**
 ```typescript
 get allViolations(): Record<string, string[]>
@@ -2217,9 +2809,6 @@ console.log(apiError.allViolations);
 //   email: ["Invalid email address"]
 // }
 ```
-
----
-
 ## **Use Cases**
 
 ### **1. Handling Field Validation Errors**
@@ -2253,13 +2842,6 @@ const apiError = new ApiError({ "title": "Server Error", "detail": "Something we
 
 console.log(apiError.name); // "Server Error Something went wrong"
 ```
-
----
-Here’s how you can document the usage of `ApiError` in your `README.md` file, explaining how it can be integrated into a React component that handles form submissions:
-
----
-
-
 
 ## Overview
 ## Usage in React
@@ -2401,22 +2983,16 @@ const YourForm = () => {
 4. **Displaying Errors**:  
    The form renders any error messages next to the corresponding fields using the `ValidatorErrorField` component, which accepts error messages and displays them styled according to the provided classes.
 
----
-
 ### Key Benefits:
 
 - **Separation of Concerns**: The error-handling logic is abstracted away from the React component, making the component code cleaner and easier to manage.
 - **Reusability**: You can use the `ApiError` class across multiple forms and components, making it a reusable solution for handling API errors.
 - **Flexibility**: By using custom events, you can easily handle errors from various parts of your application without having to pass props or states explicitly between components.
 
----
-
 This way, the `ApiError` class integrates seamlessly with React form components and provides a structured and effective approach to handling validation errors from the API.
 ## **Conclusion**
 
 The `ApiError` class is a powerful utility to handle API errors, especially when working with form validation. By structuring error messages by field and offering methods for easy access, it simplifies the process of displaying specific violations to the user. This class ensures that error handling is efficient and user-friendly.
-
----
 
 ## Chunked file upload management
 
@@ -3192,234 +3768,6 @@ function MyUploaderComponent() {
 }
 ```
 
-````markdown
-### The Exception
-# Dom
-### `AttributeException`
-
-```typescript
-export class AttributeException extends Error
-```
-
-**Description:**
-
-This class defines a custom exception that is specifically intended to be thrown when a required attribute is missing from a Document Object Model (DOM) element. It extends the built-in `Error` class and includes contextual information about the missing attribute, the element it was expected on, and its parent container. Upon instantiation, it also logs the error message using the `Logger.error` method.
-
-**Constructor:**
-
-```typescript
-constructor(
-    private readonly attributeName: string,
-    private readonly childrenName: string,
-    private readonly parentName: string
-)
-```
-
-**Parameters:**
-
-  * `attributeName`: `string` - The name of the missing attribute (e.g., `'pattern'`, `'value'`, `'id'`).
-  * `childrenName`: `string` - The `name` or identifier of the DOM element that is missing the attribute.
-  * `parentName`: `string` - The `name` or identifier of the parent container of the DOM element where the attribute is missing (e.g., a form name).
-
-**Functionality:**
-
-  * **Custom Error Message:** When an `AttributeException` is created, it generates a descriptive error message that includes the name of the missing attribute, the name of the child element, and the name of the parent container. This message provides clear context about the error.
-  * **Correct Error Name:** The `name` property of the error object is explicitly set to `'AttributeException'`. This is helpful for identifying the type of error in `catch` blocks or during debugging.
-  * **Error Logging:** Upon instantiation, the constructor automatically logs the generated error message using the `Logger.error` method (assuming a `Logger` with an `error` method is available in the scope). This ensures that missing attribute errors are immediately recorded.
-  * **Prototype Correction:** The `Object.setPrototypeOf(this, AttributeException.prototype)` line is included to ensure that the prototype chain is correctly established, especially when the error might be caught in a plain JavaScript environment where class inheritance might not be fully handled as in TypeScript.
-
-**Example Usage:**
-
-```typescript
-import { Logger } from './logger'; // Assuming you have a logger module
-
-// Simulate a scenario where an input element is expected to have a 'pattern' attribute
-const inputElement = document.createElement('input');
-inputElement.name = 'myInput';
-const formName = 'myForm';
-
-if (!inputElement.getAttribute('pattern')) {
-    throw new AttributeException('pattern', inputElement.name, formName);
-}
-
-// In a catch block:
-try {
-    // ... some code that might throw AttributeException
-} catch (error) {
-    if (error instanceof AttributeException) {
-        console.error('Caught an AttributeException:', error.message);
-        // Handle the missing attribute error specifically
-    } else {
-        console.error('An unexpected error occurred:', error);
-    }
-}
-```
-
-**Purpose in Your Codebase:**
-
-This `AttributeException` class likely serves as a specific way to handle situations where certain HTML attributes, such as `pattern` in the context of input validation, are expected to be present on DOM elements but are not found. By throwing a custom exception, you can:
-
-  * **Clearly identify the type of error.**
-  * **Provide detailed information in error messages and logs.**
-  * **Implement specific error handling logic** in `catch` blocks based on the type of exception.
-````
-
----
-
-# `Logger` Class Documentation
-
-This documentation provides a guide to using the `Logger` class, a simple yet effective utility for managing console output based on your application's environment and debugging settings.
-
----
-
-## Class `Logger`
-
-The `Logger` class is a **singleton** utility designed to provide controlled logging capabilities within your application. It allows you to output messages to the console (`log`, `warn`, `error`, `info`) while respecting different application environments (`dev`, `prod`, `test`) and a global debug flag.
-
-### Core Features:
-
-* **Singleton Pattern**: Ensures only one instance of the `Logger` exists throughout your application, providing a centralized logging configuration.
-* **Environment-Aware Logging**: Adjusts logging behavior based on the `APP_ENV` (Application Environment) property, allowing for verbose output in development and stricter control in production.
-* **Debug Control**: A `DEBUG` flag offers an additional layer of control over when messages are displayed.
-* **Timestamped Messages**: All log messages are automatically prefixed with an ISO timestamp and the log type for better traceability.
-
-### Properties
-
-* `APP_ENV: Env`
-    * **Description**: Defines the current application environment. It can be `"dev"`, `"prod"`, or `"test"`.
-    * **Default Value**: `"dev"`
-    * **Usage**: Controls which log messages are displayed. For instance, `info` messages might only appear in `dev` mode.
-
-* `DEBUG: boolean`
-    * **Description**: A global debug flag. When `true`, more verbose logging might occur. When `false`, certain log types might be suppressed, even in non-production environments.
-    * **Default Value**: `true`
-    * **Usage**: Use this to quickly toggle detailed logging on or off without changing `APP_ENV`.
-
-### Constructor
-
-The `Logger` class has a `private` constructor. This means you **cannot** directly create instances using `new Logger()`. This enforces the singleton pattern, ensuring you always work with the single, shared instance of the logger.
-
-### Public Static Methods
-
-Since `Logger` is a singleton with a private constructor, you interact with it entirely through its static methods.
-
-#### `static getInstance(): Logger`
-
-* **Description**: This is the **only way** to get an instance of the `Logger` class. It implements the singleton pattern, ensuring that if an instance already exists, it's returned; otherwise, a new one is created and returned.
-* **Usage**: You'll typically call this once at the beginning of your application or whenever you need to configure the logger's `APP_ENV` or `DEBUG` properties.
-    ```typescript
-    const logger = Logger.getInstance();
-    logger.APP_ENV = "prod"; // Set environment to production
-    logger.DEBUG = false;    // Disable debug output
-    ```
-
-#### `static log(...args: any[]): void`
-
-* **Description**: Logs a general message to the console using `console.log`.
-* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is not `"prod"`.
-* **Usage**: Use for general information, tracking flow, or debugging messages that are not critical errors.
-    ```typescript
-    Logger.log("User logged in:", userId);
-    ```
-
-#### `static warn(...args: any[]): void`
-
-* **Description**: Logs a warning message to the console using `console.warn`.
-* **Logging Conditions**: Messages are logged if `DEBUG` is `true` **OR** `APP_ENV` is not `"prod"`. This means warnings are more likely to appear than regular logs.
-* **Usage**: Use for potential issues, deprecated features, or situations that don't break the application but warrant attention.
-    ```typescript
-    Logger.warn("API response was slower than expected for endpoint:", url);
-    ```
-
-#### `static error(...args: any[]): void`
-
-* **Description**: Logs an error message to the console using `console.error`.
-* **Logging Conditions**: **Always** logs the message, regardless of `DEBUG` flag or `APP_ENV`. Errors are considered critical and should always be visible.
-* **Usage**: Use for critical failures, caught exceptions, or unexpected behavior that prevents an operation from completing successfully.
-    ```typescript
-    try {
-        // Some operation
-    } catch (e) {
-        Logger.error("Failed to process data:", e);
-    }
-    ```
-
-#### `static info(...args: any[]): void`
-
-* **Description**: Logs an informational message to the console using `console.info`.
-* **Logging Conditions**: Messages are logged only if `DEBUG` is `true` **AND** `APP_ENV` is `"dev"`. This makes `info` logs strictly for development-time debugging.
-* **Usage**: Use for highly detailed debugging information that you only want to see during active development.
-    ```typescript
-    Logger.info("Detailed debug info:", dataObject, "from function:", funcName);
-    ```
-
----
-
-## How to Use the `Logger` Class
-
-### 1. Configure the Logger (Optional, but Recommended)
-
-At the very beginning of your application (e.g., `main.ts`, `app.ts`), get the logger instance and set its environment and debug flags.
-
-```typescript
-// app.ts or main.ts
-import { Logger } from './path/to/Logger'; // Adjust path as needed
-
-// Get the singleton instance
-const logger = Logger.getInstance();
-
-// Configure environment and debug mode
-// This could be based on environment variables (e.g., process.env.NODE_ENV)
-logger.APP_ENV = "dev"; // or "prod", "test"
-logger.DEBUG = true;   // or false
-
-console.log("Logger configured!");
-```
-
-### 2. Use Logging Methods Throughout Your Code
-
-Once configured, you can call the static logging methods from anywhere in your application. You don't need to pass the `logger` instance around; just import the `Logger` class.
-
-```typescript
-import { Logger } from './path/to/Logger'; // Adjust path as needed
-
-// In a service or component
-class UserService {
-    fetchUsers() {
-        Logger.log("Attempting to fetch users...");
-        fetch('/api/users')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                Logger.info("Users data received:", data);
-                // Process data
-            })
-            .catch(error => {
-                Logger.error("Error fetching users:", error);
-                Logger.warn("User fetch failed, showing fallback data.");
-            });
-    }
-}
-
-const userService = new UserService();
-userService.fetchUsers();
-
-// Example of different log outputs based on configuration:
-// If APP_ENV = "dev" and DEBUG = true:
-// 2024-05-27T10:00:00.000Z [LOG] Attempting to fetch users...
-// 2024-05-27T10:00:01.500Z [INFO] Users data received: [...]
-// (If an error occurs) 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
-// (If an error occurs) 2024-05-27T10:02:00.000Z [WARN] User fetch failed, showing fallback data.
-
-// If APP_ENV = "prod" and DEBUG = false:
-// (Only errors would be logged)
-// 2024-05-27T10:02:00.000Z [ERROR] Error fetching users: ...
-```
-
 ## Contact Information
 
 This file is part of the project by AGBOKOUDJO Franck.
@@ -3429,4 +3777,4 @@ This file is part of the project by AGBOKOUDJO Franck.
 - LinkedIn: [https://www.linkedin.com/in/internationales-web-services-120520193/](https://www.linkedin.com/in/internationales-web-services-120520193/)
 - Company: INTERNATIONALES WEB SERVICES
 
-For more information, please feel free to contact the author.
+For more information, please feel free to contact the author.#

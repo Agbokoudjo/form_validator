@@ -120,7 +120,17 @@
            min-length="20"
            required
            >
-          </textarea>
+          </textarea><br/>
+           <label for="userType">User Type:</label>
+  <select id="userType" name="user_type" event-validate-change="change" required>
+    <option value="">-- Please select --</option>
+    <option value="admin">Administrator</option>
+    <option value="user">Regular User</option>
+  </select>
+  <div class="error-message" id="error-userType"></div>
+  <br>
+           <label for="password">Password:</label>
+      <input type="password" id="password" name="password" event-validate-blur="blur" min-length="8" required upper-case-allow="true" number-allow="true">
           <hr/><br/>
           <strong class="text-center fw-bolder">File Validation</strong><br/>
           <label for="img">Uploader des images</label><br>

@@ -67,13 +67,28 @@ export function createSmallErrorMessage(
         separator_join: "<br/><hr/>"
     }));
 }
+
 /**
- * This function adds error messages to a field in the DOM.
- * @param fieldId - The unique ID of the field to which the error messages will be added.
- * @param Errorhandle - An instance of ErrorMessageHandle used to retrieve error messages.
- * This function checks if there are error messages associated with the field, 
- * adds the 'is-invalid' class if not present, creates small error message elements, 
- * and appends them to the field.
+ * Appends a list of validation error messages to a form field in the DOM.
+ *
+ * This function is used to visually display server-side or client-side validation 
+ * errors for a specific form field. It adds a container `<div>` below the targeted 
+ * input element, containing each error message wrapped in a `<small>` tag.
+ *
+ * Additionally, it adds the `is-invalid` class to the form field for Bootstrap-style 
+ * validation feedback.
+ *
+ * @param elmtfield - The jQuery object representing the target form input element.
+ * @param errormessagefield - An optional array of error messages to display for this field.
+ * @param className_container_ErrorMessage - Optional custom class string for styling 
+ *        the error message container. Defaults to a Bootstrap border style.
+ *
+ * @example
+ * // For an input with ID "user_email" and validation errors:
+ * addErrorMessageFieldDom($('#user_email'), [
+ *   'This field is required.',
+ *   'Must be a valid email address.'
+ * ]);
  */
 export function addErrorMessageFieldDom(
     elmtfield: JQuery<HTMLFormChildrenElement>,
@@ -108,25 +123,48 @@ export function serviceInternclass(input_field: JQuery<HTMLInputElement | HTMLTe
 }
 
 /**
- * This function handles errors for multiple form fields.
- * @param formName - The name of the form to which the errors belong.
- * @param formId - The unique ID of the form.
- * @param errors - An object containing field names as keys and corresponding error messages as values.
- * 
- * This function loops through the errors object, finds the corresponding form fields,
- * adds the 'is-invalid' class to them, and appends a small error message element next to the input field.
+ * Handles and displays multiple validation errors for a form with nested fields.
+ *
+ * This function is typically used to apply validation feedback returned by the backend.
+ * It traverses the `errors` object where each key represents a form field (including nested fields like `address.city`)
+ * and each value is an array of error messages for that field.
+ *
+ * For each field:
+ * - It constructs the DOM field ID using the `formName` and the error key, replacing dots (`.`) with underscores (`_`)
+ *   to support nested fields.
+ * - It checks whether the field exists in the DOM.
+ * - If found, it adds the `is-invalid` class and appends the error messages below the field using `addErrorMessageFieldDom`.
+ * - If the field is not found, a warning is logged using `Logger.warn`.
+ *
+ * @param formName - The name/alias of the form (used as a prefix for field IDs).
+ * @param formId - The DOM ID of the form (not used in this implementation but can be helpful for future extensions).
+ * @param errors - An object where keys are field names (e.g. "email", "address.city") and values are arrays of error messages.
+ *
+ * @example
+ * handleErrorsManyForm('user', 'user_form', {
+ *   "email": ["This field is required."],
+ *   "address.city": ["City is required."]
+ * });
  */
+
 export function handleErrorsManyForm(
     formName: string,
     formId: string,
-    errors: Record<string, string>
+    errors: Record<string, string[]>
 ): void {
     if (Object.keys(errors).length === 0) return;
-    let element: JQuery<HTMLElement>;
+
     for (const key in errors) {
-        element = jQuery(`#${formName}_${key}`);
+        const fieldId = `${formName}_${key.replace(/\./g, '_')}`;
+        const element = jQuery<HTMLFormChildrenElement>(`#${fieldId}`);
+
+        if (element.length === 0) {
+            Logger.warn(`Field not found for ${fieldId}`);
+            continue;
+        }
+
         element.addClass('is-invalid');
-        element.after(createSmallErrorMessage(formId, errors[key], key));
+        addErrorMessageFieldDom(element, errors[key]);
     }
 }
 

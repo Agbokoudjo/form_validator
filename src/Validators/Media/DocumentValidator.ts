@@ -1,4 +1,3 @@
-import * as Mammoth from 'mammoth';
 import * as Papa from 'papaparse';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as XLSX from 'xlsx';
@@ -82,7 +81,7 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
                 return this.validatePdf(file, uint8Array);
 
             case 'word':
-                return this.validateWord(file, uint8Array);
+                return null;
 
             case 'excel':
                 return this.validateExcel(file, uint8Array);
@@ -142,7 +141,7 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
         }
     }
 
-    protected async validateWord(file: File, uint8Array: Uint8Array): Promise<string | null> {
+    /*protected async validateWord(file: File, uint8Array: Uint8Array): Promise<string | null> {
         try {
             // Convertir Uint8Array en ArrayBuffer
             const arrayBuffer = uint8Array.buffer;
@@ -157,7 +156,7 @@ export class DocumentValidator extends AbstractMediaValidator implements MediaVa
             console.error("Error while validating Word document:", error);
             return `An error occurred while validating the Word document "${file.name}": ${error}`;
         }
-    }
+    }*/
 
     protected async validateExcel(file: File, uint8Array: Uint8Array): Promise<string | null> {
         try {
