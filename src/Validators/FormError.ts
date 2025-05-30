@@ -155,7 +155,7 @@ export abstract class FormError implements FormErrorInterface {
 		return this;
 	};
 
-	public getErrorMessageField = (targetInputname: string): string[] | undefined => { return this.m_errorMessageField.get(targetInputname) || []; };
+	public getErrorMessageField = (targetInputname: string): string[] => { return this.m_errorMessageField.get(targetInputname) || []; };
 
 	public clearError = (targetInputname: string): this => {
 		if (this.m_is_valid_field.has(targetInputname)) {
@@ -173,7 +173,7 @@ export abstract class FormError implements FormErrorInterface {
 	};
 	public getValidatorStatus = (targetInputname: string): FieldStateValidating => {
 		return {
-			validatorStatus: this.m_is_valid_field.get(targetInputname),
+			validatorStatus: this.hasErrorsField(targetInputname),
 			errorMessage: this.getErrorMessageField(targetInputname)
 		};
 	};

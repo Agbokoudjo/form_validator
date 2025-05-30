@@ -1,8 +1,8 @@
 import { OptionsValidateNoTypeFile, OptionsInputField, DateOptions, SelectOptions, URLOptions, PassworkRuleOptions, NumberOptions, OptionsCheckbox, OptionsRadio } from ".";
 
 export interface FieldStateValidating {
-    errorMessage: string[] | undefined;
-    validatorStatus: boolean | undefined;
+    errorMessage: string[];
+    validatorStatus: boolean;
 }
 export type FormInputType = "radio" | "checkbox" | "number" | "text" | "email" | "password" | "url" | "select" | "textarea" | "date" | "file" | "tel";
 

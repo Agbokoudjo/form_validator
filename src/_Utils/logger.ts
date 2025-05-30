@@ -33,21 +33,21 @@ export class Logger {
         return Logger.loggerInstance;
     }
 
-    private formatArgs(args: any[]): string[] {
+    private formatArgs(args: any[]): string | string[] {
         return args.map(arg => {
             if (arg instanceof Error) {
                 return `${arg.name}: ${arg.message}\n${arg.stack}`;
             }
 
-            if (typeof arg === 'object') {
+            else if (typeof arg === 'object') {
                 try {
                     return JSON.stringify(arg, null, 2);
                 } catch {
                     return '[Unserializable object]';
                 }
             }
-
-            return String(arg);
+            else if (typeof arg === "string") { return arg }
+            else return arg;
         });
     }
 

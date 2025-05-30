@@ -178,7 +178,7 @@ export abstract class AbstractFormChildrenValidate {
         data_event: DataFieldValidation
     ): void {
         this._formParent.get(0)!.dispatchEvent(new CustomEvent(event_type, {
-            bubbles: true,
+            bubbles: false,
             cancelable: true,
             detail: new FieldValidationEventData(data_event)
         }))
