@@ -566,7 +566,7 @@ export class FormChildrenTypeFileValidate
     }
     private getBaseOptionsValidate(): OptionsFile {
         const extensions_file = this.getAttrChildren('data-extentions');
-        const allowedMimeTypeAccept_file = this.getAttrChildren('allowed-mime-type-accept');
+        const allowedMimeTypeAccept_file = this.getAttrChildren('data-allowed-mime-type-accept');
         return {
             allowedMimeTypeAccept: allowedMimeTypeAccept_file ? allowedMimeTypeAccept_file.split(',') : undefined,
             maxsizeFile: parseInt(this.getAttrChildren('data-maxsize-file') ?? '2', 10),
