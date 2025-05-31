@@ -116,7 +116,7 @@ export abstract class AbstractFormChildrenValidate {
      * Falls back to the tag name (e.g., textarea) if the type is not present.
      */
     public get type(): FormInputType {
-        let type = this.getAttrChildren('type');
+        let type = this.getAttrChildren('data-type') ?? this.getAttrChildren('type');
         if (!type) {
             type = this.getHtmlChildrenObject.tagName.toLowerCase();
         }
