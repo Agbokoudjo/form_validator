@@ -28,6 +28,16 @@
       <div class="form-group text-center">
         <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
         <form class="form" method="post" action="test" name="form_validate" id="form_validate">
+          <input type="tel" 
+          id="phone" 
+          name="phone" 
+          placeholder="+33 6 12 34 56 78" 
+          data-escapestrip-html-and-php-tags="true" 
+          data-event-validate-blur="blur" 
+          data-event-validate-input="input" 
+          data-eg-await="+33 6 12 34 56 78" 
+          autocomplete="on" minlength="8" 
+          maxlength="80" data-type="tel" class="form-control">
           <label for="lastname">Lastname</label><br/>
           <input type="text" 
           class="form-control lastname"

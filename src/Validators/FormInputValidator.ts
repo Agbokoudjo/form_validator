@@ -13,12 +13,13 @@ import { escapeHtmlBalise } from "../_Utils/string";
 import { FormError } from "./FormError";
 import { ValidatorFormInputNoTypeFileInterface, FormInputType } from "./ValidatorFormInputNoTypeFileInterface";
 import { OptionsValidateNoTypeFile, OptionsInputField, DateOptions, OptionsRadio, SelectOptions, URLOptions, PassworkRuleOptions, NumberOptions, OptionsCheckbox } from ".";
+import parsePhoneNumberFromString from "libphonenumber-js";
 const emailErrorMessage = "Please enter a valid email address";
 const phoneErrorMessage = 'This phone number seems to be invalid';
 const textErrormMessage = "The content of this field must contain only alphabetical letters and must not null";
 const emailRegex =
 	/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const phoneRegex = /^(\+|00|0)[0-9]{1,3}[0-9]{1,4}[0-9]{6,13}$/s
+const phoneRegex = /^\+?[0-9]{1,4}[\s.-]?[0-9]{2,4}([\s.-]?[0-9]{2,4}){2,5}$/;
 const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/
 
 export class FormInputValidator extends FormError implements ValidatorFormInputNoTypeFileInterface {
@@ -133,7 +134,7 @@ export class FormInputValidator extends FormError implements ValidatorFormInputN
 			escapestripHtmlAndPhpTags: true
 		}): this => {
 		let messageerror = optionsinputtext.errorMessageInput ?? textErrormMessage;
-		const regexName = optionsinputtext.regexValidator ?? /^[\p{L}\s]+$/u;
+		const regexName = optionsinputtext.regexValidator;
 		if (!datainput) {
 			return this.validatorRequired(datainput, targetInputname, optionsinputtext.requiredInput || true);
 		}
@@ -144,8 +145,10 @@ export class FormInputValidator extends FormError implements ValidatorFormInputN
 		if (optionsinputtext.typeInput && optionsinputtext.typeInput !== "textarea") {
 			messageerror = `${messageerror} eg:${optionsinputtext.egAwait ?? "WLINDABLA Franck Empedocle"}`
 		}
-		if (regexName.test(datavalue) === false) {
-			return this.setValidatorStatus(false, messageerror, targetInputname);
+		if (regexName) {
+			if (regexName.test(datavalue) === false) {
+				return this.setValidatorStatus(false, messageerror, targetInputname);
+			}
 		}
 		this.validatorLength(datavalue, targetInputname, optionsinputtext.minLength, optionsinputtext.maxLength);
 		return this;
@@ -162,13 +165,16 @@ export class FormInputValidator extends FormError implements ValidatorFormInputN
 		});
 	};
 	public telValidator = (data_tel: string, targetInputname: string, optionsinputTel: OptionsInputField): this => {
+		const raw_tel = parsePhoneNumberFromString(data_tel);
+		console.log(raw_tel)
+		if (raw_tel && !raw_tel.isValid()) {
+			return this.setValidatorStatus(false, `${phoneErrorMessage} eg: ${optionsinputTel.egAwait ?? "+229016725186"}`, targetInputname);
+		}
 		return this.textValidator(data_tel, targetInputname, {
-			regexValidator: optionsinputTel.regexValidator ?? phoneRegex,
 			errorMessageInput: `${optionsinputTel.errorMessageInput ?? phoneErrorMessage}`,
 			minLength: optionsinputTel.minLength ?? 8,
 			maxLength: optionsinputTel.maxLength ?? 80,
 			requiredInput: optionsinputTel.requiredInput ?? true,
-			egAwait: optionsinputTel.egAwait ?? "+229016725186",
 			typeInput: 'tel'
 		})
 	}
