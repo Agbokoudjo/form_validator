@@ -12,9 +12,6 @@ import { capitalizeString, escapeHtmlBalise, usernameFormat } from "../_Utils/st
  */
 
 export interface OptionsFormattingEvent {
-    inputlastnameModule?: boolean;
-    inputfirstnameModule?: boolean;
-    usernameModule?: boolean;
     locales?: string | string[];
 }
 export class FormFormattingEvent {
@@ -31,18 +28,19 @@ export class FormFormattingEvent {
         separator_toString?: string,
         finale_separator_toString?: string,
         option_module: OptionsFormattingEvent = {
-            inputlastnameModule: true,
-            inputfirstnameModule: true,
-            usernameModule: true,
+          locales:"fr"
         }): this => {
         this.m_option_module = option_module;
-        if (this.m_option_module.inputlastnameModule === true) {
+        const inputAll = jQuery('input.username',subject);
+        const inputAll_lastname = jQuery('input.lastname',subject);
+        const inputAll_firstname = jQuery('input.firstname',subject);
+        if (inputAll_lastname.length >0) {
             this.lastnameToUpperCase(subject, this.m_option_module.locales);
         }
-        if (this.m_option_module.inputfirstnameModule === true) {
+        if (inputAll_firstname.length >0) {
             this.capitalizeUsername(subject, separator_toString, finale_separator_toString, this.m_option_module.locales);
         }
-        if (this.m_option_module.usernameModule === true) {
+        if (inputAll.length >0) {
             this.usernameFormatDom(subject, separator_toString, finale_separator_toString, this.m_option_module.locales);
         }
         return this;
