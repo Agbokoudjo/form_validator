@@ -7,16 +7,14 @@ import {
 import typescriptLogo from "./typescript.svg";
 import Swal from "sweetalert2";
 import { addHashToIds, translate } from "./_Utils";
-/*import { FormInputValidator } from "./Validators/FormInputValidator";*/
-import { DocumentValidator } from "./Validators/Media/DocumentValidator";
-import { VideoValidator } from "./Validators/Media/VideoValidator";
-import { ImageValidator } from "./Validators/Media/ImageValidator";
+import { configurePDFWorker } from "./Validators/Media/DocumentValidator";
 import { FormFormattingEvent } from "./Formatting/FormFormattingEvent";
 import { uploadedMedia } from './MediaUpload/upload';
 import { addParamToUrl, httpFetchHandler, mapStatusToResponseType } from "./_Utils";
 import { FieldValidationEventData, FieldValidationFailed, FieldValidationSuccess, FormValidate, MediaUploadEventListener, addErrorMessageFieldDom } from ".";
 import { Logger } from "./_Utils/logger";
 import { HTMLFormChildrenElement } from ".";
+import * as pdfjsLib from 'pdfjs-dist';
 /*const formInputValidator = FormInputValidator.getInstance();*/
 //const documentValidator = DocumentValidator.getInstance();
 //const videoValidator = VideoValidator.getInstance();
@@ -39,6 +37,7 @@ document.querySelector<HTMLDivElement>('#app-header')!.innerHTML = `
     <h4>Vite + TypeScript</h4>
   </div>
 `
+configurePDFWorker('public/workers/pdf.worker.min.js');
 jQuery(function validateInput() {
   /**
    * Text input formatting

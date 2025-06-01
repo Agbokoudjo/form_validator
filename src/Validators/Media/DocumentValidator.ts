@@ -1,11 +1,3 @@
-import * as Papa from 'papaparse';
-import * as pdfjsLib from 'pdfjs-dist';
-import * as XLSX from 'xlsx';
-import { AbstractMediaValidator } from './AbstractMediaValidator';
-import { MediaValidatorInterface, OptionsFile } from './InterfaceMedia';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'public/workers/pdf.worker.min.js';
-
 /** 
  * This file is part of the project by AGBOKOUDJO Franck.
  *
@@ -16,6 +8,20 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'public/workers/pdf.worker.min.js';
  *
  * For more information, please feel free to contact the author.
  */
+import * as Papa from 'papaparse';
+import * as pdfjsLib from 'pdfjs-dist';
+import * as XLSX from 'xlsx';
+import { AbstractMediaValidator } from './AbstractMediaValidator';
+import { MediaValidatorInterface, OptionsFile } from './InterfaceMedia';
+import { Logger } from '../..';
+
+export const configurePDFWorker = (workerSrc: string): void => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+};
+
+if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+    Logger.warn('[DocumentValidator] PDF Worker src not configured. Call configurePDFWorker("/path/to/pdf.worker.min.js") before using PDF validation.');
+}
 export class DocumentValidator extends AbstractMediaValidator implements MediaValidatorInterface {
     protected readonly mimeTypeMap: Record<string, string[]> = {
         pdf: ['application/pdf'],
