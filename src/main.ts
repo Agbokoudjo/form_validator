@@ -49,11 +49,11 @@ jQuery(function validateInput() {
   const idsBlur = addHashToIds(formValidate.idChildrenUsingEventBlur).join(",");
   const idsInput = addHashToIds(formValidate.idChildrenUsingEventInput).join(",");
   const idsChange = addHashToIds(formValidate.idChildrenUsingEventChange).join(",");
-  formValidate.form.on("blur", `${idsBlur}`, (event: JQuery.BlurEvent) => {
+  formValidate.form.on("blur", `${idsBlur}`, async (event: JQuery.BlurEvent) => {
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
       console.log(event);
-      formValidate.validateChildrenForm(event.target as HTMLFormChildrenElement)
+      await formValidate.validateChildrenForm(event.target as HTMLFormChildrenElement)
     }
   })
   formValidate.form.on(FieldValidationFailed, (event: JQuery.TriggeredEvent) => {

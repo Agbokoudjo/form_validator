@@ -264,7 +264,10 @@ export async function httpFetchHandler<T = unknown>({
     params.body = isFormData ? data : JSON.stringify(data);
   }
 
-  for (let attempt = 1; attempt <= retryCount; attempt++) {
+  if (retryCount === 1) {
+    retryCount += 2;
+  }
+  for (let attempt = 0; attempt < retryCount; attempt++) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     params.signal = controller.signal;

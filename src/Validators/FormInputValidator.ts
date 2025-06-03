@@ -13,7 +13,8 @@ import { escapeHtmlBalise } from "../_Utils/string";
 import { FormError } from "./FormError";
 import { ValidatorFormInputNoTypeFileInterface, FormInputType } from "./ValidatorFormInputNoTypeFileInterface";
 import { OptionsValidateNoTypeFile, OptionsInputField, DateOptions, OptionsRadio, SelectOptions, URLOptions, PassworkRuleOptions, NumberOptions, OptionsCheckbox } from ".";
-import parsePhoneNumberFromString from "libphonenumber-js";
+import { parsePhoneNumberWithError, ParseError } from "libphonenumber-js";
+import { Logger } from "..";
 const emailErrorMessage = "Please enter a valid email address";
 const phoneErrorMessage = 'This phone number seems to be invalid';
 const textErrormMessage = "The content of this field must contain only alphabetical letters and must not null";
@@ -165,11 +166,20 @@ export class FormInputValidator extends FormError implements ValidatorFormInputN
 		});
 	};
 	public telValidator = (data_tel: string, targetInputname: string, optionsinputTel: OptionsInputField): this => {
-		const raw_tel = parsePhoneNumberFromString(data_tel);
-		console.log(raw_tel)
-		if (raw_tel && !raw_tel.isValid()) {
-			return this.setValidatorStatus(false, `${phoneErrorMessage} eg: ${optionsinputTel.egAwait ?? "+229016725186"}`, targetInputname);
+		try {
+			const phoneNumber = parsePhoneNumberWithError(data_tel.trim(), { extract: true })
+			if (!phoneNumber.isValid()) {
+				return this.setValidatorStatus(false, `${phoneErrorMessage} eg: ${optionsinputTel.egAwait ?? "+229016725186"}`, targetInputname);
+			}
+			jQuery(`input[name="${targetInputname}"]`).val(phoneNumber.number);
+			Logger.log('number tel clean:', phoneNumber.number)
+		} catch (error) {
+			Logger.error('error Validate Phone:', error);
+			if (error instanceof ParseError || error instanceof Error) {
+				return this.setValidatorStatus(false, `${error.message} eg: ${optionsinputTel.egAwait ?? "+229016725186"}`, targetInputname);
+			}
 		}
+
 		return this.textValidator(data_tel, targetInputname, {
 			errorMessageInput: `${optionsinputTel.errorMessageInput ?? phoneErrorMessage}`,
 			minLength: optionsinputTel.minLength ?? 8,
