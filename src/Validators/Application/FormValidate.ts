@@ -161,7 +161,7 @@ This class centralizes the management of form validation by:
 export class FormValidate {
     private _idChildrens: string[];
     private _form: JQuery<HTMLFormElement>;
-    private _formChildrenValidate: FormChildrenValidateInterface | null = null;
+    private _formChildrenValidate: Map<string, FormChildrenValidateInterface | null>;
     private readonly _excludedTypes = ["hidden", "submit", "datetime", "datetime-local", "time", "month"];
     constructor(formCssSelector: string = "form") {
         this._form = jQuery<HTMLFormElement>(`form${formCssSelector}`);
@@ -182,6 +182,7 @@ export class FormValidate {
             .map((_i, el) => el.id)
             .get()
             .filter((id) => id !== undefined && id !== "");
+        this._formChildrenValidate = new Map<string, FormChildrenValidateInterface | null>();
     }
     public autoValidateAllFields = async (): Promise<void> => {
         try {
@@ -195,9 +196,11 @@ export class FormValidate {
         }
     }
     public validateChildrenForm = async (target: HTMLFormChildrenElement): Promise<void> => {
+
         try {
-            this._formChildrenValidate = this.getValidatorInstance(target);
-            await this._formChildrenValidate.validate();
+            const validator = this.getValidatorInstance(target);
+            await validator.validate();
+            this._formChildrenValidate.set(target.name, validator);
         } catch (error) {
             Logger.error('Validation failed:', error);
             throw error;
@@ -207,12 +210,17 @@ export class FormValidate {
     public buildValidators(): FormChildrenValidateInterface[] {
         const validators: FormChildrenValidateInterface[] = [];
         this.childrens.each((_i, el) => {
-            validators.push(this.getValidatorInstance(el as HTMLFormChildrenElement))
+            const validator = this.getValidatorInstance(el as HTMLFormChildrenElement);
+            validators.push(validator)
+            this._formChildrenValidate.set(el.name, validator);
         });
         return validators;
     }
 
-    public clearErrorDataChildren(): void { this._formChildrenValidate?.clearErrorField(); }
+    public clearErrorDataChildren(target: HTMLFormChildrenElement): void {
+        this._formChildrenValidate.get(target.name)!.clearErrorField();
+        this._formChildrenValidate.delete(target.name);
+    }
     private getValidatorInstance(target: HTMLFormChildrenElement): FormChildrenTypeFileValidate | FormChildrenTypeNoFileValidate {
         if (target instanceof HTMLInputElement && target.type === "file") {
             const mediaType = jQuery(target).attr('data-media-type') as MediaType | undefined;

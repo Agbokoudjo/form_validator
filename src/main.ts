@@ -73,7 +73,7 @@ jQuery(function validateInput() {
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
       if (target) {
         clearErrorInput(jQuery(target))
-        formValidate.clearErrorDataChildren()
+        formValidate.clearErrorDataChildren(target)
       }
     }
 
@@ -84,7 +84,7 @@ jQuery(function validateInput() {
     if (target instanceof HTMLInputElement) {
       if (target) {
         clearErrorInput(jQuery(target))
-        formValidate.clearErrorDataChildren()
+        formValidate.clearErrorDataChildren(target)
       }
     }
 
