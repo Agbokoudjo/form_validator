@@ -218,7 +218,9 @@ export class FormValidate {
     }
 
     public clearErrorDataChildren(target: HTMLFormChildrenElement): void {
-        this._formChildrenValidate.get(target.name)!.clearErrorField();
+        const validatorClean = this._formChildrenValidate.get(target.name)
+        if (!validatorClean) { return; }
+        validatorClean.clearErrorField();
         this._formChildrenValidate.delete(target.name);
     }
     private getValidatorInstance(target: HTMLFormChildrenElement): FormChildrenTypeFileValidate | FormChildrenTypeNoFileValidate {
