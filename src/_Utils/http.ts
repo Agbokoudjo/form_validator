@@ -76,7 +76,7 @@ export class HttpResponse<T = unknown> {
   get headers(): Headers { return this.response_data.headers; }
   get data(): T { return this.response_data.data; }
 }
-async function responseTypeHandle<T = unknown>(
+export async function responseTypeHandle<T = unknown>(
   responseType: string,
   response: Response
 ): Promise<HttpResponse> {
@@ -106,7 +106,7 @@ async function responseTypeHandle<T = unknown>(
       return new HttpResponse({ status, headers, data: await response.text() }); // Par défaut, du texte
   }
 }
-async function detectedResponseTypeNoOk<T = unknown>(
+export async function detectedResponseTypeNoOk<T = unknown>(
   response: Response
 ): Promise<HttpResponse> {
   const contentType = (response.headers.get("content-type") ?? "").trim().toLowerCase();
@@ -158,14 +158,49 @@ export class HttpFetchError extends Error {
     Object.setPrototypeOf(this, HttpFetchError.prototype);
   }
 }
-interface FetchOptions {
+
+// 🔒 Allowed HTTP methods
+type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'PATCH'
+  | 'HEAD'
+  | 'DELETE'
+  | 'PURGE'
+  | 'OPTIONS'
+  | 'TRACE'
+  | 'CONNECT';
+
+// 🎯 Supported response types for parsing
+type HttpResponseType = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'stream' | 'formData';
+
+// 🧾 Main type definition for httpFetchHandler options
+interface FetchOptions<T = unknown> {
+  // The target URL for the request
   url: string | URL | Request;
-  methodSend?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'HEAD' | 'DELETE' | 'PURGE' | 'OPTIONS' | 'TRACE' | 'CONNECT';
-  data?: unknown;
+
+  // HTTP method to be used (defaults to 'GET' if not specified)
+  methodSend?: HttpMethod;
+
+  // Data to be sent with the request (e.g., FormData, JSON object, etc.)
+  data?: T;
+
+  // Custom HTTP headers to be sent with the request
   optionsheaders?: HeadersInit;
+
+  // Maximum time (in milliseconds) before the request is aborted
   timeout?: number;
+
+  // Number of retry attempts on network failure or timeout
   retryCount?: number;
-  responseType?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'stream' | 'formData';
+
+  // Expected response type to automatically handle parsing
+  responseType?: HttpResponseType;
+
+  // Whether to retry the request for certain HTTP status codes (e.g., 5xx)
+  retryOnStatusCode?: boolean;
+  keepalive?: boolean;
 }
 
 /**
@@ -248,6 +283,8 @@ export async function httpFetchHandler<T = unknown>({
   timeout = 45000, // 45 secondes par défaut
   retryCount = 3, // 3 tentatives par défaut
   responseType = 'json',
+  retryOnStatusCode = false,
+  keepalive = false
 }: FetchOptions): Promise<HttpResponse> {
   const isFormData = data instanceof FormData;
   const headers_requete: HeadersInit = { ...optionsheaders };
@@ -255,55 +292,68 @@ export async function httpFetchHandler<T = unknown>({
   if (isFormData && headers_requete instanceof Object) {
     delete (headers_requete as Record<string, string>)["Content-Type"];
   }
+  // ⛔ If keepalive is true, we should not retry nor set a timeout manually
+  if (keepalive) {
+    retryCount = 1;
+    timeout = 0;
+  }
   const params: RequestInit = {
     method: methodSend,
     headers: headers_requete,
+    keepalive: keepalive // ✅ Send request with keepalive flag if enabled
   };
-
-  if (data && ["POST", "PUT", "PATCH"].includes(methodSend)) { // ✅ Ajouter le body uniquement pour POST, PUT, PATCH
+  if (data && ["POST", "PUT", "PATCH"].includes(methodSend)) {
     params.body = isFormData ? data : JSON.stringify(data);
   }
-
   if (retryCount === 1) {
-    retryCount += 2;
+    retryCount += 2; // Safety for invalid config (will try 3 times total)
   }
-  for (let attempt = 0; attempt < retryCount; attempt++) {
+  for (let attempt = 0; attempt < retryCount; ++attempt) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    params.signal = controller.signal;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (!keepalive && timeout > 0) {
+      timeoutId = setTimeout(() => controller.abort(), timeout);
+      params.signal = controller.signal;
+    }
     try {
       const response = await fetch(url, params);
-      clearTimeout(timeoutId);
-      if (mapStatusToResponseType(response.status) === 'error') {
-        return await detectedResponseTypeNoOk<T>(response);
+      if (timeoutId) clearTimeout(timeoutId);
+      const isErrror = mapStatusToResponseType(response.status) === "error"
+      if (isErrror) {
+        Logger.warn(`Response status=${response.status} (attempt ${attempt + 1}/${retryCount})`);
+        if (!retryOnStatusCode || attempt === retryCount - 1) {
+          return await detectedResponseTypeNoOk<T>(response); // ne retry pas sauf si explicitement demandé
+        }
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+        continue; // retry
       }
+      Logger.info(`✅ Successful response (status ${response.status}) on attempt ${attempt + 1}`);
       return await responseTypeHandle<T>(responseType, response);
     } catch (error: any) {
-      clearTimeout(timeoutId); // Nettoyer le timeout en cas d'erreur
-      if (error?.name === "AbortError") {
-        throw new HttpFetchError("Request timed out because the server did not respond within the specified time.", url, { cause: error });
-      }
-
-      if (error.message.includes("NetworkError") || error.message.includes("Failed to fetch")) {
-        if (attempt === retryCount) {
-          throw new HttpFetchError(`Request failed after ${retryCount} attempts due to network issues: ${error.message}`, url, { attempt, cause: error });
+      if (timeoutId) clearTimeout(timeoutId);
+      const isLastAttempt = attempt === retryCount - 1;
+      if (error.name === "AbortError") {
+        Logger.warn(`⏱️ Timeout (attempt ${attempt + 1}/${retryCount})`);
+        if (isLastAttempt) { //si c'est la dernier tentative
+          throw new HttpFetchError("Request timed out because the server did not respond within the specified time.", url, { cause: error });
         }
-        Logger.warn(`Network error (attempt ${attempt}): The server did not respond. Retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Délai progressif
-        continue; // Passe à la prochaine tentative
+      } else if (error.message.includes("NetworkError") || error.message.includes("Failed to fetch")) {
+        Logger.warn(`🌐 Network error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
+        if (isLastAttempt) {
+          throw new HttpFetchError(`Network error after ${retryCount} attempts: ${error.message}`, url, { cause: error });
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
       }
-
-      if (attempt === retryCount) {
-        throw new HttpFetchError(`Failed after ${retryCount} attempts due to an unexpected error: ${error?.message}`, url, { attempt, cause: error });
-      }
-      Logger.error(`An unexpected error occurred (attempt ${attempt}): ${error?.message}`);
-
-      if (attempt < retryCount) {
-        await new Promise(resolve => setTimeout(resolve, 500 * attempt)); // Délai pour les autres erreurs
+      else {
+        Logger.error(`❌ Unexpected error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
+        if (isLastAttempt) {
+          throw new HttpFetchError(`Unexpected error after ${retryCount} attempts: ${error.message}`, url, { cause: error });
+        }
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
         continue;
       }
     }
   }
-  // 🔴 Normalement, ce point n'est jamais atteint, mais on ajoute un throw par sécurité
-  throw new HttpFetchError("Unexpected error in httpFetchHandler", url);
+  throw new HttpFetchError("Unexpected fallthrough in httpFetchHandler", url);
 }

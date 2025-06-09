@@ -15,10 +15,13 @@ import { AbstractMediaValidator } from './AbstractMediaValidator';
 import { MediaValidatorInterface, OptionsFile } from './InterfaceMedia';
 import { Logger } from '../..';
 
+/**
+ * @deprecated ;
+ */
 export const configurePDFWorker = (workerSrc: string): void => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs';
 };
-
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs';
 if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
     Logger.warn('[DocumentValidator] PDF Worker src not configured. Call configurePDFWorker("/path/to/pdf.worker.min.js") before using PDF validation.');
 }
