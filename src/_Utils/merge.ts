@@ -9,6 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 import { isPlainObject } from "./helper";
+
 export type MergeArrayStrategy<T> = 'concat' | 'replace' | 'mergeUnique' | ((target: T[], source: T[]) => T[]);
 
 /** Merges two arrays according to a specified strategy.
@@ -59,20 +60,26 @@ export function mergeArrayValues<T>( // Ajout du paramètre de type T
     source: T[],
     strategy: MergeArrayStrategy<T> = "mergeUnique"
 ): T[] {
+
     if (typeof strategy === 'function') {
         return strategy(target, source);
     }
+
     switch (strategy) {
         case "concat":
             return target.concat(source);
+
         case "mergeUnique":
             return Array.from(new Set([...target, ...source]));
+
         case "replace":
             return source;
+
         default:
             throw new Error(`Unknown table merge strategy: ${strategy}`);
     }
 }
+
 /**
  * 
  * @param obj 
@@ -125,32 +132,45 @@ export function mergeArrayValues<T>( // Ajout du paramètre de type T
  */
 export function deepMerge<T extends object, D extends Partial<T>>(obj: T | Partial<T>, defaults: D, mergeArrays: MergeArrayStrategy<any> = 'replace'): T {
     const result = { ...obj } as { [k: string]: any };
+
     for (const key in defaults) {
         const defaultValue = defaults[key];
         const currentValue = result[key];
+
         if (currentValue === undefined) {
             result[key] = defaultValue;
-        } else if (
+
+        }
+
+        if (
             isPlainObject(currentValue) &&
             isPlainObject(defaultValue)
         ) {
             result[key] = deepMerge(currentValue as Partial<T>, defaultValue as Partial<T>, mergeArrays);
-        } else if (Array.isArray(currentValue) && Array.isArray(defaultValue)) {
-            result[key] = mergeArrayValues(currentValue, defaultValue, mergeArrays);
-        } else if (currentValue instanceof Map && defaultValue instanceof Map) {
+        }
+
+        if (Array.isArray(currentValue) && Array.isArray(defaultValue)) {
+            result[key] = mergeArrayValues(defaultValue, currentValue, mergeArrays);
+        }
+
+        if (currentValue instanceof Map && defaultValue instanceof Map) {
             result[key] = new Map([...currentValue, ...defaultValue]);
-        } else if (currentValue instanceof Set && defaultValue instanceof Set) {
+        }
+
+        if (currentValue instanceof Set && defaultValue instanceof Set) {
             result[key] = new Set([...currentValue, ...defaultValue]);
         }
-        else if (currentValue instanceof Date && defaultValue instanceof Date) {
+
+        if (currentValue instanceof Date && defaultValue instanceof Date) {
             result[key] = new Date(defaultValue);
         }
     }
+
     return result as T;
 }
 
 export function deepMergeWithDefault<T extends object>(obj: T | undefined, defaults: T): T {
-    return deepMerge(obj || {} as T, defaults);
+    return deepMerge(obj ?? {} as T, defaults);
 }
 
 /**
@@ -345,7 +365,9 @@ export function deepMergeAll<T>(
     mergeStrategy: MergeArrayStrategy<T> = 'replace',
     ...objects: Partial<T>[]
 ): T {
+
     if (objects.length === 0) throw new Error('At least one object is required');
+
     return objects.reduce((acc: Partial<T>, obj: Partial<T>) => deepMerge(acc, obj, mergeStrategy), {} as Partial<T>) as T;
 }
 
@@ -430,6 +452,7 @@ export function deepMergeAllExtended<T extends object[]>(
     mergeArrays: MergeArrayStrategy<T>,
     ...objects: T
 ): MergeObjects<T> {
+
     if (objects.length === 0) throw new Error('At least one object is required');
 
     return objects.reduce((acc, obj) => deepMerge(acc, obj, mergeArrays), {} as any);

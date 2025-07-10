@@ -10,7 +10,7 @@
  */
 import { lowerRegex, punctuationRegex, numberRegex, symbolRegex, upperRegex } from "./regex";
 import { deepMerge } from "./merge";
-import { Logger } from "./logger";
+
 /**
  * Échappe les balises HTML contenues dans la chaîne ou dans chaque chaîne d'un tableau ou objet.
  *
@@ -211,15 +211,20 @@ export function capitalizeString(data: string,
     escapeHtmlBalise_string: boolean = true,
     locales?: string | string[]
 ): string {
+
     data = data.replace(/\s+/g, " ");
     let words: string[] = data.split(separator_toString);
+
     if (words.length <= 1) { return ucfirst(data, true, locales); }
+
     if (escapeHtmlBalise_string) {
         words = escapeHtmlBalise(words, true) as string[];
     }
+
     return words.map((word_item: string, index: number) => ucfirst(word_item, false, locales))
         .join(finale_separator_toString);
 }
+
 /**
  * This function formats a string into a full name with first name(s) and last name.
  * For example, if you provide a string like "Agbokoudjo hounha franck empedocle hounha franck empedocle Agbokoudjo",
@@ -244,25 +249,33 @@ export function usernameFormat(value_username: string,
     finale_separator_toString: string = " ",
     locales?: string | string[]
 ): string {
+
     value_username = value_username.trim().replace(/\s+/g, " ");
     // Vérifier si la chaîne est vide ou ne contient qu'un seul mot
+
     if (!value_username || value_username.split(separator_toString).length <= 1) {
         return value_username;
     }
+
     const username_elmt = escapeHtmlBalise(value_username.split(separator_toString)) as string[];
+
     const lastname = position_lastname === "right"
         ? username_elmt.pop()!.toLocaleUpperCase(locales)
         : username_elmt[0].toLocaleUpperCase(locales);
+
     const firstname_emt = position_lastname === "right"
         ? username_elmt
         : username_elmt.slice(1);
+
     const firstname = firstname_emt
         .map(firstname_item => capitalizeString(firstname_item, separator_toString, finale_separator_toString, false, locales))
         .join(finale_separator_toString);
+
     return position_lastname === "right"
         ? `${firstname}${finale_separator_toString}${lastname}`
         : `${lastname}${finale_separator_toString}${firstname}`;
 }
+
 /**
  * Converts a string value to a boolean.
  * Recognized truthy values: "true", "1", "yes"
@@ -279,7 +292,7 @@ export function toBoolean(value: string | null | undefined): boolean {
     if (['false', '0', 'no'].includes(normalized)) return false;
 
     // Optional: throw or default to false for unrecognized strings
-    Logger.warn(`Unrecognized boolean string value: "${value}"`);
+    console.warn(`Unrecognized boolean string value: "${value}"`);
     return false;
 }
 
@@ -329,6 +342,7 @@ export interface ByteLengthOptions {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI | encodeURI}
  */
+
 /**
  * Options pour la validation de la longueur en octets.
  */
@@ -340,6 +354,7 @@ export function isByteLength(str: string, options: ByteLengthOptions = {}): bool
     // Vérifie que byteLength est ≥ min et ≤ max (si max est défini)
     return byteLength >= min && (typeof max === 'undefined' || byteLength <= max);
 }
+
 export function mapToObject(map: Map<string, number>): Record<string, number> {
     const obj: Record<string, number> = {};
     for (const [key, value] of map.entries()) {
@@ -362,33 +377,28 @@ export function mapToObject(map: Map<string, number>): Record<string, number> {
  * countChars("hello"); // Map { 'h' => 1, 'e' => 1, 'l' => 2, 'o' => 1 }
  */
 export function countChars(str: string): Map<string, number> {
+
     if (str.length > 255) {
         throw new Error(`${str} is too long. Maximum allowed is 255 characters. Use countWord() instead for processing.`);
     }
+
     str = str.trim();
     let result_char = new Map<string, number>();
     for (const char of str) {
         const count_char = result_char.get(char) || 0;
         result_char.set(char, count_char + 1);
     }
+
     return result_char;
 }
 
 
-export interface AnalysisCharOptions { // Renommé de AnalyzeAllowedCharOptions
+export interface AnalyzeAllowedCharOptions {
     allowedUpper?: boolean;
     allowedLower?: boolean;
     allowedNumber?: boolean;
     allowedSymbol?: boolean;
-    allowedPunctuation?: boolean; // Faute de frappe corrigée
-}
-
-export interface AnalysisCharOptions { // Renommé de AnalyzeAllowedCharOptions
-    allowedUpper?: boolean;
-    allowedLower?: boolean;
-    allowedNumber?: boolean;
-    allowedSymbol?: boolean;
-    allowedPunctuation?: boolean; // Faute de frappe corrigée
+    allowedPunctuation?: boolean;
 }
 
 export interface AnalyzeWordOptions {
@@ -396,17 +406,17 @@ export interface AnalyzeWordOptions {
     customLowerRegex?: RegExp;
     customNumberRegex?: RegExp;
     customSymbolRegex?: RegExp;
-    customPunctuationRegex?: RegExp; // Faute de frappe corrigée
-    analyzeCharTypes?: AnalysisCharOptions; // Renommé pour plus de clarté
+    customPunctuationRegex?: RegExp;
+    analyzeCharTypes?: AnalyzeAllowedCharOptions;
 }
-export interface WordAnalysisResult { // Renommé de AnalysisWordInterface
+export interface AnalysisWordInterface {
     length: number;
     uniqueChars: number;
     uppercaseCount: number;
     lowercaseCount: number;
     numberCount: number;
     symbolCount: number;
-    punctuationCount: number; // Faute de frappe corrigée
+    punctuationCount: number;
 }
 
 /**
@@ -458,7 +468,8 @@ export interface WordAnalysisResult { // Renommé de AnalysisWordInterface
  * });
  * ```
  */
-export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOptions): WordAnalysisResult {
+export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOptions): AnalysisWordInterface {
+
     if (typeof word !== 'string') { throw new TypeError('The argument "word" must be a string.'); }
 
     let charMap: Map<string, number>;
@@ -469,7 +480,7 @@ export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOption
         throw error;
     }
 
-    let analysis: WordAnalysisResult = {
+    let analysis: AnalysisWordInterface = {
         length: word.length,
         uniqueChars: charMap.size,
         uppercaseCount: 0,
@@ -478,6 +489,7 @@ export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOption
         symbolCount: 0,
         punctuationCount: 0
     };
+
     const mergedOptions = deepMerge<AnalyzeWordOptions, AnalyzeWordOptions>(
         analyzeWordOptions || {}, {
         customUpperRegex: upperRegex,
@@ -507,23 +519,27 @@ export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOption
     const { allowedLower, allowedNumber, allowedPunctuation, allowedSymbol, allowedUpper } = analyzeCharTypes!;
 
     for (const [char, charCount] of charMap.entries()) {
-        // Utilisez des conditions if si un caractère peut potentiellement appartenir à plusieurs catégories
-        // et que vous voulez le compter dans toutes.
-        // Sinon, la chaîne else-if garantit qu'il n'est compté que dans une seule.
+
+
         if (allowedUpper && customUpperRegex && customUpperRegex.test(char)) {
             analysis.uppercaseCount += charCount;
+
         } else if (allowedLower && customLowerRegex && customLowerRegex.test(char)) {
             analysis.lowercaseCount += charCount;
+
         } else if (allowedNumber && customNumberRegex && customNumberRegex.test(char)) {
             analysis.numberCount += charCount;
+
         } else if (allowedSymbol && customSymbolRegex && customSymbolRegex.test(char)) {
-            // Remarque : Si une ponctuation est considérée comme un "symbole" par votre regex,
-            // et que vous ne voulez la voir que dans punctuationCount, ajustez l'ordre ou la regex.
+            // Note: Les symboles peuvent inclure des ponctuations si les regex se chevauchent.
             analysis.symbolCount += charCount;
+
         } else if (allowedPunctuation && customPunctuationRegex && customPunctuationRegex.test(char)) {
-            analysis.punctuationCount += charCount; // Faute de frappe corrigée
+            analysis.punctuationCount += charCount;
         }
+
     }
+
     return analysis;
 }
 
@@ -585,7 +601,7 @@ console.log(result); // { score: 95, level: 'strong' }
  * ```
  */
 export function scoreWord(
-    analysis: WordAnalysisResult,
+    analysis: AnalysisWordInterface,
     scoringOptions: WordScoringOptions = {}
 ): ScoredWord {
     const {
@@ -614,9 +630,13 @@ export function scoreWord(
 
     // 4. Bonus pour la présence d'au moins un caractère de chaque catégorie
     if (analysis.lowercaseCount > 0) score += bonusForContainingLower;
+
     if (analysis.uppercaseCount > 0) score += bonusForContainingUpper;
+
     if (analysis.numberCount > 0) score += bonusForContainingNumber;
+
     if (analysis.symbolCount > 0) score += bonusForContainingSymbol;
+
     if (analysis.punctuationCount > 0) score += bonusForContainingPunctuation; // Si vous l'ajoutez
 
     // Détermination du niveau

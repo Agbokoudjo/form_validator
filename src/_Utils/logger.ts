@@ -9,6 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 export type Env = "dev" | "prod" | "test";
+
 /**
  * @example 
  * 
@@ -55,28 +56,42 @@ export class Logger {
     }
 
     private getPrefix(type: string): { prefixString: string, styles: string[] } {
+
         const timestamp = new Date().toISOString();
+
         let typeColor: string = 'color: #333; font-weight: bold;';// Couleur par défaut pour 'log'
+
         let timestampColor: string = 'color: gray;'; // Couleur par défaut pour l'horodatage
         if (type === "error") { typeColor = 'color: red; font-weight: bold;'; }
+
         else if (type === "warn") { typeColor = 'color: orange; font-weight: bold;'; }
+
         else if (type === "info") { typeColor = 'color:blue; font-weight: bold;'; }
+
         // Construit la chaîne de format avec deux %c pour deux styles
         const prefixString = `%c[${type.toUpperCase()}]%c ${timestamp}`;
+
         // L'ordre est important : typeColor pour le premier %c, timestampColor pour le second %c
         const styles = [typeColor, timestampColor];
+
         return { prefixString, styles };
     }
+
     public static log(...args: any[]): void {
         const logger = this.getInstance();
+
         if (logger.DEBUG && logger.APP_ENV !== "prod") {
+
             const { prefixString, styles } = logger.getPrefix('log');
             // Passe la chaîne de préfixe, puis tous les arguments de style, puis les messages formatés réels
             console.log(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
+
     public static warn(...args: any[]): void {
+
         const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
+
         if (logger.DEBUG || logger.APP_ENV !== "prod") { // Logique corrigée basée sur l'original, souvent les avertissements s'affichent même en production si le débogage est activé
             const { prefixString, styles } = logger.getPrefix('warn');
             console.warn(prefixString, ...styles, ...logger.formatArgs(args));
@@ -84,14 +99,18 @@ export class Logger {
     }
 
     public static error(...args: any[]): void {
+
         const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
+
         const { prefixString, styles } = logger.getPrefix('error');
         // Les erreurs sont toujours journalisées
         console.error(prefixString, ...styles, ...logger.formatArgs(args));
     }
 
     public static info(...args: any[]): void {
+
         const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
+
         if (logger.DEBUG && logger.APP_ENV === "dev") {
             const { prefixString, styles } = logger.getPrefix('info');
             console.info(prefixString, ...styles, ...logger.formatArgs(args));

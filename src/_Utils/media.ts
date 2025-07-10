@@ -78,6 +78,7 @@ const defaultChunkConfig: ChunkSizeConfiguration = {
         { maxSizeMo: Infinity, chunkSizeMo: 700 }, // Pour les fichiers plus grands que 1000 Mo
     ],
 };
+
 export function calculateUploadChunkSize(
     media_size: number,
     speedMbps: number | undefined,
@@ -103,6 +104,7 @@ export function convertOctetToGo(size_file: number): number {
     const go = size_file / (Math.pow(1024, 3));
     return parseFloat(go.toFixed(2));
 }
+
 export function convertOctetToMo(size_file: number): number {
     const mo = size_file / (Math.pow(1024, 2));
     return parseFloat(mo.toFixed(2));
@@ -147,9 +149,11 @@ export function createChunkFormData(
     chunkFormData.append('extension', orginal_name_media.split('.').pop() as string);
     chunkFormData.append('sizeMedia', sizeMedia.toString());
     chunkFormData.append('provider', provider);
+
     if (uploadedChunks === totalChunks - 1) {
         chunkFormData.append('sizeTailChunk', (chunk_media.size).toString())
     }
+
     if (othersData) {
         for (const key in othersData) {
             const value = othersData[key];
@@ -160,6 +164,7 @@ export function createChunkFormData(
     }
     return chunkFormData;
 }
+
 export interface BaseUploadedMediaOptions {
     readonly media: File;
     readonly provider: string;
@@ -167,6 +172,7 @@ export interface BaseUploadedMediaOptions {
     readonly timeoutUploadByChunk?: number;
     readonly othersData?: Record<string, string | Blob>;
 }
+
 export class BaseUploadedMedia {
     constructor(private readonly baseUploadedMedia: BaseUploadedMediaOptions) { }
     get media(): File { return this.baseUploadedMedia.media; }
@@ -175,6 +181,7 @@ export class BaseUploadedMedia {
     get timeoutId(): number | undefined { return this.baseUploadedMedia.timeoutUploadByChunk; };
     get othersData(): Record<string, string | Blob> | undefined { return this.baseUploadedMedia.othersData; }
 }
+
 export interface ChunkMediaDetailInterface {
     chunkIndex: number;
     start: number;
@@ -189,6 +196,7 @@ export interface ChunkMediaDetailInterface {
     downloadMediaComplete?: boolean,
     provider: string;
 }
+
 export class ChunkMediaDetail {
     constructor(private readonly data_chunk: ChunkMediaDetailInterface) { }
     public get status(): number | undefined { return this.data_chunk.status; }
@@ -238,6 +246,7 @@ export function updateProgressBarHTMLNotified(
     Logger.log('progress Bar Html:', progressBarInner.get(0));
     return progressBarInner.get(0)!.innerHTML;
 }
+
 /**
  * @Event Upload Media
  */
@@ -251,19 +260,28 @@ export const DOWNLOAD_MEDIA_FAILURE = "downloadMediaFailure";
 export const MEDIA_CHUNK_UPLOAD_RESUME = "mediaChunkUploadResume";
 export const DOWNLOAD_MEDIA_RESUME = "downloadMediaResume";
 export const MEDIA_METADATA_SAVE_SUCCESS = "mediaMetadataSaveSuccess";
+
 /**
  * @type EventUploadMedia 
  */
-export type EventUploadMedia = typeof MEDIA_CHUNK_UPLOAD_STARTED | typeof MEDIA_CHUNK_UPLOAD_FAILED |
-    typeof MEDIA_CHUNK_UPLOAD_SUCCESS | typeof MEDIA_CHUNK_UPLOAD_STATUS |
-    typeof MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE | typeof MEDIA_CHUNK_UPLOAD_RESUME |
-    typeof MEDIA_METADATA_SAVE_SUCCESS | typeof DOWNLOAD_MEDIA_RESUME |
-    typeof DOWNLOAD_MEDIA_COMPLETE | typeof DOWNLOAD_MEDIA_FAILURE;
+export type EventUploadMedia =
+    typeof MEDIA_CHUNK_UPLOAD_STARTED
+    | typeof MEDIA_CHUNK_UPLOAD_FAILED
+    | typeof MEDIA_CHUNK_UPLOAD_SUCCESS
+    | typeof MEDIA_CHUNK_UPLOAD_STATUS
+    | typeof MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE
+    | typeof MEDIA_CHUNK_UPLOAD_RESUME
+    | typeof MEDIA_METADATA_SAVE_SUCCESS
+    | typeof DOWNLOAD_MEDIA_RESUME
+    | typeof DOWNLOAD_MEDIA_COMPLETE
+    | typeof DOWNLOAD_MEDIA_FAILURE;
+
 export interface CustomEventOptions {
     bubbles?: boolean;
     cancelable?: boolean;
     composed?: boolean;
 }
+
 export function emitEvent(
     typeEvent: EventUploadMedia,
     target: Window | Document,

@@ -21,4 +21,4 @@ export * from "./sweetAlert";
 export * from './api';
 export * from './translate';
 export * from './media';
-export * from './http';
+export * from './http'; 

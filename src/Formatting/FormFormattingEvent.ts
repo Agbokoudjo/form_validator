@@ -21,12 +21,13 @@ export class FormFormattingEvent {
         // Définir la locale par défaut ici, si non fournie via init ou des appels de méthode spécifiques
         this.m_option_module = { locales: "en" };
     }
-    public static getInstance = (): FormFormattingEvent => {
+    public static readonly getInstance = (): FormFormattingEvent => {
         if (!FormFormattingEvent.m_instance_formatting) {
             FormFormattingEvent.m_instance_formatting = new FormFormattingEvent();
         }
         return FormFormattingEvent.m_instance_formatting;
     }
+
     /**
     * Initialise les options globales pour le gestionnaire d'événements de formatage.
     * Cette méthode peut être utilisée pour définir une locale par défaut pour toutes les opérations de formatage
@@ -40,6 +41,7 @@ export class FormFormattingEvent {
         Logger.info("FormFormattingEvent initialisé avec les options :", this.m_option_module);
         return this;
     }
+
     /**
      * Converts the last name input field's value to uppercase in real-time.
      * 
