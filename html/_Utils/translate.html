@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Module de traduction</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 2rem;
+    background: #f0f0f0;
+    color: #222;
+  }
+  .translation-demo {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    max-width: 400px;
+  }
+  .translation-demo p {
+    font-size: 1.2rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="translation-demo">
+  <h2>Exemple de traduction</h2>
+  <p id="original-message">Message original : Hello world!</p>
+  <p id="translated-message">Message traduit : </p>
+</div>
+
+<script type="module">
+// Typage TypeScript adapté en commentaire pour usage direct JS
+
+/**
+ * @typedef {(message: string) => string} TranslateCallback
+ */
+
+const config = {
+  /** @type {TranslateCallback | undefined} */
+  translate: undefined,
+};
+
+/**
+ * Définit la fonction de traduction.
+ * @param {TranslateCallback} callback 
+ */
+export function setTranslationCallback(callback) {
+  config.translate = callback;
+}
+
+/**
+ * Traduit un message via le callback s'il est défini, sinon renvoie le message d'origine.
+ * @param {string} message
+ * @returns {string}
+ */
+export function translate(message) {
+  return config.translate ? config.translate(message) : message;
+}
+
+// --- Exemple d'utilisation ---
+
+// Définir un callback de traduction simple (anglais -> français)
+setTranslationCallback((msg) => {
+  const dictionary = {
+    "Hello world!": "Bonjour le monde !",
+    "Goodbye": "Au revoir",
+  };
+  return dictionary[msg] || msg;
+});
+
+// Exemple : afficher le message traduit dans la page
+const original = "Hello world!";
+document.getElementById("translated-message").textContent = "Message traduit : " + translate(original);
+
+</script>
+
+</body>
+</html>

@@ -1,5 +1,3 @@
-import { Logger } from ".";
-
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
  *
@@ -10,12 +8,9 @@ import { Logger } from ".";
  *
  * For more information, please feel free to contact the author.
  */
-export function bytesToMegabytes(bytes: number) {
-    return bytes / (1024 * 1024);
-}
-/*
- * @formatting string
- */
+import { lowerRegex, punctuationRegex, numberRegex, symbolRegex, upperRegex } from "./regex";
+import { deepMerge } from "./merge";
+import { Logger } from "./logger";
 /**
  * Échappe les balises HTML contenues dans la chaîne ou dans chaque chaîne d'un tableau ou objet.
  *
@@ -28,7 +23,6 @@ export function escapeHtmlBalise(
     content: string | string[] | Record<string, any> | undefined | null,
     stripHtmlTags: boolean = true
 ): string | string[] | Record<string, any> {
-    if (content === undefined || content === null || Object.keys(content).length === 0) { throw new Error("I expected a string no empty,array or object but it is not yet"); }
     const escapeString = (str: string | null | undefined): string => {
         if (str === null || str === undefined) {
             return '';
@@ -36,27 +30,136 @@ export function escapeHtmlBalise(
         if (stripHtmlTags) {
             str = str.replace(/<\/?[^>]+(>|$)/g, '');
         }
-        return str.replace(/&/g, '&amp;')
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
             .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+            .replace(/>/g, '&gt;')
+            .replace(/\//g, '&#x2F;')
+            .replace(/\\/g, '&#x5C;')
+            .replace(/`/g, '&#96;');
     };
 
+    if (content === undefined || content === null) {
+        throw new Error("Expected a non-empty string, array or object, but got null or undefined");
+    }
+
+    if (typeof content === 'string') {
+        return escapeString(content);
+    }
+
     if (Array.isArray(content)) {
-        return content.map(escapeString);
-    } else if (typeof content === 'object') {
+        return content.map(item =>
+            typeof item === 'string' || item === null || item === undefined
+                ? escapeString(item)
+                : item
+        );
+    }
+
+    if (typeof content === 'object') {
         const escapedObject: Record<string, any> = {};
         for (const key in content) {
             if (Object.prototype.hasOwnProperty.call(content, key)) {
                 const value = content[key];
-                escapedObject[key] = typeof value === 'object' && value !== null
-                    ? escapeHtmlBalise(value, stripHtmlTags)
-                    : escapeString(value);
+                if (
+                    typeof value === 'string' ||
+                    value === null ||
+                    value === undefined
+                ) {
+                    escapedObject[key] = escapeString(value);
+                } else if (typeof value === 'object') {
+                    escapedObject[key] = escapeHtmlBalise(value, stripHtmlTags);
+                } else {
+                    escapedObject[key] = value;
+                }
             }
         }
         return escapedObject;
     }
 
-    return escapeString(content);
+    throw new Error("Unsupported input type for HTML escaping.");
+}
+
+/**
+ * Recursively unescapes HTML entities from strings, arrays, or objects.
+ *
+ * This function is the inverse of `escapeHtmlBalise`. It replaces HTML entities
+ * such as `&amp;`, `&lt;`, `&gt;`, `&quot;`, and others with their corresponding characters.
+ *
+ * It supports:
+ * - Strings: returns the unescaped string.
+ * - Arrays: returns a new array with all string elements unescaped.
+ * - Objects: returns a new object with all string values recursively unescaped.
+ *
+ * @param content - A string, array of strings, or object (possibly nested) whose content may contain HTML-escaped entities.
+ * @returns The unescaped version of the input, preserving its original structure (string, array, or object).
+ *
+ * @throws {Error} If the input is `null`, `undefined`, or of an unsupported type.
+ *
+ * @example
+ * unescapeHtmlBalise('&lt;b&gt;bold&lt;/b&gt;'); // "<b>bold</b>"
+ * unescapeHtmlBalise(['&amp;copy;', '&quot;text&quot;']); // ["©", '"text"']
+ * unescapeHtmlBalise({ name: '&lt;John&gt;', meta: { desc: '&quot;hello&quot;' } });
+ * // { name: "<John>", meta: { desc: '"hello"' } }
+ */
+
+export function unescapeHtmlBalise(
+    content: string | string[] | Record<string, any> | undefined | null
+): string | string[] | Record<string, any> {
+    const unescapeString = (str: string | null | undefined): string => {
+        if (str === null || str === undefined) {
+            return '';
+        }
+        return str
+            .replace(/&quot;/g, '"')
+            .replace(/&#x27;/g, "'")
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&#x2F;/g, '/')
+            .replace(/&#x5C;/g, '\\')
+            .replace(/&#96;/g, '`')
+            .replace(/&amp;/g, '&'); // Important : doit rester le dernier
+    };
+
+    if (content === undefined || content === null) {
+        throw new Error("Expected a non-empty string, array or object, but got null or undefined");
+    }
+
+    if (typeof content === 'string') {
+        return unescapeString(content);
+    }
+
+    if (Array.isArray(content)) {
+        return content.map(item =>
+            typeof item === 'string' || item === null || item === undefined
+                ? unescapeString(item)
+                : item
+        );
+    }
+
+    if (typeof content === 'object') {
+        const unescapedObject: Record<string, any> = {};
+        for (const key in content) {
+            if (Object.prototype.hasOwnProperty.call(content, key)) {
+                const value = content[key];
+                if (
+                    typeof value === 'string' ||
+                    value === null ||
+                    value === undefined
+                ) {
+                    unescapedObject[key] = unescapeString(value);
+                } else if (typeof value === 'object') {
+                    unescapedObject[key] = unescapeHtmlBalise(value);
+                } else {
+                    unescapedObject[key] = value;
+                }
+            }
+        }
+        return unescapedObject;
+    }
+
+    throw new Error("Unsupported input type for HTML unescaping.");
 }
 
 /**
@@ -170,7 +273,6 @@ export function usernameFormat(value_username: string,
  */
 export function toBoolean(value: string | null | undefined): boolean {
     if (typeof value !== 'string') return false;
-
     const normalized = value.trim().toLowerCase();
 
     if (['true', '1', 'yes'].includes(normalized)) return true;
@@ -199,3 +301,357 @@ export function addHashToIds(ids: string[]): string[] {
     if (!Array.isArray(ids)) { return []; }
     return ids.map(id => `#${id}`);
 }
+
+export interface ByteLengthOptions {
+    min?: number;
+    max?: number;
+}
+/**
+ * Checks whether the byte length of a given string is within the specified range.
+ *
+ * This function encodes the string in UTF-8 using `encodeURI` and calculates its actual byte length.
+ * It's useful for validating fields that must comply with byte-based limits, such as email addresses,
+ * usernames, database columns, or network transmission constraints.
+ *
+ * @function isByteLength
+ * @param {string} str - The string to evaluate.
+ * @param {ByteLengthOptions} [options={}] - Optional constraints for validation.
+ * @param {number} [options.min=0] - Minimum byte length allowed. Defaults to 0 if not provided.
+ * @param {number} [options.max] - Maximum byte length allowed. If not defined, no upper limit is enforced.
+ *
+ * @returns {boolean} Returns `true` if the string's byte length is within the specified range, `false` otherwise.
+ *
+ * @example
+ * isByteLength("hello", { min: 3, max: 10 });        // true
+ * isByteLength("é", { min: 1, max: 1 });             // false (é = 2 bytes in UTF-8)
+ * isByteLength("你好", { max: 4 });                  // false (each character = 3 bytes, total = 6)
+ * isByteLength("François", { max: 9 });              // true (ç = 2 bytes, total = 9 bytes)
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI | encodeURI}
+ */
+/**
+ * Options pour la validation de la longueur en octets.
+ */
+export function isByteLength(str: string, options: ByteLengthOptions = {}): boolean {
+    const min: number = options.min ?? 0;
+    const max: number | undefined = options.max;
+    // Encode en UTF-8 et calcule la longueur réelle en octets
+    const byteLength: number = encodeURI(str).split(/%..|./).length - 1;
+    // Vérifie que byteLength est ≥ min et ≤ max (si max est défini)
+    return byteLength >= min && (typeof max === 'undefined' || byteLength <= max);
+}
+export function mapToObject(map: Map<string, number>): Record<string, number> {
+    const obj: Record<string, number> = {};
+    for (const [key, value] of map.entries()) {
+        obj[key] = value;
+    }
+    return obj;
+}
+
+/**
+ * Counts the number of occurrences of each character in the input string.
+ *
+ * Throws an error if the string is longer than 255 characters, recommending
+ * to use `countWord` instead for longer text analysis.
+ *
+ * @param {string} str - The string to analyze.
+ * @returns {Map<string, number>} A map where each character is a key and the value is its count.
+ * @throws {Error} If the input string exceeds 255 characters.
+ *
+ * @example
+ * countChars("hello"); // Map { 'h' => 1, 'e' => 1, 'l' => 2, 'o' => 1 }
+ */
+export function countChars(str: string): Map<string, number> {
+    if (str.length > 255) {
+        throw new Error(`${str} is too long. Maximum allowed is 255 characters. Use countWord() instead for processing.`);
+    }
+    str = str.trim();
+    let result_char = new Map<string, number>();
+    for (const char of str) {
+        const count_char = result_char.get(char) || 0;
+        result_char.set(char, count_char + 1);
+    }
+    return result_char;
+}
+
+
+export interface AnalysisCharOptions { // Renommé de AnalyzeAllowedCharOptions
+    allowedUpper?: boolean;
+    allowedLower?: boolean;
+    allowedNumber?: boolean;
+    allowedSymbol?: boolean;
+    allowedPunctuation?: boolean; // Faute de frappe corrigée
+}
+
+export interface AnalysisCharOptions { // Renommé de AnalyzeAllowedCharOptions
+    allowedUpper?: boolean;
+    allowedLower?: boolean;
+    allowedNumber?: boolean;
+    allowedSymbol?: boolean;
+    allowedPunctuation?: boolean; // Faute de frappe corrigée
+}
+
+export interface AnalyzeWordOptions {
+    customUpperRegex?: RegExp;
+    customLowerRegex?: RegExp;
+    customNumberRegex?: RegExp;
+    customSymbolRegex?: RegExp;
+    customPunctuationRegex?: RegExp; // Faute de frappe corrigée
+    analyzeCharTypes?: AnalysisCharOptions; // Renommé pour plus de clarté
+}
+export interface WordAnalysisResult { // Renommé de AnalysisWordInterface
+    length: number;
+    uniqueChars: number;
+    uppercaseCount: number;
+    lowercaseCount: number;
+    numberCount: number;
+    symbolCount: number;
+    punctuationCount: number; // Faute de frappe corrigée
+}
+
+/**
+ * Analyzes the composition of a word or phrase by counting character types:
+ * uppercase letters, lowercase letters, digits, symbols, and punctuation marks.
+ *
+ * Allows for customization of character classification using regular expressions and
+ * selective toggling of which categories to count.
+ *
+ * @param word - The input string to analyze.
+ * @param analyzeWordOptions - Optional configuration object to customize regex patterns and enabled character types.
+ *
+ * @returns An object containing the total length, unique character count, and individual counts
+ *          of uppercase, lowercase, numeric, symbol, and punctuation characters.
+ *
+ * @throws {TypeError} If the `word` argument is not a string.
+ * @throws {Error} If the character count mapping fails (e.g., input too long).
+ *
+ * @example
+ * ```typescript
+ * analyzeWord("Hello123!");
+  {
+   lengthWord: 9,
+   uniqueChars: 8,
+   uppercaseCount: 1,
+    lowercaseCount: 4,
+    numberCount: 3,
+    symbolCount: 1,
+   punctuationCount: 0
+  }
+ *```
+ * @example
+ * ```typescript
+ * analyzeWord("ça c'est génial!", {
+ *   customLowerRegex: /^[a-zàâäéèêëïîôöùûüç]$/i,
+ *   customUpperRegex: /^[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ]$/
+ * });
+ *```
+ * @example
+ * ```typescript
+ * analyzeWord("User@domain.com!", {
+ *   analyzeCharTypes: {
+ *     allowedUpper: true,
+ *     allowedLower: true,
+ *     allowedNumber: false,
+ *     allowedSymbol: true,
+ *     allowedPunctuation: true
+ *   }
+ * });
+ * ```
+ */
+export function analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOptions): WordAnalysisResult {
+    if (typeof word !== 'string') { throw new TypeError('The argument "word" must be a string.'); }
+
+    let charMap: Map<string, number>;
+
+    try {
+        charMap = countChars(word);
+    } catch (error) {
+        throw error;
+    }
+
+    let analysis: WordAnalysisResult = {
+        length: word.length,
+        uniqueChars: charMap.size,
+        uppercaseCount: 0,
+        lowercaseCount: 0,
+        numberCount: 0,
+        symbolCount: 0,
+        punctuationCount: 0
+    };
+    const mergedOptions = deepMerge<AnalyzeWordOptions, AnalyzeWordOptions>(
+        analyzeWordOptions || {}, {
+        customUpperRegex: upperRegex,
+        customLowerRegex: lowerRegex,
+        customNumberRegex: numberRegex,
+        customSymbolRegex: symbolRegex,
+        customPunctuationRegex: punctuationRegex,
+        analyzeCharTypes: {
+            allowedUpper: true,
+            allowedLower: true,
+            allowedNumber: true,
+            allowedSymbol: true,
+            allowedPunctuation: true
+        }
+    });
+    // Destructuration et renommage pour la clarté 
+    const {
+        customUpperRegex,
+        customLowerRegex,
+        customNumberRegex,
+        customSymbolRegex,
+        customPunctuationRegex,
+        analyzeCharTypes
+    } = mergedOptions;
+
+    // Destructuration avec les noms corrigés
+    const { allowedLower, allowedNumber, allowedPunctuation, allowedSymbol, allowedUpper } = analyzeCharTypes!;
+
+    for (const [char, charCount] of charMap.entries()) {
+        // Utilisez des conditions if si un caractère peut potentiellement appartenir à plusieurs catégories
+        // et que vous voulez le compter dans toutes.
+        // Sinon, la chaîne else-if garantit qu'il n'est compté que dans une seule.
+        if (allowedUpper && customUpperRegex && customUpperRegex.test(char)) {
+            analysis.uppercaseCount += charCount;
+        } else if (allowedLower && customLowerRegex && customLowerRegex.test(char)) {
+            analysis.lowercaseCount += charCount;
+        } else if (allowedNumber && customNumberRegex && customNumberRegex.test(char)) {
+            analysis.numberCount += charCount;
+        } else if (allowedSymbol && customSymbolRegex && customSymbolRegex.test(char)) {
+            // Remarque : Si une ponctuation est considérée comme un "symbole" par votre regex,
+            // et que vous ne voulez la voir que dans punctuationCount, ajustez l'ordre ou la regex.
+            analysis.symbolCount += charCount;
+        } else if (allowedPunctuation && customPunctuationRegex && customPunctuationRegex.test(char)) {
+            analysis.punctuationCount += charCount; // Faute de frappe corrigée
+        }
+    }
+    return analysis;
+}
+
+// Interface d’analyse (résultat de analyzeWord par exemple)
+export interface WordAnalysis {
+    length: number;
+    uniqueChars: number;
+    lowercaseCount: number;
+    uppercaseCount: number;
+    numberCount: number;
+    symbolCount: number;
+    punctuationCount: number; // Vous pourriez vouloir l'inclure si analyzeWord la fournit
+}
+
+// Options de scoring (personnalisables)
+export interface WordScoringOptions {
+    pointsPerLength?: number;       // Points par caractère de longueur totale
+    pointsPerUniqueChar?: number;   // Points par caractère unique
+    pointsPerRepeatChar?: number;   // Points par caractère répété (caractères totaux - uniques)
+
+    // Bonus pour la présence de chaque type de caractère (si > 0)
+    bonusForContainingLower?: number;
+    bonusForContainingUpper?: number;
+    bonusForContainingNumber?: number;
+    bonusForContainingSymbol?: number;
+    bonusForContainingPunctuation?: number; // Si vous l'incluez dans WordAnalysis
+}
+export type WordScoreLevel = 'weak' | 'medium' | 'strong';
+
+export interface ScoredWord {
+    score: number;
+    level: WordScoreLevel;
+}
+
+/**
+ * Calcule un score de "richesse" ou de "complexité" pour n'importe quel mot,
+ * basé sur sa longueur, la diversité de ses caractères et la présence de différents types.
+ *
+ * @param analysis - Le résultat de l'analyse du mot (comptes de caractères).
+ * @param scoringOptions - Options configurables pour assigner des points par règle.
+ *
+ * @returns Un score numérique représentant la richesse/complexité du mot.
+ *
+ * @example
+ * ```typescript
+ const analysis = analyzeWord("Bonjour123!");
+const result = scoreWord(analysis, {
+  pointsPerLength: 2,
+  pointsPerUniqueChar: 2,
+  pointsPerRepeatChar: 1,
+  bonusForContainingLower: 10,
+  bonusForContainingUpper: 10,
+  bonusForContainingNumber: 10,
+  bonusForContainingSymbol: 10
+});
+
+console.log(result); // { score: 95, level: 'strong' }
+
+ * ```
+ */
+export function scoreWord(
+    analysis: WordAnalysisResult,
+    scoringOptions: WordScoringOptions = {}
+): ScoredWord {
+    const {
+        pointsPerLength = 1,
+        pointsPerUniqueChar = 2,
+        pointsPerRepeatChar = 0.5,
+        bonusForContainingLower = 10,
+        bonusForContainingUpper = 10,
+        bonusForContainingNumber = 10,
+        bonusForContainingSymbol = 10,
+        bonusForContainingPunctuation = 10
+    } = scoringOptions;
+
+    let score = 0;
+
+    // 1. Points basés sur la longueur totale du mot
+    score += analysis.length * pointsPerLength;
+
+    // 2. Points basés sur le nombre de caractères uniques
+    score += analysis.uniqueChars * pointsPerUniqueChar;
+
+    // 3. Points pour les caractères répétés (longueur totale - uniques)
+    // C'est ici que votre version originale était pertinente pour un scoring générique :
+    // une répétition n'est pas une "pénalité" mais une contribution à la "masse" du mot.
+    score += (analysis.length - analysis.uniqueChars) * pointsPerRepeatChar;
+
+    // 4. Bonus pour la présence d'au moins un caractère de chaque catégorie
+    if (analysis.lowercaseCount > 0) score += bonusForContainingLower;
+    if (analysis.uppercaseCount > 0) score += bonusForContainingUpper;
+    if (analysis.numberCount > 0) score += bonusForContainingNumber;
+    if (analysis.symbolCount > 0) score += bonusForContainingSymbol;
+    if (analysis.punctuationCount > 0) score += bonusForContainingPunctuation; // Si vous l'ajoutez
+
+    // Détermination du niveau
+    let level: WordScoreLevel;
+    if (score >= 80) {
+        level = 'strong';
+    } else if (score >= 50) {
+        level = 'medium';
+    } else {
+        level = 'weak';
+    }
+    return { score, level };
+}
+
+/**
+ * Pads a single-digit string with a leading zero.
+ *
+ * This function takes a string as input. If the string's length is 1,
+ * it prepends a "0" to it, effectively padding it to two digits.
+ * If the string's length is not 1 (e.g., it's already two or more digits, or empty),
+ * it returns the string unchanged.
+ *
+ * @param val - The string value to be padded.
+ * @returns The padded string (e.g., "5" becomes "05"), or the original string if its length is not 1.
+ *
+ * @example
+ * // Returns "05"
+ * pad("5");
+ *
+ * @example
+ * // Returns "12"
+ * pad("12");
+ *
+ * @example
+ * // Returns ""
+ * pad("");
+ */
+export function pad(val: string): string { return val.length === 1 ? `0${val}` : val; }

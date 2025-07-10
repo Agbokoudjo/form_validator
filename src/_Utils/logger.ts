@@ -10,6 +10,9 @@
  */
 export type Env = "dev" | "prod" | "test";
 /**
+ * @example 
+ * 
+ * ```typescript
  *  Logger.log('Application started');
  *   Logger.info('User logged in', { id: 123, name: "Alice" });
   *  Logger.warn('Deprecated function called');
@@ -18,6 +21,7 @@ export type Env = "dev" | "prod" | "test";
     [INFO]    2025-05-26T10:20:30.456Z  "User logged in" { id: 123, name: "Alice" }
     [WARN]    2025-05-26T10:20:30.789Z  "Deprecated function called"
     [ERROR]   2025-05-26T10:20:31.000Z  "Error: Something went wrong"
+    ```
  */
 export class Logger {
     private static loggerInstance: Logger;
@@ -33,65 +37,64 @@ export class Logger {
         return Logger.loggerInstance;
     }
 
-    private formatArgs(args: any[]): string | string[] {
+    private formatArgs(args: any[]): any[] {
         return args.map(arg => {
-            if (arg instanceof Error) {
-                return `${arg.name}: ${arg.message}\n${arg.stack}`;
-            }
-
-            else if (typeof arg === 'object') {
+            if (arg instanceof Error) { return `Error:${arg.name}:${arg.message}\n${arg.stack}\n\t${arg.cause}`; }  // Retourne une seule chaîne qui inclut le nom, le message et la pile
+            else if (typeof arg == "object" && arg !== null) {
                 try {
+                    // Retourne un objet transformé en chaîne JSON
                     return JSON.stringify(arg, null, 2);
                 } catch {
                     return '[Unserializable object]';
                 }
+            } else {
+                // Retourne les valeurs primitives directement
+                return arg;
             }
-            else if (typeof arg === "string") { return arg }
-            else return arg;
         });
     }
 
-
-    private getPrefix(type: string): [string, string] {
-        const prefix = `%c[${type.toUpperCase()}] %c${new Date().toISOString()}`;
-        let color: string;
-        switch (type) {
-            case 'error': color = 'color: red; font-weight: bold'; break;
-            case 'warn': color = 'color: orange; font-weight: bold'; break;
-            case 'info': color = 'color: blue; font-weight: bold'; break;
-            default: color = 'color: gray';
-        }
-
-        return [prefix, color];
+    private getPrefix(type: string): { prefixString: string, styles: string[] } {
+        const timestamp = new Date().toISOString();
+        let typeColor: string = 'color: #333; font-weight: bold;';// Couleur par défaut pour 'log'
+        let timestampColor: string = 'color: gray;'; // Couleur par défaut pour l'horodatage
+        if (type === "error") { typeColor = 'color: red; font-weight: bold;'; }
+        else if (type === "warn") { typeColor = 'color: orange; font-weight: bold;'; }
+        else if (type === "info") { typeColor = 'color:blue; font-weight: bold;'; }
+        // Construit la chaîne de format avec deux %c pour deux styles
+        const prefixString = `%c[${type.toUpperCase()}]%c ${timestamp}`;
+        // L'ordre est important : typeColor pour le premier %c, timestampColor pour le second %c
+        const styles = [typeColor, timestampColor];
+        return { prefixString, styles };
     }
-
     public static log(...args: any[]): void {
         const logger = this.getInstance();
         if (logger.DEBUG && logger.APP_ENV !== "prod") {
-            const [prefix, style1] = logger.getPrefix('log');
-            console.log(prefix, style1, ...logger.formatArgs(args));
+            const { prefixString, styles } = logger.getPrefix('log');
+            // Passe la chaîne de préfixe, puis tous les arguments de style, puis les messages formatés réels
+            console.log(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
-
     public static warn(...args: any[]): void {
-        const logger = this.getInstance();
-        if (logger.DEBUG || logger.APP_ENV !== "prod") {
-            const [prefix, style1] = logger.getPrefix('warn');
-            console.warn(prefix, style1, ...logger.formatArgs(args));
+        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
+        if (logger.DEBUG || logger.APP_ENV !== "prod") { // Logique corrigée basée sur l'original, souvent les avertissements s'affichent même en production si le débogage est activé
+            const { prefixString, styles } = logger.getPrefix('warn');
+            console.warn(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
 
     public static error(...args: any[]): void {
-        const logger = this.getInstance();
-        const [prefix, style1] = logger.getPrefix('error');
-        console.error(prefix, style1, ...logger.formatArgs(args));
+        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
+        const { prefixString, styles } = logger.getPrefix('error');
+        // Les erreurs sont toujours journalisées
+        console.error(prefixString, ...styles, ...logger.formatArgs(args));
     }
 
     public static info(...args: any[]): void {
-        const logger = this.getInstance();
+        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
         if (logger.DEBUG && logger.APP_ENV === "dev") {
-            const [prefix, style1] = logger.getPrefix('info');
-            console.info(prefix, style1, ...logger.formatArgs(args));
+            const { prefixString, styles } = logger.getPrefix('info');
+            console.info(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
 }

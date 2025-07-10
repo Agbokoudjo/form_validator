@@ -3,7 +3,7 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module":"ESNext",
-    "lib": ["DOM", "DOM.Iterable","esnext"],
+    "lib": ["DOM", "DOM.Iterable","esnext","ES5"],
     "skipLibCheck": true,
    "outDir": "dist",
     "rootDir": "src",  

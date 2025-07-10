@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
-
 export default defineConfig({
-	resolve: {
+    resolve: {
         alias: {
             util: "rollup-plugin-node-polyfills/polyfills/util",
             assert: "rollup-plugin-node-polyfills/polyfills/assert",

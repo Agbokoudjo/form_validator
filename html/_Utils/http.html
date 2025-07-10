@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Function Documentation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background: #f9f9f9;
+      margin: 2rem;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    .toc {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+    }
+
+    .toc ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .toc li {
+      margin: 0.5rem 0;
+    }
+
+    .function-doc {
+      background: #fff;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    code {
+      background: #eef;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background: #eee;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+
+    a {
+      text-decoration: none;
+      color: #2980b9;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📘 Function Documentation</h1>
+
+  <div class="toc">
+    <h2>📌 Table of contents</h2>
+    <ul>
+      <li><a href="#addParamToUrl">addParamToUrl</a></li>
+      <li><a href="#buildUrlFromForm">buildUrlFromForm</a></li>
+      <li><a href="#responseTypeHandle">responseTypeHandle</a></li>
+      <li><a href="#detectedResponseTypeNoOk">detectedResponseTypeNoOk</a></li>
+      <li><a href="#mapStatusToResponseType">mapStatusToResponseType</a></li>
+      <li><a href="#HttpFetchError">HttpFetchError</a></li>
+      <li><a href="#httpFetchHandler">httpFetchHandler</a></li>
+    </ul>
+  </div>
+   <!-- Function 1 -->
+<section class="function-doc" id="addParamToUrl">
+  <h2>🔧 Function: <code>addParamToUrl</code></h2>
+  <p>
+    This function dynamically adds query parameters to an existing URL and returns the updated URL, either as a string or as a <code>URL</code> instance.
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li><code>urlparam: string | URL</code> – The base URL to which query parameters will be added.</li>
+    <li><code>addparamUrlDependencie: Record&lt;string, any&gt; | null</code> – Key-value pairs to be added as query parameters (default: <code>null</code>).</li>
+    <li><code>returnUrl: boolean</code> – If <code>true</code> (default), returns the URL as a string. If <code>false</code>, returns it as a <code>URL</code> instance.</li>
+    <li><code>baseUrl: string | URL | undefined</code> – The base URL to use if <code>urlparam</code> is relative (default: <code>window.location.origin</code>).</li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p><code>string | URL</code> – The updated URL, either as a string or a <code>URL</code> object.</p>
+
+  <h3>💡 Example</h3>
+  <pre><code>
+const result = addParamToUrl("https://example.com", { lang: "fr", user: "test" });
+console.log(result); 
+// "https://example.com/?lang=fr&user=test"
+  </code></pre>
+</section>
+
+ 
+ <!-- Function 2 -->
+<section class="function-doc" id="buildUrlFromForm">
+  <h2>🔧 Function: <code>buildUrlFromForm</code></h2>
+
+  <p>
+    This function extracts data from an HTML form and converts it into URL parameters, which are then appended to a target URL. It can also merge additional parameters into the final URL.
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li><code>formElement: HTMLFormElement</code> – The source form whose data should be converted into URL parameters.</li>
+    <li><code>form_action: string | null</code> – An alternative action URL to use if <code>formElement.action</code> is empty (default: <code>null</code>).</li>
+    <li><code>addparamUrlDependencie: Record&lt;string, any&gt; | null</code> – Additional parameters to be merged into the generated URL (default: <code>null</code>).</li>
+    <li><code>returnUrl: boolean</code> – If <code>true</code> (default), returns a string; otherwise returns a <code>URL</code> instance.</li>
+    <li><code>baseUrl: string | URL | undefined</code> – The base URL to use in case of a relative path (default: <code>window.location.origin</code>).</li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p><code>string | URL</code> – The resulting URL enriched with form data and optionally additional parameters.</p>
+
+  <h3>💡 Example</h3>
+  <pre><code>
+// HTML
+&lt;form id="searchForm"&gt;
+  &lt;input name="q" value="javascript"&gt;
+  &lt;input name="sort" value="asc"&gt;
+&lt;/form&gt;
+
+// JavaScript
+const form = document.getElementById("searchForm");
+const result = buildUrlFromForm(form, null, { page: 2 });
+console.log(result);
+// "http://.../search?q=javascript&sort=asc&page=2"
+  </code></pre>
+</section>
+
+<section id="responseTypeHandle" class="function-doc">
+  <h2>🔧 Function: <code>responseTypeHandle</code></h2>
+
+  <p>
+    This asynchronous function handles different HTTP response types (<code>json</code>, <code>text</code>, <code>blob</code>, etc.)
+    and returns a <code>HttpResponse</code> instance containing the extracted data based on the specified type.
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li><strong><code>responseType: string</code></strong> – The expected type of the response. Can be <code>"json"</code>, <code>"text"</code>, <code>"blob"</code>, <code>"arrayBuffer"</code>, <code>"formData"</code>, or <code>"stream"</code>.</li>
+    <li><strong><code>response: Response</code></strong> – The HTTP <code>Response</code> object to be handled.</li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p>
+    A <code>Promise</code> that resolves to an instance of <code>HttpResponse</code> with the following properties:
+    <ul>
+      <li><code>status</code> – The HTTP status code</li>
+      <li><code>headers</code> – The HTTP response headers</li>
+      <li><code>data</code> – The parsed response data according to the specified type</li>
+    </ul>
+  </p>
+
+  <h3>💡 Example</h3>
+  <pre><code class="language-ts">
+// Example usage with fetch
+const response = await fetch("/api/data");
+const result = await responseTypeHandle("json", response);
+console.log(result.data); // Outputs the extracted JSON data
+  </code></pre>
+</section>
+
+<section id="detectedResponseTypeNoOk" class="function-doc">
+  <h2>🔧 Function: <code>detectedResponseTypeNoOk</code></h2>
+
+  <p>
+    This function automatically detects the content type of an HTTP response based on the <code>Content-Type</code> header
+    when an error status is returned (e.g., status code 4xx or 5xx). It then uses <code>responseTypeHandle</code> to properly parse the response data.
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li><strong><code>response: Response</code></strong> – The HTTP response object to analyze.</li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p>
+    A <code>Promise</code> resolving to an instance of <code>HttpResponse</code> containing the parsed response body.
+    The data type depends on the actual content returned by the server: JSON, plain text, XML, or raw status message.
+  </p>
+
+  <h3>🔍 Behavior by Content-Type</h3>
+  <ul>
+    <li><code>application/json</code>, <code>application/ld+json</code>, or any type containing <code>"json"</code> → <strong>Parsed as JSON</strong></li>
+    <li><code>text/html</code>, <code>text/plain</code> → <strong>Parsed as text</strong></li>
+    <li><code>application/xml</code>, <code>text/xml</code>, or any type containing <code>"xml"</code> → <strong>Parsed as text</strong></li>
+    <li><em>Other types</em> → Raw <code>statusText</code> is returned as the data</li>
+  </ul>
+
+  <h3>💡 Example</h3>
+  <pre><code class="language-ts">
+// Example usage
+const response = await fetch("/api/404");
+const result = await detectedResponseTypeNoOk(response);
+console.log(result.data); // Outputs error text or JSON
+  </code></pre>
+</section>
+
+<section id="mapStatusToResponseType" class="function-doc">
+  <h2>🔧 Function: <code>mapStatusToResponseType</code></h2>
+
+  <p>
+    This function maps an HTTP status code (<code>statusCodeHttpResponse</code>) to a simplified logical response type 
+    that can be used to display user messages or apply styling (e.g., success, error, etc.).
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li>
+      <strong><code>statusCodeHttpResponse: number</code></strong> – 
+      The HTTP response code to evaluate (e.g., 200, 404, 301, etc.).
+    </li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p>
+    A value of type <code>'success'</code> | <code>'info'</code> | <code>'warning'</code> | <code>'error'</code>,
+    representing the mapped logical status.
+  </p>
+
+  <h3>🔍 Status Mapping</h3>
+  <ul>
+    <li><strong>&lt; 200</strong> → <code>'info'</code> (informational, custom redirects...)</li>
+    <li><strong>200–299</strong> → <code>'success'</code> (request successful)</li>
+    <li><strong>300–399</strong> → <code>'warning'</code> (redirection, attention needed)</li>
+    <li><strong>400+</strong> → <code>'error'</code> (client or server error)</li>
+  </ul>
+
+  <h3>💡 Example</h3>
+  <pre><code class="language-ts">
+// Example usage
+const type = mapStatusToResponseType(404);
+console.log(type); // 'error'
+  </code></pre>
+</section>
+<hr>
+<section id="HttpFetchError">
+  <h2>HttpFetchError</h2>
+  <p>
+    <code>HttpFetchError</code> is a custom class that extends <code>Error</code>. It represents a specific error
+    during an HTTP request, with additional metadata useful for debugging and monitoring, such as retry attempts,
+    status code, or the response body.
+  </p>
+
+  <h3>Constructor</h3>
+  <pre><code class="language-ts">
+new HttpFetchError(
+  message: string,
+  url: string | URL | Request,
+  options?: {
+    attempt?: number;
+    responseStatus?: number;
+    responseBody?: any;
+    cause?: any;
+  }
+)
+  </code></pre>
+
+  <h3>Parameters</h3>
+  <ul>
+    <li><strong>message</strong> (<code>string</code>) – The error message.</li>
+    <li><strong>url</strong> (<code>string | URL | Request</code>) – The URL related to the failed HTTP request.</li>
+    <li><strong>options</strong> (optional):
+      <ul>
+        <li><strong>attempt</strong> (<code>number</code>) – Number of attempts made before the failure.</li>
+        <li><strong>responseStatus</strong> (<code>number</code>) – The returned HTTP status code.</li>
+        <li><strong>responseBody</strong> (<code>any</code>) – The body of the HTTP response.</li>
+        <li><strong>cause</strong> (<code>any</code>) – The original cause of the error (e.g., internal exception).</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>Properties</h3>
+  <ul>
+    <li><code>name</code> – Always set to <code>"HttpFetchError"</code> for easy identification.</li>
+    <li><code>url</code> – The URL or request associated with the error.</li>
+    <li><code>attempt</code> – The number of retry attempts made.</li>
+    <li><code>responseStatus</code> – The returned HTTP status code.</li>
+    <li><code>responseBody</code> – The body of the HTTP response.</li>
+    <li><code>cause</code> – Details or exception that caused the error.</li>
+  </ul>
+
+  <h3>Usage Example</h3>
+  <pre><code class="language-ts">
+// Create a custom HTTP error
+throw new HttpFetchError("Network error", "https://example.com/api", {
+  attempt: 3,
+  responseStatus: 500,
+  responseBody: { error: "Internal Server Error" },
+});
+  </code></pre>
+</section>
+
+<hr>
+<section id="httpFetchHandler">
+  <h2>🔄 Function: <code>httpFetchHandler</code></h2>
+
+  <p>
+    <code>httpFetchHandler</code> is an advanced asynchronous utility for handling HTTP requests with built-in support for retries, timeout handling, error categorization, and automatic response parsing.
+    It encapsulates common fetch operations and adds resilience through retry logic and fine-grained error management.
+  </p>
+
+  <h3>📥 Parameters</h3>
+  <ul>
+    <li>
+      <strong><code>url: string | URL | Request</code></strong> – The URL or request object to send the HTTP request to.
+    </li>
+    <li>
+      <strong><code>methodSend: string</code></strong> – HTTP method (e.g. <code>"GET"</code>, <code>"POST"</code>, <code>"PUT"</code>, etc.). Default is <code>"GET"</code>.
+    </li>
+    <li>
+      <strong><code>data: any</code></strong> – The request payload. If it is an instance of <code>FormData</code>, headers will be adjusted automatically.
+    </li>
+    <li>
+      <strong><code>optionsheaders: HeadersInit</code></strong> – Custom request headers. Defaults to:
+      <pre><code>{
+  "Accept": "application/json",
+  "Content-Type": "application/json",
+  "X-Requested-With": "XMLHttpRequest"
+}</code></pre>
+    </li>
+    <li>
+      <strong><code>timeout: number</code></strong> – Timeout in milliseconds. Default is <code>45000</code> (45 seconds). Ignored if <code>keepalive</code> is <code>true</code>.
+    </li>
+    <li>
+      <strong><code>retryCount: number</code></strong> – Maximum number of retry attempts for recoverable errors. Default is <code>3</code>.
+    </li>
+    <li>
+      <strong><code>responseType: string</code></strong> – Expected response type. Can be <code>"json"</code>, <code>"text"</code>, <code>"blob"</code>, etc.
+    </li>
+    <li>
+      <strong><code>retryOnStatusCode: boolean</code></strong> – Whether to retry requests on error HTTP status codes (like 500). Default is <code>false</code>.
+    </li>
+    <li>
+      <strong><code>keepalive: boolean</code></strong> – Enables the keepalive flag for background requests (e.g., during page unload). Disables timeout and retries if <code>true</code>.
+    </li>
+  </ul>
+
+  <h3>📤 Returns</h3>
+  <p>
+    A <code>Promise</code> that resolves to an <code>HttpResponse</code> object containing the response status, headers, and parsed data based on the specified <code>responseType</code>.
+  </p>
+
+  <h3>🚦Behavior & Features</h3>
+  <ul>
+    <li>💡 Automatically retries failed requests (e.g., network errors, server issues) up to <code>retryCount</code> times.</li>
+    <li>⏱️ Applies a timeout using <code>AbortController</code>, unless <code>keepalive</code> is enabled.</li>
+    <li>🧠 Intelligent content parsing with <code>responseTypeHandle</code> and fallback handling via <code>detectedResponseTypeNoOk</code>.</li>
+    <li>🪝 Logs responses, warnings, and errors with contextual information including the attempt count.</li>
+    <li>❗ Throws an <code>HttpFetchError</code> when all attempts fail or when an unrecoverable error occurs.</li>
+  </ul>
+
+  <h3>💡 Example</h3>
+  <pre><code class="language-ts">
+const response = await httpFetchHandler({
+  url: "https://api.example.com/data",
+  methodSend: "POST",
+  data: { username: "john", password: "secret" },
+  retryOnStatusCode: true,
+  timeout: 10000,
+  responseType: "json"
+});
+
+console.log(response.data); // Parsed response data
+  </code></pre>
+
+  <h3>🔁 Retry Strategy</h3>
+  <p>
+    The function attempts the request up to <code>retryCount</code> times in the following cases:
+  </p>
+  <ul>
+    <li><strong>Timeout</strong> – The server doesn't respond in time.</li>
+    <li><strong>Network Error</strong> – The connection fails (e.g., no internet).</li>
+    <li><strong>Error HTTP Status</strong> – Only if <code>retryOnStatusCode</code> is <code>true</code>.</li>
+    <li>Each retry is delayed by a backoff timer (e.g., 500ms × attempt index).</li>
+  </ul>
+
+  <h3>⚠️ Errors Thrown</h3>
+  <ul>
+    <li><code>HttpFetchError</code> – When the request fails after all retries or in case of unexpected failures.</li>
+    <li>Includes useful metadata: attempted URL, response status, body (if available), and original cause.</li>
+  </ul>
+</section>
+
+  
+</body>
+</html>

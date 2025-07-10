@@ -44,4 +44,7 @@ export class AttributeException extends Error {
         // Corrige le prototype pour les cas où l'erreur est catchée dans un contexte JS pur
         Object.setPrototypeOf(this, AttributeException.prototype);
     }
+    public get __attributeName(): string { return this.attributeName; }
+    public get __childrenName(): string { return this.childrenName; }
+    public get __parentNameOrIdOrTagName(): string { return this.parentNameOrIdOrTagName; }
 }

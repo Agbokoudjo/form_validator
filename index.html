@@ -7,6 +7,26 @@
     <title>Project Validator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style type="text/css">
+       body {
+            padding: 20px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .accordion-button {
+            font-weight: bold;
+        }
+        .demo-output {
+            margin-top: 15px;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            min-height: 50px; /* Pour un affichage visuel même vide */
+            border: 1px solid #dee2e6;
+        }
       button.btn-submit{
         background-color: chocolate; color:aliceblue;
         font-weight: bolder;
@@ -20,191 +40,255 @@
 
       }
     </style>
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
   </head>
   <body>
     <div class="container" id="app">
        <div id="app-header"></div>
        <hr/><br/>
-      <div class="form-group text-center">
-        <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
-        <form class="form" method="post" action="test" name="form_validate" id="form_validate">
-          <input type="tel" 
-          id="phone" 
-          name="phone" 
-          placeholder="+33 6 12 34 56 78" 
-          data-escapestrip-html-and-php-tags="true" 
-          data-event-validate-blur="blur" 
-          data-event-validate-input="input" 
-          data-eg-await="+33 6 12 34 56 78" 
-          autocomplete="on" minlength="8" 
-          maxlength="80" data-type="tel" class="form-control">
-          <label for="lastname">Lastname</label><br/>
-          <input type="text" 
-          class="form-control lastname"
-          placeholder="Eg:AGBOKOUDJO" 
-          id="lastname" 
-          name="lastname"
-          data-event-validate-blur="blur"  
-          data-event-validate-input="input"
-          pattern="^[a-zA-ZÀ-ÿ\s]+$"
-          required="true"
-           data-escapestrip-html-and-php-tags="true"
-           max-length="100"
-           min-length="3"
-          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          data-eg-await="AGBOKOUDJO"
-          /><br/>
-           <label for="firstname">Firstnames</label><br/>
-          <input type="text" class="form-control firstname"
-          placeholder="Eg:Franck Empedocle Hounha" 
-          id="firstname" 
-          name="firstname"
-          data-event-validate-blur="blur"  
-          data-event-validate-input="input"
-          pattern="^[a-zA-ZÀ-ÿ\s]+$"
-           required="true"
-           data-escapestrip-html-and-php-tags="true"
-           max-length="200"
-           min-length="3"
-          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          data-eg-await="Hounha Franck"
-          /><br/>
-          <label for="username">Fullname</label><br/>
-          <input type="text" class="form-control username"
-          placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
-          id="username" 
-          name="username"
-          data-position-lastname="right"
-          data-event-validate-blur="blur" 
-           data-event-validate-input="input"
-           pattern="^[a-zA-ZÀ-ÿ\s]+$"
-            data-escapestrip-html-and-php-tags="true"
-           max-length="200"
-           min-length="6"
-           required="true"
-          data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
-          data-eg-await="AGABOKOUDJO Hounha Franck"
-          /><br/>
-          <hr/><br/>
-           <label for="email">Email</label><br/>
-          <input type="email" 
-          class="email form-control" 
-          placeholder="Eg:franckagbokoudjo301@gmail.com" 
-          id="email" name="email"
-          data-event-validate-blur="blur"  
-          data-event-validate-input="input"
-          required="true"
-           data-escapestrip-html-and-php-tags="false"
-           max-length="180"
-           min-length="6"
-          data-error-message-input="email is invalid"
-          data-eg-await="franckagbokoudjo301@gmail.com"
-          /><br/>
-          <label for="tel">Phone:</label>
-            <input type="tel" class="tel form-control" 
-          placeholder="Eg:+22967251886" 
-          id="tel" name="tel"
-          data-event-validate-blur="blur" 
-           data-event-validate-input="input"
-           required="true"
-           pattern="^([\+]{1})([0-9\s]{1,})+$"
-          data-escapestrip-html-and-php-tags="false"
-           max-length="180"
-           min-length="6"
-           data-error-message-input="The content of this field must contain only number ,one symbol +,
-           of spaces and must not null "
-            data-eg-await="+2290167251886"
-          /><br/>
-          <label for="message" class="form-label">Message:</label>
-          <textarea id="message"
-          name="message"
-          class="form-control" 
-           placeholder="write the message here" 
-           rows="10"
-            cols="5"
-           data-event-validate-blur="blur"  
-           data-event-validate-input="input"
-           data-pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
-            data-escapestrip-html-and-php-tags="false"
-           max-length="100000"
-           min-length="20"
-           required
-           >
-          </textarea><br/>
-           <label for="userType">User Type:</label>
-  <select id="userType" name="user_type" data-event-validate-change="change" required>
-    <option value="">-- Please select --</option>
-    <option value="admin">Administrator</option>
-    <option value="user">Regular User</option>
-  </select>
-  <div class="error-message" id="error-userType"></div>
-  <br>
-           <label for="password">Password:</label>
-      <input type="password" id="password" name="password" 
-      data-event-validate-blur="blur" 
-      min-length="8" required data-upper-case-allow="true" data-number-allow="true">
-          <hr/><br/>
-          <strong class="text-center fw-bolder">File Validation</strong><br/>
-          <label for="img">Uploader des images</label><br>
-          <input type="file" class="images form-control" multiple 
-          id="img" 
-          name="images"
-          data-event-validate-blur="blur"  
-          data-event-validate-change="change"
-          data-media-type="image"
-          /><br/>
-           <label for="pdf">Uploader des documents pdf</label><br/>
-          <input type="file" class="pdf form-control" 
-          multiple 
-           data-event-validate-blur="blur"  
-           data-event-validate-change="change"
-              media-type="document"
-          data-allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
-            application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-            application/vnd.oasis.opendocument.text"
-          data-extensions="jpg,jpeg,png,webp"
-          id="pdf" name="pdf"/><br/>
-           <label for="video">Uploader des medias video</label><br/>
-          <input type="file" 
-          class="video form-control" 
-          multiple 
-           data-event-validate-blur="blur"  
-           data-event-validate-change="change"
-           id="video" 
-              data-media-type="video"
-             data-allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
-            video/mp4, video/quicktime, video/x-matroska,
-            video/webm, video/3gpp, video/3gpp2, video/x-m4v,
-            video/mpeg, video/mp2t, video/ogg, video/x-ms-asf,
-            application/vnd.rn-realmedia, video/divx"
-            data-extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
-            3g2, m4v, mpg, mpeg, ts, ogv, asf, rm, divx
-            "
-           name="video"/><br/>
-          <button type="submit" class="btn-submit btn">Valider</button>
-        </form>
-      </div>
-      <div class="form-group flex text-center flex-col items-start gap-y-3 mb-3 mt-5">
-          <strong class="text-center fw-bolder">Upload media by chunk</strong>
-          <form method="post" role="form" class="form" id="upload-media-form" enctype="multipart/form-data">
-            <div class="flex flex-col items-start gap-y-3">
-              <label htmlFor="media" class="text-sm font-medium cursor-pointer">
-                
-              </label>
-              <input
-                type="file"
-                id="media"
-                required
-                name="media"
-                class="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none form-control"
-              />
+       <div class="accordion mt-4" id="testingLoggerAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingLogger">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLogger" aria-expanded="false" aria-controls="collapseLogger">
+                    Tester la Classe Logger
+                </button>
+            </h2>
+            <div id="collapseLogger" class="accordion-collapse collapse" aria-labelledby="headingLogger" data-bs-parent="#testingLoggerAccordion">
+                <div class="accordion-body">
+                    <p>Utilisez cette section pour tester les différentes méthodes de la classe `Logger` (log, info, warn, error).</p>
+    
+                    <div class="mb-3">
+                        <label for="loggerMessage" class="form-label">Message du Log :</label>
+                        <input type="text" class="form-control" id="loggerMessage" value="Test message" placeholder="Entrez un message pour le log">
+                    </div>
+    
+                    <div class="mb-3">
+                        <label for="loggerLevel" class="form-label">Niveau de Log :</label>
+                        <select class="form-select" id="loggerLevel">
+                            <option value="log" selected>Log (Générique)</option>
+                            <option value="info">Info</option>
+                            <option value="warn">Avertissement</option>
+                            <option value="error">Erreur</option>
+                        </select>
+                    </div>
+    
+                    <div class="mb-3">
+                        <label for="loggerContext" class="form-label">Contexte (JSON optionnel) :</label>
+                        <textarea class="form-control" id="loggerContext" rows="3" placeholder='Ex: {"id": 123, "user": "Alice"}'></textarea>
+                        <small class="form-text text-muted">Doit être un JSON valide si utilisé.</small>
+                    </div>
+    
+                    <button type="button" class="btn btn-primary" id="testLogger">Exécuter Test Logger</button>
+    
+                    <div id="resultLogger" class="mt-3 p-3 border rounded">
+                        <p class="mb-0 text-muted">Les résultats du log apparaîtront ici. Vérifiez également la console de votre navigateur.</p>
+                    </div>
+                </div>
             </div>
-              <button type="submit" class="mt-3 text-center btn-submit btn" id="upload-media">Start upload media</button>
-         </form>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingMergeFunctions">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMergeFunctions" aria-expanded="false" aria-controls="collapseMergeFunctions">
+                  Tester les Fonctions de Fusion (MergeArrayValues & DeepMerge)
+              </button>
+          </h2>
+          <div id="collapseMergeFunctions" class="accordion-collapse collapse" aria-labelledby="headingMergeFunctions" data-bs-parent="#testingMergeFunctionsAccordion">
+              <div class="accordion-body">
+                  <p>Cliquez sur le bouton ci-dessous pour exécuter les tests des fonctions `mergeArrayValues` et `deepMerge`. Les résultats seront affichés dans la console du navigateur.</p>
+                  
+                  <button type="button" class="btn btn-primary" id="testMergeFunctions">Exécuter Test Merge</button>
+  
+                  <div id="resultMergeFunctions" class="mt-3 p-3 border rounded">
+                      <p class="mb-0 text-muted">Les résultats des fusions (merge) apparaîtront dans la console de votre navigateur après l'exécution du test.</p>
+                  </div>
+              </div>
+          </div>
       </div>
     </div>
+    <div class="form-group text-center">
+      <strong class="text-center fw-bolder">Text formatting and Field Data Validation</strong>
+      <form class="form" method="post" action="test" name="form_validate" id="form_validate">
+        <input type="tel" 
+        id="phone" 
+        name="phone" 
+        placeholder="+33 6 12 34 56 78" 
+        data-escapestrip-html-and-php-tags="true" 
+        data-event-validate-blur="blur" 
+        data-event-validate-input="input" 
+        data-eg-await="+33 6 12 34 56 78" 
+        autocomplete="on" minlength="8" 
+        maxlength="80" data-type="tel" class="form-control">
+        <label for="lastname">Lastname</label><br/>
+        <input type="text" 
+        class="form-control lastname"
+        placeholder="Eg:AGBOKOUDJO" 
+        id="lastname" 
+        name="lastname"
+        data-event-validate-blur="blur"  
+        data-event-validate-input="input"
+        pattern="^[a-zA-ZÀ-ÿ\s]+$"
+        required="true"
+         data-escapestrip-html-and-php-tags="true"
+         max-length="100"
+         min-length="3"
+        data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+        data-eg-await="AGBOKOUDJO"
+        /><br/>
+         <label for="firstname">Firstnames</label><br/>
+        <input type="text" class="form-control firstname"
+        placeholder="Eg:Franck Empedocle Hounha" 
+        id="firstname" 
+        name="firstname"
+        data-event-validate-blur="blur"  
+        data-event-validate-input="input"
+        pattern="^[a-zA-ZÀ-ÿ\s]+$"
+         required="true"
+         data-escapestrip-html-and-php-tags="true"
+         max-length="200"
+         min-length="3"
+        data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+        data-eg-await="Hounha Franck"
+        /><br/>
+        <label for="username">Fullname</label><br/>
+        <input type="text" class="form-control username"
+        placeholder="Eg:AGBOKOUDJO Hounha Franck or Hounha Franck AGBOKOUDJO" 
+        id="username" 
+        name="username"
+        data-position-lastname="right"
+        data-event-validate-blur="blur" 
+         data-event-validate-input="input"
+         pattern="^[a-zA-ZÀ-ÿ\s]+$"
+          data-escapestrip-html-and-php-tags="true"
+         max-length="200"
+         min-length="6"
+         required="true"
+        data-error-message-input="The content of this field must contain only alphabetical letters  and must not null "
+        data-eg-await="AGABOKOUDJO Hounha Franck"
+        /><br/>
+        <hr/><br/>
+         <label for="email">Email</label><br/>
+        <input type="email" 
+        class="email form-control" 
+        placeholder="Eg:franckagbokoudjo301@gmail.com" 
+        id="email" name="email"
+        data-event-validate-blur="blur"  
+        data-event-validate-input="input"
+        required="true"
+         data-escapestrip-html-and-php-tags="false"
+         max-length="180"
+         min-length="6"
+        data-error-message-input="email is invalid"
+        data-eg-await="franckagbokoudjo301@gmail.com"
+        /><br/>
+        <label for="tel">Phone:</label>
+          <input type="tel" class="tel form-control" 
+        placeholder="Eg:+22967251886" 
+        id="tel" name="tel"
+        data-event-validate-blur="blur" 
+         data-event-validate-input="input"
+         required="true"
+         pattern="^([\+]{1})([0-9\s]{1,})+$"
+        data-escapestrip-html-and-php-tags="false"
+         max-length="180"
+         min-length="6"
+         data-error-message-input="The content of this field must contain only number ,one symbol +,
+         of spaces and must not null "
+          data-eg-await="+2290167251886"
+        /><br/>
+        <label for="message" class="form-label">Message:</label>
+        <textarea id="message"
+        name="message"
+        class="form-control" 
+         placeholder="write the message here" 
+         rows="10"
+          cols="5"
+         data-event-validate-blur="blur"  
+         data-event-validate-input="input"
+         data-pattern="^[a-zA-ZÀ-ÿ0-9\s.,!?'-]+$"
+          data-escapestrip-html-and-php-tags="false"
+         max-length="100000"
+         min-length="20"
+         required
+         >
+        </textarea><br/>
+         <label for="userType">User Type:</label>
+<select id="userType" name="user_type" data-event-validate-change="change" required class="form-select form-control">
+  <option value="">-- Please select --</option>
+  <option value="admin">Administrator</option>
+  <option value="user">Regular User</option>
+  <option value="user_no">IRegular User</option>
+</select>
+<div class="error-message" id="error-userType"></div>
+<br>
+         <label for="password">Password:</label>
+    <input type="password" id="password" name="password" 
+    data-event-validate-blur="blur" 
+    min-length="8" required data-upper-case-allow="true" data-number-allow="true" class="form-control">
+        <hr/><br/>
+        <strong class="text-center fw-bolder">File Validation</strong><br/>
+        <label for="img">Uploader des images</label><br>
+        <input type="file" class="images form-control" multiple 
+        id="img" 
+        name="images"
+        data-event-validate-blur="blur"  
+        data-event-validate-change="change"
+        data-media-type="image"
+        /><br/>
+         <label for="pdf">Uploader des documents pdf</label><br/>
+        <input type="file" class="pdf form-control" 
+        multiple 
+         data-event-validate-blur="blur"  
+         data-event-validate-change="change"
+            media-type="document"
+        data-allowed-mime-type-accept="application/pdf, text/csv, text/plain,application/msword,
+          application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+          application/vnd.oasis.opendocument.text"
+        data-extensions="jpg,jpeg,png,webp"
+        id="pdf" name="pdf"/><br/>
+         <label for="video">Uploader des medias video</label><br/>
+        <input type="file" 
+        class="video form-control" 
+        multiple 
+         data-event-validate-blur="blur"  
+         data-event-validate-change="change"
+         id="video" 
+            data-media-type="video"
+           data-allowed-mime-type-accept="video/x-msvideo, video/x-flv, video/x-ms-wmv,
+          video/mp4, video/quicktime, video/x-matroska,
+          video/webm, video/3gpp, video/3gpp2, video/x-m4v,
+          video/mpeg, video/mp2t, video/ogg, video/x-ms-asf,
+          application/vnd.rn-realmedia, video/divx"
+          data-extensions=" avi, flv, wmv, mp4, mov, mkv, webm, 3gp,
+          3g2, m4v, mpg, mpeg, ts, ogv, asf, rm, divx
+          "
+         name="video"/><br/>
+        <button type="submit" class="btn-submit btn">Valider</button>
+      </form>
+    </div>
+    <div class="form-group flex text-center flex-col items-start gap-y-3 mb-3 mt-5">
+        <strong class="text-center fw-bolder">Upload media by chunk</strong>
+        <form method="post" role="form" class="form" id="upload-media-form" enctype="multipart/form-data">
+          <div class="flex flex-col items-start gap-y-3">
+            <label htmlFor="media" class="text-sm font-medium cursor-pointer">
+              
+            </label>
+            <input
+              type="file"
+              id="media"
+              required
+              name="media"
+              class="w-full p-4 bg-transparent border border-gray-200 rounded-lg outline-none form-control"
+            />
+          </div>
+            <button type="submit" class="mt-3 text-center btn-submit btn" id="upload-media">Start upload media</button>
+       </form>
+    </div>
+    </div>
+    <script type="module">
+      import  "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      window.jQuery=window.$=jQuery;
+    </script>
     <script type="module" src="src/main.ts"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   </body>
 </html>

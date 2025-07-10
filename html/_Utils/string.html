@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Documentation - Fonctions de chaîne</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    code {
+      background: #eef;
+      padding: 0.2rem 0.4rem;
+      border-radius: 5px;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 1rem;
+      overflow-x: auto;
+      border-radius: 5px;
+    }
+    a {
+      color: #2980b9;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .toc {
+      margin-bottom: 2rem;
+    }
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .toc li {
+      margin-bottom: 0.5rem;
+    }
+    hr {
+      margin: 2rem 0;
+      border: none;
+      border-top: 1px solid #ccc;
+    }
+    #capitalizeString {
+  padding-top: 2rem;
+  border-top: 1px solid #ccc;
+  margin-top: 2rem;
+}
+#capitalizeString h2 {
+  color: #2c3e50;
+}
+#capitalizeString code {
+  background: #f4f4f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+.doc-section {
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+}
+
+.doc-section h2 {
+  color: #1e272e;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.doc-section ul {
+  padding-left: 1.5rem;
+}
+
+.doc-section code {
+  background: #f1f1f1;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-family: monospace;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 Documentation des fonctions de chaînes</h1>
+
+    <nav class="toc">
+      <h2>📌 Table des matières</h2>
+      <ul>
+        <li><a href="#escapeHtmlBalise">escapeHtmlBalise()</a></li>
+        <li><a href="#ucfirst">ucfirst()</a></li>
+        <li><a href="#nl2br">nl2br()</a></li>
+        <li><a href="#capitalizeString">capitalizeString</a></li>
+        <li><a href="#usernameFormat">usernameFormat</a></li>
+        <li><a href="#toBoolean">toBoolean</a></li>
+        <li><a href="#addHashToIds">addHashToIds</a></li>
+        <li><a href="#isByteLength">isByteLength</a></li>
+        <li><a href="#countChars">countChars</a></li>
+        <li><a href="#analyzeWord">analyzeWord</a></li>
+        <li><a href="#scoreWord">scoreWord</a></li>
+      </ul>
+    </nav>
+    <section id="escapeHtmlBalise">
+      <h2>🔹 escapeHtmlBalise()</h2>
+      <p><strong>Description:</strong></p>
+      <p>Escapes HTML tags within a string, array, or object. Also removes HTML tags if requested.</p>
+    
+      <p><strong>Parameters:</strong></p>
+      <ul>
+        <li><code>content</code> — String, array, or object containing strings to be cleaned.</li>
+        <li><code>stripHtmlTags</code> — Boolean, indicates whether to remove HTML tags before escaping (default: <code>true</code>).</li>
+      </ul>
+    
+      <p><strong>Returns:</strong> Cleaned string or structure.</p>
+      <p><strong>Error:</strong> If empty or undefined.</p>
+    
+      <p><strong>Examples:</strong></p>
+      <pre><code>escapeHtmlBalise("&lt;b&gt;Hello&lt;/b&gt;");
+    // "Hello"</code></pre>
+    </section>
+
+    <hr>
+
+    <section id="ucfirst">
+      <h2>🔹 ucfirst()</h2>
+      <p><strong>Description:</strong></p>
+      <p>Capitalizes the first letter and converts the rest to lowercase. Can also escape HTML tags beforehand.</p>
+    
+      <p><strong>Parameters:</strong></p>
+      <ul>
+        <li><code>str</code> — The string to transform.</li>
+        <li><code>escapeHtmlBalise_string</code> — If true, escapes HTML tags first (default: <code>true</code>).</li>
+        <li><code>locales</code> — Optional. Specifies the locale to use (e.g., "en-US").</li>
+      </ul>
+    
+      <p><strong>Returns:</strong> A string with the first letter capitalized.</p>
+    
+      <p><strong>Example:</strong></p>
+      <pre><code>ucfirst("agbOkoudjo");
+    // "Agbokoudjo"</code></pre>
+    </section>
+    <hr>
+
+    <section id="nl2br">
+      <h2>🔹 nl2br()</h2>
+      <p><strong>Description:</strong></p>
+      <p>Inserts HTML <code>&lt;br&gt;</code> tags before all newlines in a string.</p>
+    
+      <p><strong>Parameters:</strong></p>
+      <ul>
+        <li><code>str</code> — The string containing newlines.</li>
+      </ul>
+    
+      <p><strong>Returns:</strong> String with <code>\n</code> converted to <code>&lt;br&gt;</code>.</p>
+    
+      <p><strong>Example:</strong></p>
+      <pre><code>nl2br("Hello\nEveryone");
+    // "Hello&lt;br&gt;\nEveryone"</code></pre>
+    </section>
+
+    <hr />
+    <section id="capitalizeString" class="doc-section">
+      <h2>capitalizeString</h2>
+      <p>
+        <strong>Description:</strong><br>
+        Capitalizes each word in a string. This function transforms each word by making the first letter uppercase and the rest lowercase. Useful for formatting names or titles.
+      </p>
+      <p><strong>Usage examples:</strong></p>
+      <ul>
+        <li><code>"hounha franck empedocle"</code> → <code>"Hounha Franck Empedocle"</code></li>
+        <li><code>"internationales web services"</code> → <code>"Internationales Web Services"</code></li>
+      </ul>
+      <h4>Parameters:</h4>
+      <ul>
+        <li><code>data: string</code> – The input string to be transformed.</li>
+        <li><code>separator_toString: string</code> (optional, default = <code>" "</code>) – Word separator.</li>
+        <li><code>finale_separator_toString: string</code> (optional, default = <code>" "</code>) – Final join separator.</li>
+        <li><code>escapeHtmlBalise_string: boolean</code> (optional, default = <code>true</code>) – Escapes HTML tags if true.</li>
+        <li><code>locales: string | string[]</code> (optional) – Locale(s) to use for case transformation.</li>
+      </ul>
+      <h4>Returns:</h4>
+      <p><code>string</code> – The formatted string with each word capitalized.</p>
+    </section>
+       <hr>      
+       <section id="usernameFormat" class="doc-section">
+        <h2>usernameFormat</h2>
+        <p>
+          <strong>Description:</strong><br>
+          Formats a string into a structured full name by capitalizing the first name(s) and uppercasing the last name. You can choose the position of the last name (left or right).
+        </p>
+        <p><strong>Examples of usage:</strong></p>
+        <ul>
+          <li><code>usernameFormat("Agbokoudjo hounha franck empedocle hounha franck empedocle Agbokoudjo", "left")</code> → <code>"Hounha Franck Empedocle AGBOKOUDJO"</code></li>
+          <li><code>usernameFormat("Agbokoudjo hounha franck empedocle hounha franck empedocle Agbokoudjo", "right")</code> → <code>"AGBOKOUDJO Hounha Franck Empedocle"</code></li>
+        </ul>
+        <h4>Parameters:</h4>
+        <ul>
+          <li><code>value_username: string</code> – The input full name string.</li>
+          <li><code>position_lastname: "left" | "right"</code> (optional, default = <code>"left"</code>) – Position of the last name.</li>
+          <li><code>separator_toString: string</code> (optional, default = <code>" "</code>) – Separator for words.</li>
+          <li><code>finale_separator_toString: string</code> (optional, default = <code>" "</code>) – Final separator for joining.</li>
+          <li><code>locales: string | string[]</code> (optional) – Locales for case transformation.</li>
+        </ul>
+        <h4>Returns:</h4>
+        <p><code>string</code> – A formatted full name with first names capitalized and last name uppercased.</p>
+      </section>
+    <hr>
+    <section id="toBoolean" class="doc-section">
+        <h2>toBoolean</h2>
+        <p>
+          <strong>Description:</strong><br>
+          Converts a string value to a boolean. Handles common truthy and falsy representations.
+        </p>
+        <p><strong>Truthy values:</strong> <code>"true"</code>, <code>"1"</code>, <code>"yes"</code></p>
+        <p><strong>Falsy values:</strong> <code>"false"</code>, <code>"0"</code>, <code>"no"</code></p>
+        <h4>Parameters:</h4>
+        <ul>
+          <li><code>value: string | null | undefined</code> – The input string to convert.</li>
+        </ul>
+        <h4>Returns:</h4>
+        <p><code>boolean</code> – The boolean representation of the input string.</p>
+      </section>
+      <hr>            
+      <section id="addHashToIds" class="doc-section">
+        <h2>addHashToIds</h2>
+        <p>
+          <strong>Description:</strong><br>
+          Adds a hash symbol (<code>#</code>) at the beginning of each string in an array. Commonly used for generating CSS selectors from a list of element IDs.
+        </p>
+        <h4>Example:</h4>
+        <pre><code>
+      const ids = ['name', 'email', 'submit'];
+      const result = addHashToIds(ids);
+      console.log(result); // ['#name', '#email', '#submit']
+        </code></pre>
+        <h4>Parameters:</h4>
+        <ul>
+          <li><code>ids: string[]</code> – An array of element IDs.</li>
+        </ul>
+        <h4>Returns:</h4>
+        <p><code>string[]</code> – A new array where each ID is prefixed with <code>#</code>.</p>
+      </section>
+        <hr>  
+        <section id="toBoolean" class="doc-section">
+          <h2>toBoolean</h2>
+          <p>
+            <strong>Description:</strong><br>
+            Converts a string value to a boolean. Handles common truthy and falsy representations.
+          </p>
+          <p><strong>Truthy values:</strong> <code>"true"</code>, <code>"1"</code>, <code>"yes"</code></p>
+          <p><strong>Falsy values:</strong> <code>"false"</code>, <code>"0"</code>, <code>"no"</code></p>
+          <h4>Parameters:</h4>
+          <ul>
+            <li><code>value: string | null | undefined</code> – The input string to convert.</li>
+          </ul>
+          <h4>Returns:</h4>
+          <p><code>boolean</code> – The boolean representation of the input string.</p>
+        </section>
+        <hr>            
+        <section id="addHashToIds" class="doc-section">
+          <h2>addHashToIds</h2>
+          <p>
+            <strong>Description:</strong><br>
+            Adds a hash symbol (<code>#</code>) at the beginning of each string in an array. Commonly used for generating CSS selectors from a list of element IDs.
+          </p>
+          <h4>Example:</h4>
+          <pre><code>
+        const ids = ['name', 'email', 'submit'];
+        const result = addHashToIds(ids);
+        console.log(result); // ['#name', '#email', '#submit']
+          </code></pre>
+          <h4>Parameters:</h4>
+          <ul>
+            <li><code>ids: string[]</code> – An array of element IDs.</li>
+          </ul>
+          <h4>Returns:</h4>
+          <p><code>string[]</code> – A new array where each ID is prefixed with <code>#</code>.</p>
+        </section> 
+        <section id="isByteLength">
+          <h2>isByteLength</h2>
+          <p><strong>Function:</strong> Checks if the byte length (UTF-8) of a string falls within a given range.</p>
+          <p>
+            This function encodes the string using `encodeURI` to calculate the actual byte size, making it useful for validating:
+            <ul>
+              <li>form fields sensitive to byte size (like email addresses, usernames),</li>
+              <li>database columns with size limits,</li>
+              <li>or in network transmission contexts.</li>
+            </ul>
+          </p>
+          <h3>Signature</h3>
+          <pre><code>isByteLength(str: string, options?: ByteLengthOptions): boolean</code></pre>
+          <h3>Parameters</h3>
+          <ul>
+            <li><strong>str</strong> <em>(string)</em>: The string to evaluate.</li>
+            <li><strong>options</strong> <em>(ByteLengthOptions)</em> (optional):
+              <ul>
+                <li><strong>min</strong> <em>(number)</em>: Minimum byte length (default: 0).</li>
+                <li><strong>max</strong> <em>(number)</em>: Maximum byte length (optional).</li>
+              </ul>
+            </li>
+          </ul>
+          <h3>Returns</h3>
+          <p><strong>(boolean)</strong>: Returns `true` if the byte length is within the specified range, otherwise `false`.</p>
+          <h3>Examples</h3>
+          <pre><code>// Correct length: 5 ASCII letters = 5 bytes
+        isByteLength("hello", { min: 3, max: 10 }); // true
+        
+        // é = 2 bytes → exceeds max
+        isByteLength("é", { min: 1, max: 1 }); // false
+        
+        // Each character = 3 bytes, total = 6
+        isByteLength("你好", { max: 4 }); // false
+        
+        // ç = 2 bytes, total = 9
+        isByteLength("François", { max: 9 }); // true
+          </code></pre>
+          <h3>See also</h3>
+          <ul>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI" target="_blank">encodeURI - MDN</a></li>
+          </ul>
+        </section>
+        <section id="countChars">
+          <h2>countChars</h2>
+          <p><strong>Function:</strong> Counts the number of occurrences of each character in a string.</p>
+          <p>
+            This function returns a JavaScript <code>Map</code>, where each distinct character is a key and its frequency is the associated value.<br>
+            It's optimized for short strings (less than 255 characters) and throws an error if this limit is exceeded, suggesting using <code>countWord()</code> for longer texts or word analyses.
+          </p>
+          <h3>Signature</h3>
+          <pre><code>countChars(str: string): Map&lt;string, number&gt;</code></pre>
+          <h3>Parameters</h3>
+          <ul>
+            <li><strong>str</strong> <em>(string)</em>: The string to analyze.</li>
+          </ul>
+          <h3>Returns</h3>
+          <p><strong>(Map&lt;string, number&gt;)</strong>: A Map containing each unique character as a key, and its frequency as a value.</p>
+          <h3>Exceptions</h3>
+          <ul>
+            <li><strong>Error</strong>: If the string contains more than 255 characters.<br>
+              Message: <code>&lt;string&gt; is too long. Maximum allowed is 255 characters. Use countWord() instead for processing.</code>
+            </li>
+          </ul>
+          <h3>Examples</h3>
+          <pre><code>// Simple example with repeated letters
+        countChars("hello"); // Result: Map { 'h' => 1, 'e' => 1, 'l' => 2, 'o' => 1 }
+        
+        // Example with spaces and punctuation
+        countChars("Hi! Hi!");
+        // Result: Map { 'H' => 2, 'i' => 2, '!' => 2, ' ' => 1 }
+          </code></pre>
+          <h3>Notes</h3>
+          <ul>
+            <li>Special characters, uppercase/lowercase letters, and spaces are all counted as is.</li>
+            <li>For analyzing words or long sentences, use the <code>countWord()</code> function instead (not included here).</li>
+          </ul>
+        </section>
+        <section id="analyzeWord">
+          <h2>analyzeWord</h2>
+        
+          <p><strong>Function:</strong> Analyzes the composition of a word or phrase by counting the types of characters present.</p>
+        
+          <p>
+            This function returns an object containing the total number of characters, the number of unique characters,
+            as well as the distribution by type (uppercase, lowercase, digits, symbols, punctuation).<br>
+            It is customizable via regular expressions and options to enable or disable
+            certain categories.
+          </p>
+        
+          <h3>Signature</h3>
+          <pre><code>analyzeWord(word: string, analyzeWordOptions?: AnalyzeWordOptions): WordAnalysisResult</code></pre>
+        
+          <h3>Parameters</h3>
+          <ul>
+            <li><strong>word</strong> <em>(string)</em>: The string to analyze.</li>
+            <li>
+              <strong>analyzeWordOptions</strong> <em>(optional)</em>:
+              A configuration object allowing to:
+              <ul>
+                <li>Provide custom regex: <code>customUpperRegex</code>, <code>customLowerRegex</code>, etc.</li>
+                <li>Enable/disable character types to analyze via <code>analyzeCharTypes</code>.</li>
+              </ul>
+            </li>
+          </ul>
+        
+          <h3>Returns</h3>
+          <p>
+            <strong>WordAnalysisResult</strong>: An object containing:
+          </p>
+          <ul>
+            <li><code>length</code>: Total length of the word.</li>
+            <li><code>uniqueChars</code>: Number of distinct characters.</li>
+            <li><code>uppercaseCount</code>: Number of uppercase letters.</li>
+            <li><code>lowercaseCount</code>: Number of lowercase letters.</li>
+            <li><code>numberCount</code>: Number of digits.</li>
+            <li><code>symbolCount</code>: Number of symbols.</li>
+            <li><code>punctuationCount</code>: Number of punctuation marks.</li>
+          </ul>
+        
+          <h3>Exceptions</h3>
+          <ul>
+            <li><strong>TypeError</strong>: If the <code>word</code> argument is not a string.</li>
+            <li><strong>Error</strong>: If <code>countChars</code> fails (e.g., text too long).</li>
+          </ul>
+        
+          <h3>Examples</h3>
+          <pre><code>// Basic analysis
+        analyzeWord("Hello123!");
+        // Result:
+        {
+          length: 9,
+          uniqueChars: 8,
+          uppercaseCount: 1,
+          lowercaseCount: 4,
+          numberCount: 3,
+          symbolCount: 1,
+          punctuationCount: 0
+        }
+        
+        // Analysis with custom regex
+        analyzeWord("ça c'est génial!", {
+          customLowerRegex: /^[a-zàâäéèêëïîôöùûüç]$/i,
+          customUpperRegex: /^[A-ZÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ]$/
+        });
+        
+        // Analysis with allowed type filtering
+        analyzeWord("User@domain.com!", {
+          analyzeCharTypes: {
+            allowedUpper: true,
+            allowedLower: true,
+            allowedNumber: false,
+            allowedSymbol: true,
+            allowedPunctuation: true
+          }
+        });
+          </code></pre>
+        
+          <h3>Notes</h3>
+          <ul>
+            <li>Custom regex allows handling non-Latin or accented alphabets.</li>
+            <li>Categories do not overlap: a character is counted in only one category according to priority order.</li>
+            <li>The result is useful for advanced input validations or linguistic statistics.</li>
+          </ul>
+        </section>
+        <section id="scoreWord">
+          <h2>scoreWord</h2>
+        
+          <p>
+            <strong>Function:</strong> Calculates a richness or complexity score for a word
+            based on its characteristic analysis, considering its length, the number of
+            unique characters, repetitions, and the presence of specific types
+            (uppercase, digits, symbols, punctuation, etc.).
+          </p>
+        
+          <h3>Signature</h3>
+          <pre><code>
+        scoreWord(analysis: WordAnalysisResult, scoringOptions?: WordScoringOptions): ScoredWord
+          </code></pre>
+        
+          <h3>Parameters</h3>
+          <ul>
+            <li><strong>analysis</strong> <em>(WordAnalysisResult)</em>: Result from <code>analyzeWord</code> containing character counts.</li>
+            <li><strong>scoringOptions</strong> <em>(optional)</em>: Options to customize the score calculation.
+              See the <code>WordScoringOptions</code> interface below.
+            </li>
+          </ul>
+        
+          <h3>Returns</h3>
+          <p>
+            <strong>ScoredWord</strong>: Object containing:
+          </p>
+          <ul>
+            <li><code>score</code>: The numeric score obtained.</li>
+            <li><code>level</code>: Assessed complexity level: <code>'weak'</code>, <code>'medium'</code>, or <code>'strong'</code>.</li>
+          </ul>
+        
+          <h3>Associated Interfaces</h3>
+        
+          <h4>WordAnalysis</h4>
+          <pre><code>
+        interface WordAnalysis {
+          length: number;
+          uniqueChars: number;
+          lowercaseCount: number;
+          uppercaseCount: number;
+          numberCount: number;
+          symbolCount: number;
+          punctuationCount: number;
+        }
+          </code></pre>
+        
+          <h4>WordScoringOptions</h4>
+          <pre><code>
+        interface WordScoringOptions {
+          pointsPerLength?: number;      // Points per total character
+          pointsPerUniqueChar?: number;    // Points per unique character
+          pointsPerRepeatChar?: number;    // Points for each repeated character
+        
+          bonusForContainingLower?: number;  // Bonus for lowercase letters
+          bonusForContainingUpper?: number;  // Bonus for uppercase letters
+          bonusForContainingNumber?: number; // Bonus for digits
+          bonusForContainingSymbol?: number; // Bonus for symbols
+          bonusForContainingPunctuation?: number; // Bonus for punctuation
+        }
+          </code></pre>
+        
+          <h4>ScoredWord</h4>
+          <pre><code>
+        interface ScoredWord {
+          score: number;
+          level: 'weak' | 'medium' | 'strong';
+        }
+          </code></pre>
+        
+          <h3>Example</h3>
+          <pre><code>
+        const analysis = analyzeWord("Bonjour123!");
+        const result = scoreWord(analysis, {
+          pointsPerLength: 2,
+          pointsPerUniqueChar: 2,
+          pointsPerRepeatChar: 1,
+          bonusForContainingLower: 10,
+          bonusForContainingUpper: 10,
+          bonusForContainingNumber: 10,
+          bonusForContainingSymbol: 10
+        });
+        
+        console.log(result);
+        // { score: 95, level: 'strong' }
+          </code></pre>
+        
+          <h3>Scoring Logic</h3>
+          <ul>
+            <li>Points are awarded for:
+              <ul>
+                <li>Each total character (<code>length</code>)</li>
+                <li>Each unique character</li>
+                <li>Each repetition (calculated as <code>length - uniqueChars</code>)</li>
+              </ul>
+            </li>
+            <li>Bonuses are added if the word contains at least one:
+              <ul>
+                <li>Lowercase letter</li>
+                <li>Uppercase letter</li>
+                <li>Digit</li>
+                <li>Symbol</li>
+                <li>Punctuation (if present in the analysis)</li>
+              </ul>
+            </li>
+            <li>The complexity level is determined by the score:
+              <ul>
+                <li><code>score ≥ 80</code> → <strong>strong</strong></li>
+                <li><code>50 ≤ score &lt; 80</code> → <strong>medium</strong></li>
+                <li><code>score &lt; 50</code> → <strong>weak</strong></li>
+              </ul>
+            </li>
+          </ul>
+        
+          <h3>Typical Usage</h3>
+          <p>
+            Ideal for evaluating the strength of passwords, identifiers, or any input requiring a good balance of length, variety, and complexity.
+          </p>
+        </section>    
+  </div>
+</body>
+</html>

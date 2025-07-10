@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Documentation - Exceptions</title>
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            margin: 2rem;
+            background: #f9f9f9;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        nav {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #ecf0f1;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+        nav a {
+            display: block;
+            color: #2980b9;
+            text-decoration: none;
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+        section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgb(0 0 0 / 0.1);
+            max-width: 800px;
+        }
+        code {
+            font-family: "Courier New", Courier, monospace;
+            background: #f0f0f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+        .note {
+            font-style: italic;
+            color: #7f8c8d;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Exceptions Documentation</h1>
+
+<nav>
+    <h2>Table of Contents</h2>
+    <a href="#attribute-exception">AttributeException</a>
+</nav>
+
+<section id="attribute-exception">
+    <h2>Class <code>AttributeException</code></h2>
+    <p>
+        Custom exception thrown when a required attribute is missing from a DOM element,
+        such as the <code>pattern</code> attribute on an <code>&lt;input&gt;</code> or <code>&lt;textarea&gt;</code> element.
+    </p>
+    <p>
+        Useful in form validation where certain attributes are expected on child elements.
+    </p>
+
+    <h3>Usage Example</h3>
+    <pre><code>if (!pattern) {
+    throw new AttributeException('pattern', input.name, 'RegistrationForm');
+}</code></pre>
+
+    <h3>Properties</h3>
+    <ul>
+        <li><strong>name</strong>: Name of the exception (<code>"AttributeException"</code>).</li>
+        <li><strong>attributeName</strong>: Name of the missing attribute.</li>
+        <li><strong>childrenName</strong>: Name of the affected child element.</li>
+        <li><strong>parentNameOrIdOrTagName</strong>: Name or ID of the parent for context.</li>
+    </ul>
+
+    <h3>Source Code</h3>
+    <pre><code>export class AttributeException extends Error {
+    constructor(
+        private readonly attributeName: string,
+        private readonly childrenName: string,
+        private readonly parentNameOrIdOrTagName: string) {
+        const message = `The ${attributeName} field named "${childrenName}" in the "${parentNameOrIdOrTagName}" container does not have a pattern attribute.`;
+        super(message);
+        this.name = 'AttributeException';
+        Logger.error(message);
+        Object.setPrototypeOf(this, AttributeException.prototype);
+    }
+}</code></pre>
+
+    <p class="note">
+        Note: This class uses the <code>Logger.error()</code> method for consistent logging.
+    </p>
+</section>
+</body>
+</html>

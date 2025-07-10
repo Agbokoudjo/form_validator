@@ -8,7 +8,13 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { FieldStateValidating } from "./ValidatorFormInputNoTypeFileInterface";
+
+import { formErrorStateManager } from "./AbstractFormError";
+import { Logger } from "../_Utils";
+export interface FieldStateValidating {
+	errorMessage: string[];
+	validatorStatus: boolean;
+}
 export interface FormErrorInterface {
 	/**
 	 * Sets the validation status and error message for a specific input field.
@@ -38,25 +44,6 @@ export interface FormErrorInterface {
 	getValidatorStatus: (targetInputname: string) => FieldStateValidating;
 
 	/**
-	 * EN : Stores an error message for an input field in the form. 
-	 * If the error message already exists, it will not be added again.
-	 * 
-	 * @param targetInputname  EN : The name or ID of the field as a key.
-	 * @param messageerrorinput EN : The error message to add for the field.
-	 * @returns EN : The instance of the class to allow method chaining.
-	 */
-	setErrorMessageField: (targetInputname: string, messageerrorinput: string | string[]) => this;
-	/**
-	 * EN : Retrieves all error messages associated with a specific field in the form.
-	 * If no error messages are defined for the field, returns an empty array.
-	 * 
-	 * @param targetInputname
-	 *                          EN : The name or ID of the field whose error messages should be retrieved.
-	 * @returns
-	 *            EN : An array containing the error messages for the field, or an empty array if none exist.
-	 */
-	getErrorMessageField: (targetInputname: string) => string[] | undefined;
-	/**
 	 * EN : Clears the error messages and validation state associated with a specific field in the form.
 	 * 
 	 * @param targetInputname
@@ -71,110 +58,43 @@ export interface FormErrorInterface {
 	 * @param targetname EN : The name or ID of the field to check.
 	 * @returns  EN : The validation status of the field (true if valid, false if invalid, undefined if not defined).
 	 */
-	hasErrorsField: (targetInputname: string) => boolean
-	/**
-	 * Supprime un message d'erreur spécifique pour un champ.
-	 * @param targetInputname Le nom du champ.
-	 * @param messageerrorinput Le message d'erreur à supprimer.
-	 * @returns L'instance de la classe.
-	 */
-	removeSpecificErrorMessage: (targetInputname: string, messageerrorinput: string) => this;
-	/**
-	 * Récupère l'état de validation de tous les champs.
-	 * @returns La Map des états de validation des champs.
-	 */
-	getErrorsFieldAll: () => Map<string, boolean>
-	/**
-	 * Récupère les messages d'erreur de tous les champs.
-	 * @returns La Map des messages d'erreur des champs.
-	 */
-	getErrorMessageFieldAll: () => Map<string, string[]>;
+	hasErrorsField: (targetInputname: string) => boolean;
+
+	getErrors: (targetInputname: string) => string[];
+	getErrorsField: (targetInputname: string) => string[];
 }
 export abstract class FormError implements FormErrorInterface {
-	private m_is_valid_field: Map<string, boolean>;
-	private m_errorMessageField: Map<string, string[]>;
-	protected constructor() {
-		this.m_is_valid_field = new Map<string, boolean>();
-		this.m_errorMessageField = new Map<string, string[]>();
-	}
+
+	protected constructor() { Logger.log('formErrorStateManager:', formErrorStateManager) }
 	/**
 	 * Vérifie si tous les champs sont valides.
 	 * @returns true si tous les champs sont valides, false sinon.
 	 */
 	public areAllFieldsValid = (): boolean => {
-		for (const isValid of this.m_is_valid_field.values()) {
-			if (!isValid) {
-				return false;
-			}
-		}
-		return true;
+		return formErrorStateManager.__areAllFieldsValid();
 	}
-	/**
-	 * Réinitialise tous les états de validation et messages d'erreur.
-	 * @returns L'instance de la classe.
-	 */
-	public clearAll = (): this => {
-		this.m_is_valid_field.clear();
-		this.m_errorMessageField.clear();
-		return this;
-	}
+
 	public removeSpecificErrorMessage = (targetInputname: string, messageerrorinput: string): this => {
-		const errorMessageField = this.m_errorMessageField.get(targetInputname) || [];
-		const updatedErrors = errorMessageField.filter(msg => msg !== messageerrorinput);
-		if (updatedErrors.length > 0) {
-			this.m_errorMessageField.set(targetInputname, updatedErrors);
-		} else {
-			this.m_errorMessageField.delete(targetInputname);
-		}
+		formErrorStateManager.__removeSpecificErrorMessage(targetInputname, messageerrorinput);
 		return this;
 	}
-	public hasErrorsField = (targetname: string): boolean => {
-		return this.m_is_valid_field.get(targetname) === true || this.m_is_valid_field.get(targetname) === undefined
-	};
-	public setErrorMessageField = (targetInputname: string, messageerrorinput: string | string[]): this => {
-		// Si messageerrorinput est un tableau, on l'assigne directement à errorMessageField
-		const errorMessageField = this.m_errorMessageField.get(targetInputname) || [];
+	public hasErrorsField = (targetInputname: string): boolean => { return formErrorStateManager.getStatus(targetInputname); };
 
-		// Si le message d'erreur est un tableau, on ajoute les messages un par un
-		if (Array.isArray(messageerrorinput)) {
-			messageerrorinput.forEach((message) => {
-				if (!errorMessageField.includes(message)) {
-					errorMessageField.push(message);
-				}
-			});
-		} else {
-			// Si c'est une chaîne, on l'ajoute directement
-			if (!errorMessageField.includes(messageerrorinput)) {
-				errorMessageField.push(messageerrorinput);
-			}
-		}
-
-		// On met à jour l'erreur pour ce champ
-		this.m_errorMessageField.set(targetInputname, errorMessageField);
-
-		return this;
-	};
-
-	public getErrorMessageField = (targetInputname: string): string[] => { return this.m_errorMessageField.get(targetInputname) || []; };
-
+	getErrorsField(targetInputname: string): string[] { return formErrorStateManager.getErrorMessageField(targetInputname); }
+	getErrors(targetInputname: string): string[] { return formErrorStateManager.getErrorMessageField(targetInputname); }
 	public clearError = (targetInputname: string): this => {
-		if (this.m_is_valid_field.has(targetInputname)) {
-			this.m_is_valid_field.delete(targetInputname);
-			this.m_errorMessageField.delete(targetInputname);
-		}
+		formErrorStateManager.clearErrorField(targetInputname);
 		return this;
 	};
-	public getErrorsFieldAll = (): Map<string, boolean> => { return this.m_is_valid_field; }
-	public getErrorMessageFieldAll = (): Map<string, string[]> => { return this.m_errorMessageField; }
 	public setValidatorStatus = (status: boolean, error_message: string, targetInputname: string): this => {
-		this.m_is_valid_field.set(targetInputname, status);
-		this.setErrorMessageField(targetInputname, error_message);
+		formErrorStateManager.setStatus(targetInputname, status)
+		formErrorStateManager.setErrorMessageField(targetInputname, error_message);
 		return this;
 	};
 	public getValidatorStatus = (targetInputname: string): FieldStateValidating => {
 		return {
 			validatorStatus: this.hasErrorsField(targetInputname),
-			errorMessage: this.getErrorMessageField(targetInputname)
+			errorMessage: formErrorStateManager.getErrorMessageField(targetInputname)
 		};
 	};
 

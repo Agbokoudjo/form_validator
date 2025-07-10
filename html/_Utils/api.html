@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - ApiError</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background: #f9f9f9;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        code, pre {
+            background-color: #ecf0f1;
+            padding: 0.3em 0.6em;
+            border-radius: 4px;
+        }
+        section {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>📘 <code>ApiError</code> Class Documentation</h1>
+
+    <section>
+        <h2>🔧 Constructor</h2>
+        <p>
+            <code>new ApiError(data: Record&lt;string, unknown&gt; | string, status: number)</code>
+        </p>
+        <p>Constructs a new API error, storing the associated data and HTTP status code.</p>
+    </section>
+    
+    <section>
+        <h2>⚠️ <code>violationsFor(field: string): string[]</code></h2>
+        <p>Returns validation error messages for a given field.</p>
+        <p><strong>Example:</strong></p>
+        <pre><code>const err = new ApiError({
+      violations: [
+        { propertyPath: "email", message: "Invalid email format." },
+        { propertyPath: "email", message: "Email already in use." }
+      ]
+    }, 400);
+    
+    console.log(err.violationsFor("email"));
+    // Result: ["Invalid email format.", "Email already in use."]</code></pre>
+    </section>
+    
+    <section>
+        <h2>🧠 <code>get name(): string</code></h2>
+        <p>Returns a formatted error name based on the <code>title</code> and <code>detail</code> properties of the data.</p>
+        <p><strong>Examples:</strong></p>
+        <pre><code>new ApiError({ title: "Error", detail: "Invalid email" }, 400).name;
+    // Result: "Error: Invalid email"
+    
+    new ApiError({ title: "Error" }, 500).name;
+    // Result: "Error"
+    
+    new ApiError({}, 500).name;
+    // Result: "Unknown Error"</code></pre>
+    </section>
+    
+    <section>
+        <h2>📋 <code>get allViolations(): Record&lt;string, string[]&gt;</code></h2>
+        <p>Returns all violations as an object structured by field.</p>
+        <p><strong>Example:</strong></p>
+        <pre><code>const err = new ApiError({
+      violations: [
+        { propertyPath: "email", message: "Email required" },
+        { propertyPath: "password", message: "Weak password" }
+      ]
+    }, 400);
+    
+    console.log(err.allViolations);
+    // Result: {
+    //   email: ["Email required"],
+    //   password: ["Weak password"]
+    // }</code></pre>
+    </section>
+
+</body>
+</html>

@@ -39,9 +39,6 @@ interface FieldCollectionInterface {
     removeFieldFromCollection: (target_remove: JQuery<HTMLDivElement | HTMLElement>) => void;  // Retirer un champ de la collection
 }
 /**
- * Cette classe gère automatiquement les collections de champs input dans un formulaire
- * en fonction d'un certain hypothèse fourni.
- *
  * This class automatically manages input field collections in a form based on a given assumption.
  */
 export class WlindablaFieldCollectionManager implements FieldCollectionInterface {
@@ -117,3 +114,4 @@ export class WlindablaFieldCollectionManager implements FieldCollectionInterface
     }
     public getCollectionCounters = (container_id: string): number => { return this.collectionCounters[container_id] ?? -1 }
 }
+export const collectionManager = WlindablaFieldCollectionManager.getInstance();

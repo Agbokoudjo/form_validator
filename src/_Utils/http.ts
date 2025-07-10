@@ -13,57 +13,7 @@ import { Logger } from ".";
 export interface addParamToUrlConfig {
   [key: string]: any;
 }
-/**
- * 
- * @param urlparam 
- * @param addparamUrlDependencie 
- * @param returnUrl un boolean qui permet de dire que si il faut renvoyer url sous forme de chaine de caractere ou sous 
- * sous forme instance de URL par default c'est true 
- * si @default returnUrl =true on envoie sous forme de chaine de caractere sinon on envoie le nouveau URL construire sous forme
- * d'instance de URL
- * @param baseUrl 
- * @returns string |URL
- */
-export function addParamToUrl(urlparam: string | URL,
-  addparamUrlDependencie: Record<string, any> | null = null,
-  returnUrl: boolean = true,
-  baseUrl: string | URL | undefined = window.location.origin): string | URL {
-  const url = new URL(urlparam, baseUrl);
-  if (addparamUrlDependencie) {
-    for (const [keyparam, valueparam] of Object.entries(addparamUrlDependencie)) {
-      url.searchParams.set(keyparam, valueparam);
-    }
-  }
-  return returnUrl ? url.toString() : url;
-};
-/**
- * Crée une URL avec des paramètres à partir des données de formulaire.
- * 
- * @param formElement - L'élément de formulaire dont les données sont extraites.
- * @param baseUrl - L'URL de base pour laquelle les paramètres doivent être ajoutés.
- * @param returnUrl - Si vrai, retourne une chaîne de caractères représentant l'URL, sinon retourne une instance de URL.
- * @returns Une chaîne de caractères ou une instance de URL avec les paramètres ajoutés.
- */
-export function buildUrlFromForm(
-  formElement: HTMLFormElement,
-  form_action: string | null = null,
-  addparamUrlDependencie: Record<string, any> | null,
-  returnUrl: boolean = true,
-  baseUrl: string | URL | undefined = window.location.origin
-): string | URL {
-  const formData = new FormData(formElement);
-  const searchParamsInstance = new URLSearchParams();
-  formData.forEach((value, key) => {
-    searchParamsInstance.append(key, value.toString());
-  });
-  const url = new URL(formElement.action || form_action || baseUrl, baseUrl);
-  // Ajouter les paramètres au URL
-  searchParamsInstance.forEach((value, key) => {
-    url.searchParams.set(key, value);
-  });
-  const urlWithAddedParams = addParamToUrl(url, addparamUrlDependencie, returnUrl, baseUrl);
-  return returnUrl ? urlWithAddedParams.toString() : urlWithAddedParams;
-};
+
 interface HttpResponseData<T = unknown> {
   readonly status: number;
   readonly headers: Headers;

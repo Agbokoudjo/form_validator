@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DOM Utilities Documentation</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 2rem;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h1, h2, h3 {
+      color: #004080;
+    }
+
+    code {
+      background-color: #eef;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    pre {
+      background-color: #f4f4f4;
+      border-left: 4px solid #ccc;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    section {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    nav {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li::before {
+      content: "📌 ";
+    }
+
+    a {
+      text-decoration: none;
+      color: #0066cc;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>📚 DOM Utilities Documentation</h1>
+
+  <nav>
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#smallError">smallError</a></li>
+      <li><a href="#validatorErrorField">validatorErrorField</a></li>
+      <li><a href="#createSmallErrorMessage">createSmallErrorMessage</a></li>
+      <li><a href="#addErrorMessageFieldDom">addErrorMessageFieldDom</a></li>
+      <li><a href="#handleErrorsManyForm">handleErrorsManyForm</a></li>
+      <li><a href="#clearErrorInput">clearErrorInput</a></li>
+      <li><a href="#getInputPatternRegex">getInputPatternRegex</a></li>
+    </ul>
+  </nav>
+
+  <section id="smallError">
+    <h2><code>smallError</code></h2>
+    <p>
+      The <code>smallError</code> function generates a <code>&lt;small&gt;</code> HTML element containing an error message,
+      optionally including a <code>data-key</code> attribute for JavaScript tracking or debugging purposes.
+    </p>
+
+    <h3>Function Signature</h3>
+    <pre><code class="language-ts">
+export function smallError(
+  message_error: string,
+  className: string,
+  id: string,
+  key?: number
+): string
+    </code></pre>
+
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>message_error</strong> (<code>string</code>): The error message to be displayed.</li>
+      <li><strong>className</strong> (<code>string</code>): The CSS class(es) applied to the <code>&lt;small&gt;</code> element.</li>
+      <li><strong>id</strong> (<code>string</code>): A unique identifier for the HTML element.</li>
+      <li><strong>key</strong> (<code>number</code>, optional): An optional numeric key used in the <code>data-key</code> attribute (useful for identifying or debugging elements).</li>
+    </ul>
+
+    <h3>Returns</h3>
+    <p><code>string</code> — A string representing an HTML <code>&lt;small&gt;</code> element with the specified parameters.</p>
+
+    <h3>Behavior</h3>
+    <p>
+      If the <code>key</code> parameter is provided and is not <code>undefined</code> or <code>null</code>, the function will include
+      a <code>data-key</code> attribute in the output. Otherwise, this attribute will be omitted.
+    </p>
+
+    <h3>Example</h3>
+    <pre><code class="language-ts">
+const html = smallError(
+  "This field is required",
+  "text-danger",
+  "field-error",
+  12345
+);
+
+// Output:
+// &lt;small id="field-error" class="text-danger" data-key="12345"&gt;This field is required&lt;/small&gt;
+    </code></pre>
+  </section>
+  <section id="validatorErrorField">
+    <h2><code>validatorErrorField</code></h2>
+  
+    <p>
+      The <code>validatorErrorField</code> function generates a formatted block of HTML <code>&lt;small&gt;</code> tags to display one or more validation error messages.
+      It supports customization of the CSS class, unique HTML IDs, and custom separators for joining multiple messages.
+    </p>
+  
+    <h3>Function Signature</h3>
+    <pre><code class="language-ts">
+  export const validatorErrorField = (
+    validate_error_field: ValidatorErrorFieldProps = {
+      messageerror: ' ',
+      classnameerror: ["fw-bold", "text-danger", "mt-2"],
+      id: `error-field-${Date.now()}`,
+      separator_join: "&lt;br/&gt;&lt;hr/&gt;"
+    }
+  ): string
+    </code></pre>
+  
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>validate_error_field</strong> (<code>ValidatorErrorFieldProps</code>, optional): An object containing the following properties:
+        <ul>
+          <li><code>messageerror</code> (<code>string | string[]</code>): The error message(s) to display.</li>
+          <li><code>classnameerror</code> (<code>string[]</code>): A list of CSS classes to apply to the <code>&lt;small&gt;</code> tags.</li>
+          <li><code>id</code> (<code>string</code>): The base HTML <code>id</code> used for each error element. If multiple messages exist, the index is appended.</li>
+          <li><code>separator_join</code> (<code>string</code>): A string used to join multiple <code>&lt;small&gt;</code> tags (default: <code>&lt;br/&gt;&lt;hr/&gt;</code>).</li>
+        </ul>
+      </li>
+    </ul>
+  
+    <h3>Returns</h3>
+    <p><code>string</code> — A string containing one or more formatted <code>&lt;small&gt;</code> HTML elements with appropriate classes and IDs.</p>
+  
+    <h3>Behavior</h3>
+    <ul>
+      <li>If <code>messageerror</code> is an array, each message gets a unique ID and optional <code>data-key</code> attribute for debugging.</li>
+      <li>If it is a single string, a single <code>&lt;small&gt;</code> tag is returned.</li>
+      <li>CSS classes are dynamically joined from the provided array.</li>
+      <li>Messages are joined using the specified <code>separator_join</code>.</li>
+    </ul>
+  
+    <h3>Example Usage</h3>
+    <pre><code class="language-ts">
+  validatorErrorField({
+    messageerror: ["Field is required", "Must be a valid email"],
+    classnameerror: ["text-danger", "mt-1"],
+    id: "email-error",
+    separator_join: "&lt;br/&gt;"
+  });
+  
+  // Output:
+  // &lt;small id="email-error-0" class="error-message text-danger mt-1" data-key="0"&gt;Field is required&lt;/small&gt;
+  // &lt;br/&gt;
+  // &lt;small id="email-error-1" class="error-message text-danger mt-1" data-key="1"&gt;Must be a valid email&lt;/small&gt;
+    </code></pre>
+    <h3>React Example</h3>
+<p>
+  When using <code>validatorErrorField</code> inside a React component, you can safely inject the generated HTML error messages
+  using <code>dangerouslySetInnerHTML</code>. Make sure the message content is sanitized beforehand.
+</p>
+
+<pre><code class="language-tsx">
+import React from 'react';
+// Make sure to import validatorErrorField properly
+import { validatorErrorField } from '@wlindabla/form_validator';
+
+function MyFormErrorDisplay() {
+  // Example usage with multiple error messages
+  const errors = [
+    "Username is required.",
+    "Password must be at least 8 characters long."
+  ];
+
+  const htmlErrors = validatorErrorField({
+    messageerror: errors,
+    classnameerror: ["my-custom-error-class", "font-bold"],
+    id: "form-validation-errors",
+    separator_join: "&lt;hr/&gt;"
+  });
+
+  // Or with a single message:
+  // const htmlErrors = validatorErrorField({
+  //   messageerror: "A general error occurred.",
+  //   id: "generic-error"
+  // });
+
+  return (
+    &lt;div className="error-container"&gt;
+      {/* Be cautious with dangerouslySetInnerHTML! */}
+      &lt;div dangerouslySetInnerHTML={{ __html: htmlErrors }} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MyFormErrorDisplay;
+</code></pre>
+
+<p><strong>⚠️ Warning:</strong> When using <code>dangerouslySetInnerHTML</code> in React, make sure the content is trusted or properly sanitized to avoid XSS vulnerabilities.</p>
+
+  </section>
+  <section id="createSmallErrorMessage" class="doc-section mt-5">
+    <h2 class="text-primary mb-4 border-bottom pb-2">createSmallErrorMessage</h2>
+  
+    <p class="text-muted">
+      This function creates or retrieves a <code>&lt;small&gt;</code> HTML error message element for a given input field using a unique key.
+      It's useful when multiple validation errors can exist per field and you want to uniquely identify or reuse them in the DOM.
+    </p>
+  
+    <h4 class="mt-4">Function Signature</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  createSmallErrorMessage(
+    fieldInputID: string,
+    errorMessage: string,
+    keyError: number | string
+  ): JQuery&lt;HTMLElement&gt;
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Parameters</h4>
+    <ul>
+      <li><strong>fieldInputID</strong> <code>(string)</code> – The ID of the related input field.</li>
+      <li><strong>errorMessage</strong> <code>(string)</code> – The error text to display inside the element.</li>
+      <li><strong>keyError</strong> <code>(number | string)</code> – A unique identifier for the error (used in the element's ID).</li>
+    </ul>
+  
+    <h4 class="mt-4">Returns</h4>
+    <p>
+      <code>JQuery&lt;HTMLElement&gt;</code> – A jQuery object representing the existing or newly created error message element.
+    </p>
+  
+    <h4 class="mt-4">Behavior</h4>
+    <ul>
+      <li>Generates a unique ID using the format <code>error-item-{fieldInputID}-{keyError}</code>.</li>
+      <li>Checks if an element with that ID already exists in the DOM.</li>
+      <li>
+        If it exists, returns the existing element.<br />
+        Otherwise, generates a new error message HTML using <code>validatorErrorField</code>,
+        wraps it with jQuery, assigns a <code>data-field-id</code> attribute, and returns it.
+      </li>
+    </ul>
+  
+    <h4 class="mt-4">Example</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  const errorElement = createSmallErrorMessage(
+    "email", 
+    "Email address is invalid.", 
+    1
+  );
+  jQuery("#email").after(errorElement);
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Related</h4>
+    <ul>
+      <li><a href="#validatorErrorField"><code>validatorErrorField</code></a> – Generates structured error HTML.</li>
+      <li><a href="#smallError"><code>smallError</code></a> – Basic HTML generator for a single error message.</li>
+    </ul>
+  </section>
+  <section id="addErrorMessageFieldDom" class="doc-section mt-5">
+    <h2 class="text-primary mb-4 border-bottom pb-2">addErrorMessageFieldDom</h2>
+  
+    <p class="text-muted">
+      This function adds or updates validation error messages for a specific input field in the DOM.
+      It ensures that only one error container exists per field and toggles Bootstrap-compatible error classes for styling and feedback.
+    </p>
+  
+    <h4 class="mt-4">Function Signature</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  addErrorMessageFieldDom(
+    elmtfield: JQuery&lt;HTMLElement&gt;,
+    errormessagefield?: string[],
+    className_container_ErrorMessage?: string
+  ): void
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Parameters</h4>
+    <ul>
+      <li>
+        <strong>elmtfield</strong> <code>(JQuery&lt;HTMLElement&gt;)</code> – 
+        The target input, select, or textarea element to which validation messages are attached.
+      </li>
+      <li>
+        <strong>errormessagefield</strong> <code>(string[])</code> – 
+        Optional list of error messages. If omitted or empty, any existing messages will be removed.
+      </li>
+      <li>
+        <strong>className_container_ErrorMessage</strong> <code>(string)</code> – 
+        Optional custom class for styling the message container. Defaults to <code>"border border-3 border-light"</code>.
+      </li>
+    </ul>
+  
+    <h4 class="mt-4">Returns</h4>
+    <p><code>void</code> – This function does not return anything. It directly manipulates the DOM.</p>
+  
+    <h4 class="mt-4">Behavior</h4>
+    <ul>
+      <li>Appends a <code>&lt;div&gt;</code> container after the input if it doesn't already exist.</li>
+      <li>Uses the input’s <code>id</code> to uniquely identify its associated error container.</li>
+      <li>Each error message is rendered as a <code>&lt;small&gt;</code> element with attributes for styling and traceability.</li>
+      <li>Automatically adds the Bootstrap <code>is-invalid</code> class for red visual feedback.</li>
+      <li>If <code>errormessagefield</code> is not provided or is empty, removes all errors and clears the validation style.</li>
+    </ul>
+  
+    <h4 class="mt-4">Example</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  // Add multiple error messages for an email field
+  addErrorMessageFieldDom($('#user_email'), [
+    'This field is required.',
+    'Must be a valid email address.'
+  ]);
+  
+  // Clear errors for the same field
+  addErrorMessageFieldDom($('#user_email'));
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Related</h4>
+    <ul>
+      <li><a href="#createSmallErrorMessage"><code>createSmallErrorMessage</code></a> – Generates individual error <code>&lt;small&gt;</code> elements.</li>
+      <li><a href="#validatorErrorField"><code>validatorErrorField</code></a> – Assembles error messages into HTML strings.</li>
+    </ul>
+  </section>
+  <section id="handleErrorsManyForm" class="doc-section mt-5">
+    <h2 class="text-primary border-bottom pb-2">handleErrorsManyForm</h2>
+  
+    <p class="text-muted">
+      Handles and displays or clears multiple validation errors for a form, including support for nested field names.
+      It ensures a clean reset of any previous errors and updates the form fields with the latest feedback.
+    </p>
+  
+    <h4 class="mt-4">Function Signature</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  handleErrorsManyForm(
+    formName: string,
+    formId: string,
+    errors: Record&lt;string, string[]&gt;
+  ): void
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Parameters</h4>
+    <ul>
+      <li>
+        <strong>formName</strong> <code>(string)</code> – 
+        The name or alias of the form. This acts as a prefix to locate fields in the DOM (e.g., <code>user_email</code>).
+      </li>
+      <li>
+        <strong>formId</strong> <code>(string)</code> – 
+        The HTML <code>id</code> of the form element. Used to scope both error clearing and error application.
+      </li>
+      <li>
+        <strong>errors</strong> <code>(Record&lt;string, string[]&gt;)</code> – 
+        An object representing validation errors, where each key is a field name and each value is an array of messages.
+      </li>
+    </ul>
+  
+    <h4 class="mt-4">Behavior</h4>
+    <ol class="list">
+      <li>Clears all previous error messages and <code>is-invalid</code> classes from fields under the specified form.</li>
+      <li>Iterates through the <code>errors</code> object and locates each corresponding input field using a naming convention: 
+        <code>${formName}_${fieldName}</code>.</li>
+      <li>For each field found, it uses <code>addErrorMessageFieldDom</code> to display errors visually below the input field.</li>
+      <li>If a field cannot be found in the DOM, a warning is logged via <code>Logger.warn</code>.</li>
+    </ol>
+  
+    <h4 class="mt-4">Return Value</h4>
+    <p><code>void</code> – This function performs DOM manipulation directly and returns nothing.</p>
+  
+    <h4 class="mt-4">Example Usage</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  // Show validation errors for 'user' form with ID 'user_form'
+  handleErrorsManyForm('user', 'user_form', {
+    "email": ["This field is required.", "Must be a valid email."],
+    "address.city": ["City is required."]
+  });
+  
+  // Clear all previous errors from 'user_form'
+  handleErrorsManyForm('user', 'user_form', {});
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Assumptions</h4>
+    <ul>
+      <li>Form field elements follow a naming convention such as <code>formName_fieldName</code>.</li>
+      <li>Error containers are generated using the <code>addErrorMessageFieldDom</code> utility.</li>
+      <li>Fields and error containers are uniquely identifiable using their ID attributes.</li>
+    </ul>
+  
+    <h4 class="mt-4">Related</h4>
+    <ul>
+      <li><a href="#addErrorMessageFieldDom"><code>addErrorMessageFieldDom</code></a> – Displays individual field errors.</li>
+      <li><a href="#createSmallErrorMessage"><code>createSmallErrorMessage</code></a> – Creates a single error message element.</li>
+    </ul>
+  </section>
+  <section id="clearErrorInput" class="doc-section mt-5">
+    <h2 class="text-primary border-bottom pb-2">clearErrorInput</h2>
+  
+    <p class="text-muted">
+      Removes all validation error indicators for a specific input field, including both the
+      <code>is-invalid</code> class and the associated error message container.
+    </p>
+  
+    <h4 class="mt-4">Function Signature</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  clearErrorInput(inputFieldJQuery: JQuery&lt;HTMLElement&gt;): void
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Parameters</h4>
+    <ul>
+      <li>
+        <strong>inputFieldJQuery</strong> <code>(JQuery&lt;HTMLElement&gt;)</code> – 
+        A jQuery-wrapped input element (e.g., <code>&lt;input&gt;</code>, <code>&lt;select&gt;</code>, or <code>&lt;textarea&gt;</code>) from which errors should be cleared.
+      </li>
+    </ul>
+  
+    <h4 class="mt-4">Behavior</h4>
+    <ol class="list">
+      <li>Retrieves the <code>id</code> of the target input field to locate its associated error container.</li>
+      <li>If the field has the <code>is-invalid</code> class, it removes this class to visually clear the error state.</li>
+      <li>Locates the associated error container element by its generated ID (<code>container-div-error-message-FIELD_ID</code>), and removes it from the DOM if present.</li>
+      <li>If the <code>is-invalid</code> class is not present, it still checks for and removes the error container in case it exists due to manual inconsistencies.</li>
+      <li>If the input field lacks an <code>id</code>, a warning is logged and the function exits without making changes.</li>
+    </ol>
+  
+    <h4 class="mt-4">Return Value</h4>
+    <p><code>void</code> – The function performs DOM updates in place and does not return any value.</p>
+  
+    <h4 class="mt-4">Example Usage</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  // To clear all validation errors from the input field with ID "user_email":
+  clearErrorInput($('#user_email'));
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Related</h4>
+    <ul>
+      <li><a href="#addErrorMessageFieldDom"><code>addErrorMessageFieldDom</code></a> – Adds or updates validation error messages for a field.</li>
+      <li><a href="#handleErrorsManyForm"><code>handleErrorsManyForm</code></a> – Processes and displays multiple field errors for an entire form.</li>
+    </ul>
+  </section>
+  <section id="getInputPatternRegex" class="doc-section mt-5">
+    <h2 class="text-primary border-bottom pb-2">getInputPatternRegex</h2>
+  
+    <p class="text-muted">
+      Converts a <code>pattern</code> attribute from an <code>&lt;input&gt;</code> or <code>&lt;textarea&gt;</code> element into a JavaScript <code>RegExp</code> object with optional flags.
+      This is particularly useful for validating form input values against constraints defined in HTML.
+    </p>
+  
+    <h4 class="mt-4">Function Signature</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  getInputPatternRegex(
+    children: HTMLElement | JQuery&lt;HTMLElement&gt;,
+    formParentName: string,
+    flag?: string
+  ): RegExp | undefined
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Parameters</h4>
+    <ul>
+      <li>
+        <strong>children</strong> <code>(HTMLElement | JQuery&lt;HTMLElement&gt;)</code> –
+        A reference to the DOM input or textarea element that contains a <code>pattern</code> attribute.
+      </li>
+      <li>
+        <strong>formParentName</strong> <code>(string)</code> –
+        A human-readable label or name for the form used in error logging for better debugging context.
+      </li>
+      <li>
+        <strong>flag</strong> <code>(string, optional)</code> –
+        Regex flags such as <code>i</code>, <code>g</code>, <code>u</code>, etc. Defaults to <code>"i"</code>.
+      </li>
+    </ul>
+  
+    <h4 class="mt-4">Returns</h4>
+    <p>
+      A <code>RegExp</code> object if the pattern is found and valid; otherwise <code>undefined</code>. Errors are logged or thrown if issues occur during parsing.
+    </p>
+  
+    <h4 class="mt-4">Behavior</h4>
+    <ol>
+      <li>Ensures the element exists in the DOM; otherwise, logs a warning and returns <code>undefined</code>.</li>
+      <li>Validates that the <code>flag</code> parameter contains only accepted regex characters.</li>
+      <li>Extracts the <code>pattern</code> attribute (or <code>data-pattern</code>) from the input/textarea element.</li>
+      <li>If the pattern is found, constructs and returns a <code>RegExp</code> object using the pattern and the flags.</li>
+      <li>Logs helpful messages via <code>Logger</code> in case of issues.</li>
+    </ol>
+  
+    <h4 class="mt-4">Example (Vanilla JS)</h4>
+    <pre class="bg-light p-3 rounded border">
+  <code>
+  const input = document.querySelector('#email') as HTMLInputElement;
+  const regex = getInputPatternRegex(input, 'LoginForm', 'gi');
+  if (regex?.test(input.value)) {
+    console.log('Valid email input!');
+  }
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Example (React)</h4>
+    <pre class="bg-light p-3 rounded border language-tsx">
+  <code>
+  import React, { useRef } from 'react';
+  
+  export function MyFormComponent() {
+    const inputRef = useRef&lt;HTMLInputElement&gt;(null);
+  
+    const handleValidate = () => {
+      if (inputRef.current) {
+        const regex = getInputPatternRegex(inputRef.current, 'MyReactForm', 'i');
+        const value = inputRef.current.value;
+        if (regex?.test(value)) {
+          console.log('✅ Valid input!');
+        } else {
+          console.warn('❌ Invalid input!');
+        }
+      }
+    };
+  
+    return (
+      &lt;div&gt;
+        &lt;input
+          ref={inputRef}
+          type="text"
+          name="username"
+          pattern="^[a-zA-Z0-9_]{4,12}+$"
+          placeholder="Enter your username"
+        /&gt;
+        &lt;button onClick={handleValidate}&gt;Validate&lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+  </code>
+    </pre>
+  
+    <h4 class="mt-4">Related</h4>
+    <ul>
+      <li><a href="#addErrorMessageFieldDom"><code>addErrorMessageFieldDom</code></a></li>
+      <li><a href="#handleErrorsManyForm"><code>handleErrorsManyForm</code></a></li>
+      <li><a href="#validatorErrorField"><code>validatorErrorField</code></a></li>
+    </ul>
+  </section>  
+</body>
+</html>

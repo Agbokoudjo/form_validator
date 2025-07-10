@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Documentation – merges function </title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background-color: #f8f9fa;
+      color: #212529;
+      line-height: 1.6;
+    }
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    h1, h2, h3 {
+      color: #333;
+    }
+
+    nav {
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    nav ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    nav li {
+      margin-bottom: 0.5rem;
+    }
+
+    nav a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    section {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 2rem;
+    }
+
+    pre {
+      background-color: #f1f1f1;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    code {
+      font-family: "Courier New", monospace;
+      font-size: 0.95rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>mergeArrayValues Documentation</h1>
+  </header>
+
+  <nav>
+    <h2>Table of Contents</h2>
+    <ul>
+      <li><a href="#mergeArrayValues">mergeArrayValues</a></li>
+      <li><a href="#merge-strategies">Available Merge Strategies</a></li>
+      <li><a href="#examples">Examples</a></li>
+      <li><a href="#deepMerge">deepMerge</a></li>
+      <li><a href="#deepMergeAll">deepMergeAll</a></li>
+      <li><a href="#deepMergeAllExtended">deepMergeAllExtended</a></li>
+    </ul>
+  </nav>
+
+  <section id="mergeArrayValues">
+    <h2>mergeArrayValues</h2>
+    <p>
+      <strong>Function:</strong> Merges two arrays based on the specified strategy.
+    </p>
+
+    <h3>Signature</h3>
+    <pre><code>
+function mergeArrayValues&lt;T&gt;(
+  target: T[],
+  source: T[],
+  strategy?: MergeArrayStrategy&lt;T&gt;
+): T[]
+    </code></pre>
+
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>target</strong>: The original array (T[])</li>
+      <li><strong>source</strong>: The new array to merge (T[])</li>
+      <li><strong>strategy</strong> <em>(optional)</em>: The merge strategy to apply</li>
+    </ul>
+
+    <h3>Return</h3>
+    <p>
+      A new array of type T[] after applying the chosen merge strategy.
+    </p>
+
+    <h3>Throws</h3>
+    <p>
+      Throws an <code>Error</code> if an unknown strategy is provided.
+    </p>
+  </section>
+
+  <section id="merge-strategies">
+    <h2>Available Merge Strategies</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>'concat'</code></td>
+          <td>Concatenates <code>target</code> and <code>source</code> arrays.</td>
+        </tr>
+        <tr>
+          <td><code>'replace'</code></td>
+          <td>Replaces the entire <code>target</code> array with <code>source</code>.</td>
+        </tr>
+        <tr>
+          <td><code>'mergeUnique'</code></td>
+          <td>Merges both arrays and removes duplicate values (based on <code>Set</code>).</td>
+        </tr>
+        <tr>
+          <td><code>(target, source) =&gt; T[]</code></td>
+          <td>Custom merging function that returns a new array.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="examples">
+    <h2>Examples</h2>
+    <pre><code>
+// Example 1: concat strategy
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+const result1 = mergeArrayValues(arr1, arr2, 'concat');
+console.log(result1); // [1, 2, 3, 4, 5, 6]
+
+// Example 2: replace strategy
+const result2 = mergeArrayValues(arr1, arr2, 'replace');
+console.log(result2); // [4, 5, 6]
+
+// Example 3: mergeUnique strategy
+const result3 = mergeArrayValues([1, 2, 3], [3, 4, 5], 'mergeUnique');
+console.log(result3); // [1, 2, 3, 4, 5]
+
+// Example 4: Custom strategy
+const customStrategy = (t, s) => [...t, ...s.filter(n => n % 2 === 0)];
+const result4 = mergeArrayValues([1, 2, 3], [4, 5, 6], customStrategy);
+console.log(result4); // [1, 2, 3, 4, 6]
+    </code></pre>
+  </section>
+  <section id="deepMerge">
+    <h2>deepMerge</h2>
+    <p>
+      <strong>Function:</strong> Deeply merges a user-defined object with default values recursively.
+    </p>
+  
+    <h3>Signature</h3>
+    <pre><code>
+  function deepMerge&lt;T extends object, D extends Partial&lt;T&gt;&gt;(
+    obj: T | Partial&lt;T&gt;,
+    defaults: D,
+    mergeArrays: MergeArrayStrategy = 'replace'
+  ): T
+    </code></pre>
+  
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>obj</strong>: The user-provided object (may be partial).</li>
+      <li><strong>defaults</strong>: A full default object that provides fallback values.</li>
+      <li><strong>mergeArrays</strong> <em>(optional)</em>: Strategy for merging arrays. Default is <code>'replace'</code>.</li>
+    </ul>
+  
+    <h3>Return</h3>
+    <p>
+      Returns a new object where missing or undefined properties in <code>obj</code> are filled in using values from <code>defaults</code>. Nested objects, arrays, Maps, Sets, and Dates are handled appropriately.
+    </p>
+  
+    <h3>Merge Behavior</h3>
+    <ul>
+      <li><strong>Objects</strong>: merged recursively.</li>
+      <li><strong>Arrays</strong>: merged based on <code>mergeArrays</code> strategy (e.g., replace, concat, mergeUnique).</li>
+      <li><strong>Maps</strong>: merged using spread into a new <code>Map</code>.</li>
+      <li><strong>Sets</strong>: merged into a new <code>Set</code> with unique values.</li>
+      <li><strong>Dates</strong>: replaced with a copy of the default date.</li>
+    </ul>
+  
+    <h3>Example</h3>
+    <pre><code>
+  // Type definition
+  type Options = {
+    security: {
+      csrf: boolean;
+      xss: boolean;
+    };
+    caching: {
+      enabled: boolean;
+      ttl: number;
+    };
+  };
+  
+  const userOptions = {
+    security: {
+      csrf: true
+    }
+  };
+  
+  const defaultOptions: Options = {
+    security: {
+      csrf: false,
+      xss: true
+    },
+    caching: {
+      enabled: true,
+      ttl: 300
+    }
+  };
+  
+  const merged = deepMerge(userOptions, defaultOptions);
+  
+  console.log(merged);
+  
+  /*
+  Output:
+  {
+    security: {
+      csrf: true,
+      xss: true
+    },
+    caching: {
+      enabled: true,
+      ttl: 300
+    }
+  }
+  */
+    </code></pre>
+  </section>  
+  <section id="deepMergeAll">
+    <h2>deepMergeAll</h2>
+    <p><strong>Function:</strong> Deeply merges multiple objects into a single one using a configurable array merge strategy.</p>
+  
+    <h3>Signature</h3>
+    <pre><code>
+  function deepMergeAll&lt;T&gt;(
+    mergeStrategy: MergeArrayStrategy&lt;T&gt; = 'replace',
+    ...objects: Partial&lt;T&gt;[]
+  ): T
+    </code></pre>
+  
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>mergeStrategy</strong> <em>(optional)</em>: Strategy to merge arrays. Options include:
+        <ul>
+          <li><code>'replace'</code>: replaces arrays completely (default)</li>
+          <li><code>'concat'</code>: concatenates arrays</li>
+          <li><code>'mergeUnique'</code>: merges arrays while removing duplicates</li>
+          <li><code>(target: T[], source: T[]) => T[]</code>: a custom merge function</li>
+        </ul>
+      </li>
+      <li><strong>...objects</strong>: List of objects to merge (must be at least one).</li>
+    </ul>
+  
+    <h3>Returns</h3>
+    <p>A new object resulting from deeply merging all provided objects using the specified array strategy.</p>
+  
+    <h3>Examples</h3>
+  
+    <h4>Example 1: Default (replace strategy)</h4>
+    <pre><code>
+  const finalConfig = deepMergeAll('replace', defaultConfig, userConfig, adminOverrides);
+  
+  /*
+  {
+    name: "My App",
+    version: "1.0.1-beta",
+    settings: {
+      theme: "light",
+      notifications: false
+    },
+    features: ["admin-panel"],
+    users: [{ id: 3, name: "Charlie" }]
+  }
+  */
+    </code></pre>
+  
+    <h4>Example 2: Concat strategy</h4>
+    <pre><code>
+  const finalConcat = deepMergeAll('concat', defaultConfig, userConfig, adminOverrides);
+  
+  /*
+  {
+    name: "My App",
+    version: "1.0.1-beta",
+    settings: {
+      theme: "light",
+      notifications: false
+    },
+    features: ["dashboard", "reports", "charts", "export", "admin-panel"],
+    users: [
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+      { id: 3, name: "Charlie" }
+    ]
+  }
+  */
+    </code></pre>
+  
+    <h4>Example 3: Unique merging strategy</h4>
+    <pre><code>
+  const finalUnique = deepMergeAll('mergeUnique', defaultConfig, userConfig, configWithDuplicateFeatures, adminOverrides);
+  
+  /*
+  {
+    name: "My App",
+    version: "1.0.1-beta",
+    settings: {
+      theme: "light",
+      notifications: false
+    },
+    features: ["dashboard", "reports", "charts", "export", "admin-panel"],
+    users: [
+      { id: 1, name: "Alice" },
+      { id: 2, name: "Bob" },
+      { id: 3, name: "Charlie" }
+    ]
+  }
+  */
+    </code></pre>
+  
+    <h4>Example 4: Custom array strategy</h4>
+    <pre><code>
+  const customStrategy: MergeArrayStrategy = (target, source) => {
+    return [...target, ...source].filter(s => typeof s === 'string' && s.length > 5);
+  };
+  
+  const finalCustom = deepMergeAll(customStrategy, defaultConfig, userConfig, adminOverrides);
+  
+  /*
+  {
+    name: "My App",
+    version: "1.0.1-beta",
+    settings: {
+      theme: "light",
+      notifications: false
+    },
+    features: ["dashboard", "reports", "charts", "export", "admin-panel"],
+    users: [...]
+  }
+  */
+    </code></pre>
+  
+    <h4>Example 5: Real-world config merge</h4>
+    <pre><code>
+  const defaultOptions = {
+    logging: {
+      level: 'info',
+      formats: ['json'],
+    },
+    features: {
+      auth: true,
+      payment: true,
+    }
+  };
+  
+  const userOptions = {
+    logging: {
+      formats: ['text'],
+    },
+    features: {
+      payment: false,
+    }
+  };
+  
+  const merged = deepMergeAll('concat', defaultOptions, userOptions);
+  
+  /*
+  {
+    logging: {
+      level: 'info',
+      formats: ['json', 'text']
+    },
+    features: {
+      auth: true,
+      payment: false
+    }
+  }
+  */
+    </code></pre>
+  
+    <h3>Errors</h3>
+    <ul>
+      <li>Throws an error if no objects are passed to the function.</li>
+    </ul>
+  </section>
+  <section id="deepMergeAllExtended">
+    <h2>deepMergeAllExtended</h2>
+    <p><strong>Function:</strong> Deeply merges multiple objects recursively using a specified array merging strategy. The final return type is inferred as the intersection of all input object types.</p>
+  
+    <h3>Signature</h3>
+    <pre><code>
+  function deepMergeAllExtended&lt;T extends object[]&gt;(
+    mergeArrays: MergeArrayStrategy&lt;T&gt;,
+    ...objects: T
+  ): MergeObjects&lt;T&gt;
+    </code></pre>
+  
+    <h3>Parameters</h3>
+    <ul>
+      <li><strong>mergeArrays</strong>: Strategy for merging arrays.
+        <ul>
+          <li><code>'replace'</code>: replaces arrays completely</li>
+          <li><code>'concat'</code>: concatenates arrays</li>
+          <li><code>'mergeUnique'</code>: merges arrays keeping only unique values</li>
+          <li><code>(target: T[], source: T[]) =&gt; T[]</code>: custom array merging function</li>
+        </ul>
+      </li>
+      <li><strong>...objects</strong>: A variadic list of objects to merge.</li>
+    </ul>
+  
+    <h3>Returns</h3>
+    <p>A new object of type <code>MergeObjects&lt;T&gt;</code>, which is the intersection of all input types with proper typing and full deep merge behavior.</p>
+  
+    <h3>Supported Features</h3>
+    <ul>
+      <li>✅ Recursive deep object merging</li>
+      <li>✅ TypeScript intersection inference</li>
+      <li>✅ Array strategy support (replace, concat, unique, custom)</li>
+      <li>✅ Native support for <code>Map</code>, <code>Set</code>, and <code>Date</code></li>
+      <li>✅ Multiple object merge (variadic)</li>
+    </ul>
+  
+    <h3>Example</h3>
+    <pre><code>
+  const defaults = {
+    env: 'prod',
+    security: {
+      headers: ['X-Frame-Options'],
+    },
+    cache: new Map([['enabled', true]]),
+    lastModified: new Date('2023-01-01'),
+  };
+  
+  const userConfig = {
+    env: 'dev',
+    security: {
+      headers: ['Content-Security-Policy'],
+    },
+    cache: new Map([['ttl', 300]]),
+  };
+  
+  const final = deepMergeAllExtended('concat', defaults, userConfig);
+  
+  /*
+  Typed result:
+  {
+    env: "prod",
+    security: {
+      headers: ["X-Frame-Options", "Content-Security-Policy"]
+    },
+    cache: Map(2),
+    lastModified: Date
+  }
+  */
+    </code></pre>
+  
+    <h3>Example of inferred type</h3>
+    <pre><code>
+  type Config1 = { name: string; };
+  type Config2 = { debug: boolean; };
+  
+  const merged = deepMergeAllExtended('replace', { name: "App" }, { debug: true });
+  
+  // Type of 'merged' is: { name: string; debug: boolean; }
+    </code></pre>
+  
+    <h3>Errors</h3>
+    <ul>
+      <li>Throws an error if no objects are provided.</li>
+    </ul>
+  
+    <h3>Summary Table</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Included</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Recursive merging</td><td>✅</td></tr>
+        <tr><td>Custom array strategy</td><td>✅</td></tr>
+        <tr><td>Supports Map / Set / Date</td><td>✅</td></tr>
+        <tr><td>Unlimited number of objects</td><td>✅</td></tr>
+        <tr><td>Type inference</td><td>✅</td></tr>
+      </tbody>
+    </table>
+  </section>  
+</body>
+</html>
