@@ -22,8 +22,8 @@
 -   [ImageValidator](#ImageValidator)
 -   [DocumentValidator](#DocumentValidator)
 -   [VideoValidator](#VideoValidator)
--   [FormChildrenValidate](#FormChildrenValidate)
--   [FormValidate](#FormValidate)
+-   [FieldInputController](#FieldInputController)
+-   [FormValidateController](#FormValidateController)
 -   [FQDNOptions](#FQDNOptions)
 -   [EmailInputOptions](#EmailInputOptions)
 -   [TextInputOptions](#TextInputOptions)
@@ -79,16 +79,14 @@ validation.
 ## Usage:
 
 To use the `TextInputValidator`, you first obtain its singleton
-instance. Then, you can call the `textValidator` method, passing the
-input data, the target field name, and an options object to define the
+instance. Then, you can call the `validate` method, passing the input
+data, the target field name, and an options object to define the
 validation rules.
 
 ### Getting an Instance:
 
 ``` typescript
-import { TextInputValidator } from '@wlindabla/form_validator'
-
-const textValidator = TextInputValidator.getInstance();
+import { textInputValidator  } from '@wlindabla/form_validator'
 ```
 
 ### Validating Text Input:
@@ -106,17 +104,17 @@ const options = {
     errorMessageInput: "Username must contain only letters and spaces."
 };
 
-textValidator.textValidator(dataToValidate, fieldName, options);
+textInputValidator.validate(dataToValidate, fieldName, options);
 
-if (!textValidator.hasErrorsField(fieldName)) {
-    const {errorMessage,validatorStatus}=textValidator.getValidatorStatus();
+if (!textInputValidator. isFieldValid(fieldName)) {
+    const {isValid,errors}=textInputValidator.getState();
     console.log(`Validation errors for ${fieldName}:`,);
 } else {
     console.log(`${fieldName} is valid.`);
 }
 ```
 
-### Parameters for `textValidator`:
+### Parameters for `validate`:
 
 -   `datainput` (`string | undefined`): The string value from the input
     field to be validated.
@@ -183,17 +181,17 @@ active across your application, centralizing password validation logic.
 ## Usage:
 
 To validate a password, retrieve the singleton instance of
-`PasswordInputValidator`. Then, call the `passwordValidator` method with
-the password string, its input name, and an options object defining the
+`PasswordInputValidator`. Then, call the `validate` method with the
+password string, its input name, and an options object defining the
 validation rules. You can also provide options for password strength
 analysis and scoring.
 
 ### Getting an Instance:
 
 ``` typescript
-import { PasswordInputValidator } from '@wlindabla/form_validator';
+import { passwordInputValidator } from '@wlindabla/form_validator';
             
-            const passwordValidator = PasswordInputValidator.getInstance();
+       
             
 ```
 
@@ -229,7 +227,7 @@ import { PassworkRuleOptions } from '@wlindabla/form_validator'; // Adjust path
                 bonusForContainingSymbol: 20
             };
             
-            passwordValidator.passwordValidator(
+            passwordInputValidator.validate(
                 password,
                 fieldName,
                 validationOptions,
@@ -238,8 +236,8 @@ import { PassworkRuleOptions } from '@wlindabla/form_validator'; // Adjust path
                 scoringOptions
             );
             
-            if (!passwordValidator.hasErrorsField(fieldName)) {
-                console.log(`Password validation failed for ${fieldName}:`, passwordValidator.getErrors());
+            if (!passwordInputValidator. isFieldValid(fieldName)) {
+                console.log(`Password validation failed for ${fieldName}:`, passwordInputValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName} password is valid.`);
             }
@@ -253,7 +251,7 @@ import { PassworkRuleOptions } from '@wlindabla/form_validator'; // Adjust path
             
 ```
 
-### Parameters for `passwordValidator`:
+### Parameters for `validate`:
 
 -   `datainput` (`string`): The password string to be validated.
 -   `targetInputname` (`string`): The name of the input field, used for
@@ -290,7 +288,7 @@ allowing for method chaining.
 :::
 
 ::: {#FormError .section}
-# Abstract Class `FormError`
+# Abstract Class `FieldValidator`
 
 **Author:** AGBOKOUDJO Franck \<franckagbokoudjo301@gmail.com\>\
 **Package:**
@@ -304,10 +302,10 @@ inheriting from \`FormError\`, all specific validators (like
 etc.) gain a consistent mechanism for handling and reporting validation
 errors.
 
-It interacts with an internal \`formErrorStateManager\` to keep track of
-the validation status and associated error messages for each input
-field. This ensures a centralized and standardized approach to error
-handling throughout your application.
+It interacts with an internal \`formErrorStore\` to keep track of the
+validation status and associated error messages for each input field.
+This ensures a centralized and standardized approach to error handling
+throughout your application.
 
 \-\--
 
@@ -334,7 +332,7 @@ handling throughout your application.
 -   **Returns:** The current instance of the validator, allowing method
     chaining.
 
-### `hasErrorsField(targetInputname: string): boolean`
+### ` isFieldValid(targetInputname: string): boolean`
 
 -   **Description:** Checks if a specific input field has any validation
     errors.
@@ -356,7 +354,7 @@ handling throughout your application.
 -   **Returns:** The current instance of the validator, allowing method
     chaining.
 
-### `setValidatorStatus(status: boolean, error_message: string, targetInputname: string): this`
+### `setValidatorState(status: boolean, error_message: string, targetInputname: string): this`
 
 -   **Description:** Sets the validation status and an associated error
     message for a given input field. This is the core method used by
@@ -370,29 +368,29 @@ handling throughout your application.
 -   **Returns:** The current instance of the validator, allowing method
     chaining.
 
-### `getValidatorStatus(targetInputname: string): FieldStateValidating`
+### `getSate(targetInputname: string): FieldStateValidating`
 
 -   **Description:** Retrieves the current validation status and any
     associated error message for a specific input field.
 -   **Parameters:**
     -   \`targetInputname\` (\`string\`): The name of the input field.
--   **Returns:** An object \`{ validatorStatus: boolean; errorMessage:
-    string\[\] \| undefined; }\` containing the validation status and an
-    array of error messages for the field.
+-   **Returns:** An object \`{isValid: boolean; errors:
+    string\[\]\|\[\]; }\` containing the validation status and an array
+    of error messages for the field.
 
 \-\--
 
 ## Usage Example:
 
-While \`FormError\` is an abstract class and cannot be instantiated
+While \`FieldValidator\` is an abstract class and cannot be instantiated
 directly, its methods are available to all classes that extend it.
 Here\'s a conceptual example of how a derived validator might use these
 methods:
 
 ``` typescript
 // Inside a derived validator, e.g., EmailValidator
-            class EmailValidator extends FormError {
-                validateEmail(email: string, fieldName: string): this {
+            class EmailValidator extends FieldValidator {
+                validate(email: string, fieldName: string): this {
                     this.clearError(fieldName); // Always good practice to clear previous errors
             
                     if (!email) {
@@ -415,11 +413,11 @@ methods:
             
             const emailVal = new EmailValidator().getInstance() // Assuming concrete implementation
             emailVal.validateEmail("test@example.com", "userEmail");
-            console.log("Has errors for userEmail?", emailVal.hasErrorsField("userEmail"));
+            console.log("Has errors for userEmail?", emailVal. isFieldValid("userEmail"));
             console.log("Validator status for userEmail:", emailVal.getValidatorStatus("userEmail"));
             
             emailVal.validateEmail("invalid-email", "userEmail");
-            console.log("Has errors for userEmail (after invalid)?", emailVal.hasErrorsField("userEmail"));
+            console.log("Has errors for userEmail (after invalid)?", emailVal. isFieldValid("userEmail"));
             console.log("Validator status for userEmail (after invalid):", emailVal.getValidatorStatus("userEmail"));
             
             console.log("Are all fields valid?", emailVal.areAllFieldsValid());
@@ -465,16 +463,16 @@ efficient number validation.
 ## Usage:
 
 To validate a number input, first get the singleton instance of
-\`NumberInputValidator\`. Then, call the \`numberValidator\` method,
-providing the input value, its field name, and an optional
-\`NumberOptions\` object to define specific validation rules.
+\`NumberInputValidator\`. Then, call the \`validate\` method, providing
+the input value, its field name, and an optional \`NumberOptions\`
+object to define specific validation rules.
 
 ### Getting an Instance:
 
 ``` typescript
-import { NumberInputValidator } from '@wlindabla/form_validator';
+import { numberInputValidator as numberValidator } from '@wlindabla/form_validator';
             
-            const numberValidator = NumberInputValidator.getInstance();
+            
             
 ```
 
@@ -486,10 +484,10 @@ import { NumberOptions } from '@wlindabla/form_validator'; // Adjust path
             // Example 1: Basic number validation
             let value1 = "123";
             let fieldName1 = "quantity";
-            numberValidator.numberValidator(value1, fieldName1);
+            numberValidator.validate(value1, fieldName1);
             
-            if (numberValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, numberValidator.getErrors());
+            if (numberValidator. isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, numberValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: quantity is valid.
             }
@@ -500,8 +498,8 @@ import { NumberOptions } from '@wlindabla/form_validator'; // Adjust path
             const options2: NumberOptions = { min: 18, max: 120 };
             numberValidator.numberValidator(value2, fieldName2, options2);
             
-            if (numberValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, numberValidator.getErrors());
+            if (numberValidator. isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, numberValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName2} is valid.`); // Output: age is valid.
             }
@@ -510,10 +508,10 @@ import { NumberOptions } from '@wlindabla/form_validator'; // Adjust path
             let value3 = "10.5";
             let fieldName3 = "price";
             const options3: NumberOptions = { min: 0, step: 1 };
-            numberValidator.numberValidator(value3, fieldName3, options3);
+            numberValidator.validate(value3, fieldName3, options3);
             
-            if (numberValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, numberValidator.getErrors());
+            if (numberValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, numberValidator.getFieldErrors());
                 // Output: Validation errors for price: { price: "The value 10.5 must be a multiple of 1." }
             } else {
                 console.log(`${fieldName3} is valid.`);
@@ -522,10 +520,10 @@ import { NumberOptions } from '@wlindabla/form_validator'; // Adjust path
             // Example 4: Invalid number input
             let value4 = "abc";
             let fieldName4 = "id";
-            numberValidator.numberValidator(value4, fieldName4);
+            numberValidator.validate(value4, fieldName4);
             
-            if (numberValidator.hasErrorsField(fieldName4)) {
-                console.log(`Validation errors for ${fieldName4}:`, numberValidator.getErrors());
+            if (numberValidator.isFieldValid(fieldName4)) {
+                console.log(`Validation errors for ${fieldName4}:`, numberValidator.getFieldErrors());
                 // Output: Validation errors for id: { id: "Please enter a valid number." }
             }
             
@@ -598,24 +596,24 @@ rules.
 ### Getting an Instance:
 
 ``` typescript
-import { DateInputValidator } from './path/to/DateInputValidator';
+import { dateInputValidator as dateValidator} from './path/to/DateInputValidator';
             
-            const dateValidator = DateInputValidator.getInstance();
+           
             
 ```
 
 ### Validating a Date Input:
 
 ``` typescript
-import { DateInputOptions } from './path/to/YourOptionsInterface'; // Adjust path
+import { dateInputOptions as dateValidator } from './path/to/YourOptionsInterface'; // Adjust path
             
             // Example 1: Basic date validation with default format
             let date1 = "2023/10/26";
             let fieldName1 = "eventDate";
-            dateValidator.dateValidator(date1, fieldName1);
+            dateValidator.validate(date1, fieldName1);
             
-            if (dateValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, dateValidator.getErrors());
+            if (dateValidator.isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, dateValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: eventDate is valid.
             }
@@ -629,10 +627,10 @@ import { DateInputOptions } from './path/to/YourOptionsInterface'; // Adjust pat
                 delimiters: ['-'],
                 maxDate: new Date('2024-01-01') // Birth date should be before 2024
             };
-            dateValidator.dateValidator(date2, fieldName2, options2);
+            dateValidator.validate(date2, fieldName2, options2);
             
-            if (dateValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, dateValidator.getErrors());
+            if (dateValidator.isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, dateValidator.getFieldErrors());
                 // Output: Validation errors for birthDate: { birthDate: "The date must be before Tue Jan 01 2024..." }
             } else {
                 console.log(`${fieldName2} is valid.`);
@@ -642,10 +640,10 @@ import { DateInputOptions } from './path/to/YourOptionsInterface'; // Adjust pat
             let futureDate = new Date(new Date().getFullYear() + 1, 0, 1).toISOString().split('T')[0]; // Jan 1st next year
             let fieldName3 = "registrationDate";
             const options3: DateInputOptions = { allowFuture: false };
-            dateValidator.dateValidator(futureDate, fieldName3, options3);
+            dateValidator.validate(futureDate, fieldName3, options3);
             
-            if (dateValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, dateValidator.getErrors());
+            if (dateValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, dateValidator.getFieldErrors());
                 // Output: Validation errors for registrationDate: { registrationDate: "The date "YYYY-MM-DD" cannot be in the future." }
             } else {
                 console.log(`${fieldName3} is valid.`);
@@ -656,8 +654,8 @@ import { DateInputOptions } from './path/to/YourOptionsInterface'; // Adjust pat
             let fieldName4 = "invalidDate";
             dateValidator.dateValidator(date4, fieldName4);
             
-            if (dateValidator.hasErrorsField(fieldName4)) {
-                console.log(`Validation errors for ${fieldName4}:`, dateValidator.getErrors());
+            if (dateValidator.isFieldValid(fieldName4)) {
+                console.log(`Validation errors for ${fieldName4}:`, dateValidator.  getFieldErrors());
                 // Output: Validation errors for invalidDate: { invalidDate: "Invalid date created from input." }
             }
             
@@ -742,9 +740,9 @@ object to define specific validation rules and default behaviors.
 ### Getting an Instance:
 
 ``` typescript
-import { TelInputValidator } from '@wlindabla/form_validator';
+import { telInputValidator as telValidator} from '@wlindabla/form_validator';
             
-            const telValidator = TelInputValidator.getInstance();
+           
             
 ```
 
@@ -760,10 +758,10 @@ import { TelInputOptions } from '@wlindabla/form_validator'; // Adjust path
                 defaultCountry: 'US',
                 egAwait: '+1 (212) 555-0100' // Example for error messages
             };
-            telValidator.telValidator(phoneNumber1, fieldName1, options1);
+            telValidator.validate(phoneNumber1, fieldName1, options1);
             
-            if (telValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, telValidator.getErrors());
+            if (telValidator. isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, telValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: userPhone is valid.
                 // If jQuery is loaded, the input field named "userPhone" might be updated to "+1 212-555-0100"
@@ -778,8 +776,8 @@ import { TelInputOptions } from '@wlindabla/form_validator'; // Adjust path
             };
             telValidator.telValidator(phoneNumber2, fieldName2, options2);
             
-            if (telValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, telValidator.getErrors());
+            if (telValidator. isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, telValidator.getFieldErrors());
                 // Output: Validation errors for contactPhone: { contactPhone: "Please enter a valid international number starting with '+' or select a country code." }
             }
             
@@ -792,14 +790,14 @@ import { TelInputOptions } from '@wlindabla/form_validator'; // Adjust path
             };
             telValidator.telValidator(phoneNumber3, fieldName3, options3);
             
-            if (telValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, telValidator.getErrors());
+            if (telValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, telValidator.getFieldErrors());
                 // Output: Validation errors for mobile: { mobile: "Invalid phone number. e.g. +229 01 67 25 18 86" }
             }
             
 ```
 
-### Parameters for `telValidator`:
+### Parameters for `validate`:
 
 -   `data_tel` (`string`): The telephone number string to be validated.
 -   `targetInputname` (`string`): The name of the input field, used for
@@ -881,9 +879,8 @@ to define specific validation rules.
 ### Getting an Instance:
 
 ``` typescript
-import { FQDNInputValidator } from '@wlindabla/form_validator';
+import { fqdnInputValidator as fqdnValidator} from '@wlindabla/form_validator';
             
-            const fqdnValidator = FQDNInputValidator.getInstance();
             
 ```
 
@@ -896,10 +893,10 @@ import { FQDNOptions } from '@wlindabla/form_validator'; // Adjust path
             let domain1 = "www.example.com";
             let fieldName1 = "website";
             const options1: FQDNOptions = {}; // Use default options
-            await fqdnValidator.fqdnValidator(domain1, fieldName1, options1);
+            await fqdnValidator.validate(domain1, fieldName1, options1);
             
-            if (fqdnValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, fqdnValidator.getErrors());
+            if (fqdnValidator.isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, fqdnValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: website is valid.
             }
@@ -910,8 +907,8 @@ import { FQDNOptions } from '@wlindabla/form_validator'; // Adjust path
             const options2: FQDNOptions = { allowNumericTld: false }; // Explicitly disallow numeric TLDs
             await fqdnValidator.fqdnValidator(domain2, fieldName2, options2);
             
-            if (fqdnValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, fqdnValidator.getErrors());
+            if (fqdnValidator.isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, fqdnValidator.getFieldErrors());
                 // Output: Validation errors for testDomain: { testDomain: "example.123 must not use a numeric TLD." }
             }
             
@@ -921,8 +918,8 @@ import { FQDNOptions } from '@wlindabla/form_validator'; // Adjust path
             const options3: FQDNOptions = { allowedUnderscores: false };
             await fqdnValidator.fqdnValidator(domain3, fieldName3, options3);
             
-            if (fqdnValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, fqdnValidator.getErrors());
+            if (fqdnValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, fqdnValidator.getFieldErrors());
                 // Output: Validation errors for subdomain: { subdomain: "my_site.example.com must not contain underscores." }
             }
             
@@ -932,15 +929,15 @@ import { FQDNOptions } from '@wlindabla/form_validator'; // Adjust path
             const options4: FQDNOptions = { allowWildcard: true };
             await fqdnValidator.fqdnValidator(domain4, fieldName4, options4);
             
-            if (fqdnValidator.hasErrorsField(fieldName4)) {
-                console.log(`Validation errors for ${fieldName4}:`, fqdnValidator.getErrors());
+            if (fqdnValidator.isFieldValid(fieldName4)) {
+                console.log(`Validation errors for ${fieldName4}:`, fqdnValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName4} is valid.`); // Output: wildcardDomain is valid.
             }
             
 ```
 
-### Parameters for `fqdnValidator`:
+### Parameters for `validate`:
 
 -   `input` (`string`): The FQDN string to be validated.
 -   `targetInputname` (`string`): The name of the input field, used for
@@ -1027,9 +1024,8 @@ object to define specific validation rules.
 ### Getting an Instance:
 
 ``` typescript
-import { EmailInputValidator } from '@wlindabla/form_validator';
+import { emailInputValidator as emailValidator} from '@wlindabla/form_validator';
             
-            const emailValidator = EmailInputValidator.getInstance();
             
 ```
 
@@ -1042,10 +1038,10 @@ import { EmailInputOptions } from '@wlindabla/form_validator'; // Adjust path
             let email1 = "test@example.com";
             let fieldName1 = "userEmail";
             const options1: EmailInputOptions = {}; // Use default options
-            await emailValidator.emailValidator(email1, fieldName1, options1);
+            await emailValidator.validate(email1, fieldName1, options1);
             
-            if (emailValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, emailValidator.getErrors());
+            if (emailValidator.isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, emailValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: userEmail is valid.
             }
@@ -1054,10 +1050,10 @@ import { EmailInputOptions } from '@wlindabla/form_validator'; // Adjust path
             let email2 = "no-display-name@example.com";
             let fieldName2 = "contactEmail";
             const options2: EmailInputOptions = { requireDisplayName: true };
-            await emailValidator.emailValidator(email2, fieldName2, options2);
+            await emailValidator.validate(email2, fieldName2, options2);
             
-            if (emailValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, emailValidator.getErrors());
+            if (emailValidator.isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, emailValidator.getFieldErrors());
                 // Output: { contactEmail: "contactEmail field must include a display name like "John Doe "" }
             }
             
@@ -1065,10 +1061,10 @@ import { EmailInputOptions } from '@wlindabla/form_validator'; // Adjust path
             let email3 = "John Doe ";
             let fieldName3 = "userAccountEmail";
             const options3: EmailInputOptions = { allowDisplayName: true };
-            await emailValidator.emailValidator(email3, fieldName3, options3);
+            await emailValidator.validate(email3, fieldName3, options3);
             
-            if (emailValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, emailValidator.getErrors());
+            if (emailValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, emailValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName3} is valid.`); // Output: userAccountEmail is valid.
             }
@@ -1079,8 +1075,8 @@ import { EmailInputOptions } from '@wlindabla/form_validator'; // Adjust path
             const options4: EmailInputOptions = { hostBlacklist: ['tempmail.com', 'mailinator.com'] };
             await emailValidator.emailValidator(email4, fieldName4, options4);
             
-            if (emailValidator.hasErrorsField(fieldName4)) {
-                console.log(`Validation errors for ${fieldName4}:`, emailValidator.getErrors());
+            if (emailValidator.isFieldValid(fieldName4)) {
+                console.log(`Validation errors for ${fieldName4}:`, emailValidator.getFieldErrors());
                 // Output: { registrationEmail: "registrationEmail field contains a blacklisted domain: "tempmail.com"." }
             }
             
@@ -1090,15 +1086,15 @@ import { EmailInputOptions } from '@wlindabla/form_validator'; // Adjust path
             const options5: EmailInputOptions = { allowIpDomain: true };
             await emailValidator.emailValidator(email5, fieldName5, options5);
             
-            if (emailValidator.hasErrorsField(fieldName5)) {
-                console.log(`Validation errors for ${fieldName5}:`, emailValidator.getErrors());
+            if (emailValidator.isFieldValid(fieldName5)) {
+                console.log(`Validation errors for ${fieldName5}:`, emailValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName5} is valid.`); // Output: serverEmail is valid.
             }
             
 ```
 
-### Parameters for `emailValidator`:
+### Parameters for `validate`:
 
 -   `datainput` (`string`): The email address string to be validated.
 -   `targetInputname` (`string`): The name of the input field, used for
@@ -1199,9 +1195,9 @@ rules.
 ### Getting an Instance:
 
 ``` typescript
-import { URLInputValidator } from '@wlindabla/form_validator';
+import {urlInputValidator as urlValidator } from '@wlindabla/form_validator';
             
-            const urlValidator = URLInputValidator.getInstance();
+          
             
 ```
 
@@ -1214,10 +1210,10 @@ import { URLOptions } from '@wlindabla/form_validator'; // Adjust path
             let url1 = "https://www.example.com";
             let fieldName1 = "websiteUrl";
             const options1: URLOptions = {}; // Use default options
-            await urlValidator.urlValidator(url1, fieldName1, options1);
+            await urlValidator.validate(url1, fieldName1, options1);
             
-            if (urlValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, urlValidator.getErrors());
+            if (urlValidator.isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, urlValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: websiteUrl is valid.
             }
@@ -1230,10 +1226,10 @@ import { URLOptions } from '@wlindabla/form_validator'; // Adjust path
                 requireValidProtocol: true,
                 allowedProtocols: ["ftp"]
             };
-            await urlValidator.urlValidator(url2, fieldName2, options2);
+            await urlValidator.validate(url2, fieldName2, options2);
             
-            if (urlValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, urlValidator.getErrors());
+            if (urlValidator.isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, urlValidator.getFieldErrors());
             } else {
                 console.log(`${fieldName2} is valid.`); // Output: fileServerUrl is valid.
             }
@@ -1245,10 +1241,10 @@ import { URLOptions } from '@wlindabla/form_validator'; // Adjust path
                 allowIP: false,
                 allowQueryParams: false
             };
-            await urlValidator.urlValidator(url3, fieldName3, options3);
+            await urlValidator.validate(url3, fieldName3, options3);
             
-            if (urlValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, urlValidator.getErrors());
+            if (urlValidator.isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, urlValidator.getFieldErrors());
                 // Output might include: "IP addresses (IPv4 or IPv6) are not allowed in URLs." and "Query parameters "?user=admin" are not allowed."
             }
             
@@ -1258,16 +1254,16 @@ import { URLOptions } from '@wlindabla/form_validator'; // Adjust path
             const options4: URLOptions = {
                 hostBlacklist: ['evil.com', 'phishing.net']
             };
-            await urlValidator.urlValidator(url4, fieldName4, options4);
+            await urlValidator.validate(url4, fieldName4, options4);
             
-            if (urlValidator.hasErrorsField(fieldName4)) {
-                console.log(`Validation errors for ${fieldName4}:`, urlValidator.getErrors());
+            if (urlValidator.isFieldValid(fieldName4)) {
+                console.log(`Validation errors for ${fieldName4}:`, urlValidator.getFieldErrors());
                 // Output: { downloadLink: "The hostname "evil.com" is blacklisted." }
             }
             
 ```
 
-### Parameters for `urlValidator`:
+### Parameters for `validate`:
 
 -   `urlData` (`string`): The URL string to be validated.
 -   `targetInputname` (`string`): The name of the input field, used for
@@ -1390,8 +1386,8 @@ import { SelectOptions } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.selectValidator(selectedValue1, fieldName1, selectOptions1);
             
-            if (choiceValidator.hasErrorsField(fieldName1)) {
-                console.log(`Validation errors for ${fieldName1}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(fieldName1)) {
+                console.log(`Validation errors for ${fieldName1}:`, choiceValidator.  getFieldErrors());
             } else {
                 console.log(`${fieldName1} is valid.`); // Output: myDropdown is valid.
             }
@@ -1404,8 +1400,8 @@ import { SelectOptions } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.selectValidator(selectedValue2, fieldName2, selectOptions2);
             
-            if (choiceValidator.hasErrorsField(fieldName2)) {
-                console.log(`Validation errors for ${fieldName2}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(fieldName2)) {
+                console.log(`Validation errors for ${fieldName2}:`, choiceValidator.  getFieldErrors());
                 // Output: { myDropdown: "The selected value "optionD" is not included in the available options: optionA | optionB | optionC" }
             }
             
@@ -1417,8 +1413,8 @@ import { SelectOptions } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.selectValidator(selectedValues3, fieldName3, selectOptions3);
             
-            if (choiceValidator.hasErrorsField(fieldName3)) {
-                console.log(`Validation errors for ${fieldName3}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(fieldName3)) {
+                console.log(`Validation errors for ${fieldName3}:`, choiceValidator.  getFieldErrors());
             } else {
                 console.log(`${fieldName3} is valid.`); // Output: multiSelect is valid.
             }
@@ -1442,8 +1438,8 @@ import { OptionsCheckbox } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.checkboxValidator(checkedCount1, groupName1, checkboxOptions1);
             
-            if (choiceValidator.hasErrorsField(groupName1)) {
-                console.log(`Validation errors for ${groupName1}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(groupName1)) {
+                console.log(`Validation errors for ${groupName1}:`, choiceValidator.  getFieldErrors());
             } else {
                 console.log(`${groupName1} is valid.`); // Output: interests is valid.
             }
@@ -1459,8 +1455,8 @@ import { OptionsCheckbox } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.checkboxValidator(checkedCount2, groupName2, checkboxOptions2);
             
-            if (choiceValidator.hasErrorsField(groupName2)) {
-                console.log(`Validation errors for ${groupName2}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(groupName2)) {
+                console.log(`Validation errors for ${groupName2}:`, choiceValidator.  getFieldErrors());
                 // Output: { colors: "Please select at least one option in the "colors" group." }
             }
             
@@ -1474,8 +1470,8 @@ import { OptionsCheckbox } from '@wlindabla/form_validator'; // Adjust path
             };
             choiceValidator.checkboxValidator(checkedCount3, groupName3, checkboxOptions3);
             
-            if (choiceValidator.hasErrorsField(groupName3)) {
-                console.log(`Validation errors for ${groupName3}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(groupName3)) {
+                console.log(`Validation errors for ${groupName3}:`, choiceValidator.  getFieldErrors());
                 // Output: { hobbies: "You can only select up to 3 options in the "hobbies" group." }
             }
             
@@ -1492,8 +1488,8 @@ import { OptionsRadio } from './path/to/YourOptionsInterface'; // Adjust path
             const radioOptions1: OptionsRadio = { required: true };
             choiceValidator.radioValidator(selectedValueRadio1, groupNameRadio1, radioOptions1);
             
-            if (choiceValidator.hasErrorsField(groupNameRadio1)) {
-                console.log(`Validation errors for ${groupNameRadio1}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(groupNameRadio1)) {
+                console.log(`Validation errors for ${groupNameRadio1}:`, choiceValidator.  getFieldErrors());
             } else {
                 console.log(`${groupNameRadio1} is valid.`); // Output: consent is valid.
             }
@@ -1504,8 +1500,8 @@ import { OptionsRadio } from './path/to/YourOptionsInterface'; // Adjust path
             const radioOptions2: OptionsRadio = { required: true };
             choiceValidator.radioValidator(selectedValueRadio2, groupNameRadio2, radioOptions2);
             
-            if (choiceValidator.hasErrorsField(groupNameRadio2)) {
-                console.log(`Validation errors for ${groupNameRadio2}:`, choiceValidator.getErrors());
+            if (choiceValidator. isFieldValid(groupNameRadio2)) {
+                console.log(`Validation errors for ${groupNameRadio2}:`, choiceValidator.  getFieldErrors());
                 // Output: { gender: "Please select an option in the "gender" group." }
             }
             
@@ -1843,10 +1839,10 @@ import { ImageValidator,OptionsImage } from '@wlindabla/form_validator' // Adjus
                 };
             
                 try {
-                    await imageValidator.fileValidator(imageFile, 'profileImage', options);
+                    await imageValidator.validate(imageFile, 'profileImage', options);
             
                     if (imageValidator.hasErrors()) {
-                        const errors = imageValidator.getErrors();
+                        const errors = imageValidator.  getFieldErrors();
                         // Display the first error found for 'profileImage'
                         if (errors['profileImage']) {
                             errorDiv.textContent = errors['profileImage'];
@@ -1925,9 +1921,9 @@ like allowed MIME types.
 ### Getting an Instance:
 
 ``` typescript
-import { DocumentValidator } from '@wlindabla/form_validator';
+import { documentValidator } from '@wlindabla/form_validator';
             
-            const documentValidator = DocumentValidator.getInstance();
+           
             
 ```
 
@@ -1948,10 +1944,10 @@ import { OptionsFile } from '@wlindabla/form_validator'; // Adjust path
             const options1: OptionsFile = {
                 allowedMimeTypeAccept: ['application/pdf']
             };
-            await documentValidator.fileValidator(mockPdfFile, 'userDocument', options1);
+            await documentValidator.validate(mockPdfFile, 'userDocument', options1);
             
-            if (documentValidator.hasErrorsField('userDocument')) {
-                console.log('PDF Validation Error:', documentValidator.getErrors());
+            if (documentValidator. isFieldValid('userDocument')) {
+                console.log('PDF Validation Error:', documentValidator.  getFieldErrors());
             } else {
                 console.log('PDF is valid.'); // Output: PDF is valid.
             }
@@ -1969,10 +1965,10 @@ import { OptionsFile } from '@wlindabla/form_validator'; // Adjust path
                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                 ]
             };
-            await documentValidator.fileValidator(fileList.files, 'uploadDocuments', options2);
+            await documentValidator.validate(fileList.files, 'uploadDocuments', options2);
             
-            if (documentValidator.hasErrorsField('uploadDocuments')) {
-                console.log('Multiple Docs Validation Errors:', documentValidator.getErrors());
+            if (documentValidator. isFieldValid('uploadDocuments')) {
+                console.log('Multiple Docs Validation Errors:', documentValidator.  getFieldErrors());
             } else {
                 console.log('All documents are valid.'); // Output: All documents are valid.
             }
@@ -1981,17 +1977,17 @@ import { OptionsFile } from '@wlindabla/form_validator'; // Adjust path
             const options3: OptionsFile = {
                 allowedMimeTypeAccept: ['application/pdf', 'application/msword']
             };
-            await documentValidator.fileValidator(mockInvalidFile, 'invoice', options3);
+            await documentValidator.validate(mockInvalidFile, 'invoice', options3);
             
-            if (documentValidator.hasErrorsField('invoice')) {
-                console.log('Invalid File Error:', documentValidator.getErrors());
+            if (documentValidator. isFieldValid('invoice')) {
+                console.log('Invalid File Error:', documentValidator.  getFieldErrors());
                 // Output: Invalid File Error: { invoice: ["Invalid extension for file image.jpg. Only PDF, Word are allowed."] }
                 // Or a signature error if the extension was allowed but content didn't match: "Invalid PDF file signature for file image.jpg."
             }
             
 ```
 
-### Parameters for `fileValidator`:
+### Parameters for `validate`:
 
 -   `medias` (`File | FileList`): The file(s) to be validated. This can
     be a single \`File\` object or a \`FileList\` object (e.g., from an
@@ -2065,9 +2061,9 @@ the \`File\` object(s) (or \`FileList\`), an optional input name, and an
 ### Getting an Instance:
 
 ``` typescript
-import { VideoValidator } from '@wlindabla/form_validator';
+import { videoValidator } from '@wlindabla/form_validator';
             
-            const videoValidator = VideoValidator.getInstance();
+          
             
 ```
 
@@ -2087,10 +2083,10 @@ import { OptionsMediaVideo } from '@wlindabla/form_validator'; // Adjust path
             
             // Example 1: Validating a single MP4 video file with default options (max 5 MiB)
             const options1: OptionsMediaVideo = {}; // Using default options
-            await videoValidator.fileValidator(mockVideoFile, 'userVideo', options1);
+            await videoValidator.validate(mockVideoFile, 'userVideo', options1);
             
-            if (videoValidator.hasErrorsField('userVideo')) {
-                console.log('Video Validation Error:', videoValidator.getErrors());
+            if (videoValidator. isFieldValid('userVideo')) {
+                console.log('Video Validation Error:', videoValidator.  getFieldErrors());
             } else {
                 console.log('Video is valid.'); // Output: Video is valid.
             }
@@ -2103,7 +2099,7 @@ import { OptionsMediaVideo } from '@wlindabla/form_validator'; // Adjust path
                 unityMaxSizeFile: 'MiB'
             };
             // const mockWebmFile = new File(['mock webm content'], 'my_clip.webm', { type: 'video/webm' });
-            // await videoValidator.fileValidator(mockWebmFile, 'webmVideo', options2);
+            // await videoValidator.validate(mockWebmFile, 'webmVideo', options2);
             // ... check errors
             
             // Example 3: Validating a video with metadata requirements (min dimensions, max duration)
@@ -2120,7 +2116,7 @@ import { OptionsMediaVideo } from '@wlindabla/form_validator'; // Adjust path
                 allowedMimeTypeAccept: ['video/mp4']
             };
             // const mockHighResShortVideo = new File(['...'], 'holiday.mp4', { type: 'video/mp4' }); // Assume 1280x720, 60s
-            // await videoValidator.fileValidator(mockHighResShortVideo, 'hdVideo', options3);
+            // await videoValidator.validate(mockHighResShortVideo, 'hdVideo', options3);
             // ... check errors
             
             // Example 4: Validating a video that is too large
@@ -2128,16 +2124,16 @@ import { OptionsMediaVideo } from '@wlindabla/form_validator'; // Adjust path
                 maxsizeFile: 10, // Max 10 MiB
                 unityMaxSizeFile: 'MiB'
             };
-            await videoValidator.fileValidator(mockTooLargeVideoFile, 'largeVideo', options4);
+            await videoValidator.validate(mockTooLargeVideoFile, 'largeVideo', options4);
             
-            if (videoValidator.hasErrorsField('largeVideo')) {
-                console.log('Large Video Validation Error:', videoValidator.getErrors());
+            if (videoValidator. isFieldValid('largeVideo')) {
+                console.log('Large Video Validation Error:', videoValidator.  getFieldErrors());
                 // Output: { largeVideo: ["File large_video.mp4 exceeds maximum allowed size of 10 MiB."] }
             }
             
 ```
 
-### Parameters for `fileValidator`:
+### Parameters for `validate`:
 
 -   `medias` (`File | FileList`): The video file(s) to be validated.
     This can be a single \`File\` object or a \`FileList\` object (e.g.,
@@ -2172,19 +2168,19 @@ The method returns a Promise that resolves to the current instance of
 chaining.
 :::
 
-::: {#FormChildrenValidate .section}
-# Class `FormChildrenValidate`
+::: {#FieldInputController .section}
+# Class `FieldInputController`
 
 **Author:** AGBOKOUDJO Franck \<franckagbokoudjo301@gmail.com\>\
 **Package:**
 [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
 
-The \`FormChildrenValidate\` class provides a dynamic and intelligent
+The \`FieldInputController\` class provides a dynamic and intelligent
 way to validate individual form input fields (excluding file inputs
 which are handled by \`FileValidator\`). It automatically infers
 validation rules based on HTML attributes present on the input elements,
 making it incredibly flexible and easy to use without extensive
-JavaScript configuration. It extends \`AbstractFormChildrenValidate\`
+JavaScript configuration. It extends \`AbstractFieldInputController\`
 for shared functionality and implements
 \`FormChildrenValidateInterface\` for consistent interaction.
 
@@ -2226,7 +2222,7 @@ for shared functionality and implements
 
 ## Usage:
 
-The primary purpose of \`FormChildrenValidate\` is to encapsulate the
+The primary purpose of \`FieldInputController\` is to encapsulate the
 validation logic for a single HTML form element. You typically
 instantiate this class for each input field you want to validate within
 a larger form validation system.
@@ -2234,7 +2230,7 @@ a larger form validation system.
 ### Constructor:
 
 ``` typescript
-new FormChildrenValidate(childrenInput: HTMLFormChildrenElement, optionsValidate?: OptionsValidate)
+new FieldInputController(childrenInput: HTMLFormChildrenElement, optionsValidate?: OptionsValidate)
             
 ```
 
@@ -2263,7 +2259,7 @@ is synchronous).
 ``` typescript
 // Assuming 'myInputField' is a jQuery object representing an HTML input element
             const myInputField = $('input[name="username"]');
-            const fieldValidator = new FormChildrenValidate(myInputField);
+            const fieldValidator = new FieldInputController(myInputField);
             
             // Trigger validation for the field
             await fieldValidator.validate();
@@ -2272,7 +2268,7 @@ is synchronous).
             if (fieldValidator.isValid()) {
                 console.log('Field is valid!');
             } else {
-                console.log('Field has errors:', fieldValidator.getFormError().getErrors());
+                console.log('Field has errors:', fieldValidator.getFormError().  getFieldErrors());
             }
             
 ```
@@ -2283,7 +2279,7 @@ Checks whether the input field currently has any validation errors. It
 returns \`true\` if no errors are present, \`false\` otherwise.
 
 ``` typescript
-const fieldValidator = new FormChildrenValidate($('input[name="email"]'));
+const fieldValidator = new FieldInputController($('input[name="email"]'));
             await fieldValidator.validate(); // Run validation first
             
             if (fieldValidator.isValid()) {
@@ -2303,7 +2299,7 @@ field. This instance holds all validation error messages for the field.
 const fieldValidator = new FormChildrenValidate($('input[name="password"]'));
             await fieldValidator.validate();
             
-            const errors = fieldValidator.getFormError().getErrors();
+            const errors = fieldValidator.getFormError().  getFieldErrors();
             if (errors) {
                 console.log('Password errors:', errors);
             }
@@ -2532,8 +2528,8 @@ container element (e.g., \`\<div\>\`) with an \`id\` that matches the
         \`data-max-height\`: Min/max video dimensions.
 :::
 
-::: {#FormValidate .section}
-# Class `FormValidate`
+::: {#FormValidateController .section}
+# Class `FormValidateController`
 
 **Author:** AGBOKOUDJO Franck \<franckagbokoudjo301@gmail.com\>\
 **Package:**
@@ -2575,17 +2571,18 @@ validation, leveraging jQuery for DOM manipulation.
 
 ## Usage:
 
-To use \`FormValidate\`, instantiate it by providing a CSS selector for
-your target form. Once initialized, you can use its methods to trigger
-validation, access form children, and manage error states.
+To use \`FormValidateController\`, instantiate it by providing a CSS
+selector for your target form. Once initialized, you can use its methods
+to trigger validation, access form children, and manage error states.
 
 ### Constructor:
 
 ``` typescript
-constructor(formCssSelector: string = "form-validate")
+constructor(formCssSelector: string = ".form-validate")
 ```
 
-Initializes a new \`FormValidate\` instance for a specific HTML form.
+Initializes a new \`FormValidateController\` instance for a specific
+HTML form.
 
 -   \`formCssSelector\` (\`string\`, optional): A CSS selector suffix to
     identify the form. By default, it targets forms with the class
@@ -2597,10 +2594,10 @@ Initializes a new \`FormValidate\` instance for a specific HTML form.
 
 ``` typescript
 // Example 1: Validate a form with the class 'my-contact-form'
-const contactFormValidator = new FormValidate('.my-contact-form');
+const contactFormValidator = new FormValidateController('.my-contact-form');
 
 // Example 2: Validate all forms on the page (if no specific class is needed)
-const allFormsValidator = new FormValidate('form');
+const allFormsValidator = new FormValidateController('.form-validate');
 ```
 
 ### Public Methods:
@@ -2639,7 +2636,7 @@ you only need to check the field currently being interacted with.
     input, select, or textarea element to validate.
 
 ``` typescript
-const myFormValidator = new FormValidate('.user-profile-form');
+const myFormValidator = new FormValidateController('.user-profile-form');
 
 // Validate an input field on blur
 myFormValidator.idChildrenUsingEventBlur.forEach(id => {
@@ -2649,20 +2646,11 @@ jQuery(`#${id}`).on('blur', async function() {
 });
 ```
 
-#### \`buildValidators(): FormChildrenValidateInterface\[\]\`
-
 Constructs and returns an array of \`FormChildrenValidateInterface\`
 instances, one for each relevant child input element in the form. This
 method prepares all field validators but does not trigger their
 validation. It\'s primarily used internally but can be accessed if you
 need to work with all field validator instances directly.
-
-``` typescript
-const myFormValidator = new FormValidate('.settings-form');
-const allFieldValidators = myFormValidator.buildValidators();
-console.log(`Found ${allFieldValidators.length} fields to validate.`);
-// You could then iterate through `allFieldValidators` to attach custom event listeners or logic.
-```
 
 #### \`clearErrorDataChildren(target: HTMLFormChildrenElement): void\`
 
@@ -2674,7 +2662,7 @@ that previously had an error, removing the error message.
     input, select, or textarea element whose errors should be cleared.
 
 ``` typescript
-const myFormValidator = new FormValidate('.feedback-form');
+const myFormValidator = new FormValidateController('.feedback-form');
 
 // Clear errors on change
 myFormValidator.idChildrenUsingEventChange.forEach(id => {
@@ -2713,7 +2701,7 @@ found within the form, excluding types like \`hidden\`, \`submit\`,
 \`datetime\`, \`datetime-local\`, \`time\`, and \`month\`.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
 const allVisibleInputs = myFormValidator.childrens;
 console.log(`Total relevant fields: ${allVisibleInputs.length}`);
 ```
@@ -2724,7 +2712,7 @@ Returns an array of IDs of child fields that have the
 \`data-event-validate-blur=\"blur\"\` attribute.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
     myFormValidator.idChildrenUsingEventBlur.forEach(id => {
         console.log(`Field with ID '${id}' will validate on blur.`);
         // Attach event listeners here
@@ -2741,7 +2729,7 @@ Returns an array of IDs of child fields that have the
 \`data-event-validate-input=\"input\"\` attribute.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
         myFormValidator.idChildrenUsingEventInput.forEach(id => {
             console.log(`Field with ID '${id}' will validate on input.`);
         });
@@ -2754,7 +2742,7 @@ Returns an array of IDs of child fields that have the
 \`data-event-validate-change=\"change\"\` attribute.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
         myFormValidator.idChildrenUsingEventChange.forEach(id => {
             console.log(`Field with ID '${id}' will validate on change.`);
         });
@@ -2767,7 +2755,7 @@ Returns an array of IDs of child fields that have the
 \`data-event-validate-focus=\"focus\"\` attribute.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
         myFormValidator.idChildrenUsingEventFocus.forEach(id => {
             console.log(`Field with ID '${id}' will validate on focus.`);
         });
@@ -2779,7 +2767,7 @@ textarea elements within the form. This list is generated during
 initialization.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
 console.log('All validatable field IDs:', myFormValidator.idChildrens);
 ```
 
@@ -2789,7 +2777,7 @@ Returns the jQuery-wrapped HTML form element that this \`FormValidate\`
 instance is managing.
 
 ``` typescript
-const myFormValidator = new FormValidate('.my-form');
+const myFormValidator = new FormValidateController('.my-form');
 const formElement = myFormValidator.form;
 console.log('Managed form element:', formElement);
 ```
@@ -2821,16 +2809,70 @@ This example demonstrates how to integrate \`FormValidate\` into your
 application using jQuery to listen for validation events and manage
 error messages.
 
-``` typescript
-import { FormValidate } from './path/to/FormValidate'; // Adjust path
-import { addHashToIds, Logger, HTMLFormChildrenElement } from './path/to/_Utils'; // Adjust paths
-import { FieldValidationFailed, FieldValidationSuccess, FieldValidationEventData } from './path/to/Events'; // Adjust paths
-import { addErrorMessageFieldDom, clearErrorInput } from './path/to/DOMManipulation'; // Adjust paths for your DOM manipulation functions
+::: {style="background-color:#fff; color:#000;font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 20px auto; padding: 20px; border: 1px solid #ddd;"}
+# Documentation Update: Caching Validation Options
 
-jQuery(function TestvalidateInput() {
-  // 1. Initialize FormValidate for a specific form (e.g., a form with id="form_validate")
-  const formValidate = new FormValidate('#form_validate');
+We\'ve implemented a robust, pluggable caching system to accelerate
+repeated field validations.
 
+------------------------------------------------------------------------
+
+## 1. Integrating an Options Cache Adapter
+
+To boost performance and accelerate repetitive field validations, the
+**`FormValidateController`** supports injecting a caching mechanism for
+field validation options. This avoids the expensive process of
+re-reading HTML attributes and recalculating options on every validation
+event.
+
+The `FormValidateController` constructor now accepts an optional second
+argument:
+
+``` {style=" padding: 10px; border-radius: 5px; overflow-x: auto;"}
+new FormValidateController(selector: string, cacheAdapter?: FieldOptionsValidateCacheAdapterInterface);
+```
+
+### Architectural Principle: The Adapter Pattern
+
+Your library remains **agnostic to external cache technologies** (like
+Dexie.js, Redis, etc.). Instead, it relies on the **Adapter Pattern**.
+Any class provided to the constructor must implement the interface
+contract: **`FieldOptionsValidateCacheAdapterInterface`**.
+
+If no adapter is provided (the default behavior), the value is
+`undefined`, and the system operates in its standard mode, calculating
+options directly from the DOM on demand.
+
+------------------------------------------------------------------------
+
+## 2. Default Usage: The Built-in `LocalStorageCacheAdapter`
+
+For most applications, you can gain immediate, persistent performance
+benefits using the built-in default adapter,
+**`LocalStorageCacheAdapter`**.
+
+💡 **Key Advantage:** This adapter utilizes the native browser
+`localStorage` API. It is included in the library and requires **zero
+external dependencies**, maintaining your low-dependency philosophy.
+
+### Implementation Example
+
+To activate caching, simply instantiate the default adapter and pass it
+to the controller:
+
+``` {style="padding: 15px; border-radius: 5px; overflow-x: auto;"}
+        // Example of standard usage, now with caching enabled.
+import { FormValidateController, LocalStorageCacheAdapter } from '@wlindabla/form_validator'; 
+// ... (other imports)
+
+jQuery(function testvalidateInputWithCache() {
+  
+  // 1. Instantiate the LocalStorage cache adapter
+  const cacheAdapter = new LocalStorageCacheAdapter();
+
+  // 2. Initialize FormValidate, injecting the adapter
+  const formValidate = new FormValidateController('#form_validate', cacheAdapter);
+     const form=formValidate.form
   // 2. Prepare selectors for fields based on their validation events
   //    addHashToIds is a utility function that converts ['id1', 'id2'] to ['#id1', '#id2']
   //    and then joins them into a comma-separated string for jQuery event delegation.
@@ -2841,7 +2883,7 @@ jQuery(function TestvalidateInput() {
   // 3. Attach event listener for 'blur' event to trigger validation
   //    This listener is delegated to the form element to efficiently handle blur events
   //    on multiple input, textarea elements specified by `idsBlur`.
-  formValidate.form.on("blur", `${idsBlur}`, async (event: JQuery.BlurEvent) => {
+  form.on("blur", `${idsBlur}`, async (event: JQuery.BlurEvent) => {
     const target = event.target;
     // Ensure the event target is an HTML input or textarea element before validating
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
@@ -2853,7 +2895,7 @@ jQuery(function TestvalidateInput() {
 
   // 4. Attach event listener for custom 'FieldValidationFailed' event
   //    This event is dispatched by the FormChildrenValidate class when a field fails validation.
-  formValidate.form.on(FieldValidationFailed, (event: JQuery.TriggeredEvent) => {
+  form.on(FieldValidationFailed, (event: JQuery.TriggeredEvent) => {
     // Access the custom event data containing details about the validation failure
     const data = (event.originalEvent as CustomEvent).detail;
     // Use a utility function to display the error message in the DOM
@@ -2863,14 +2905,14 @@ jQuery(function TestvalidateInput() {
 
   // 5. Attach event listener for custom 'FieldValidationSuccess' event
   //    This event is dispatched when a field successfully passes validation.
-  formValidate.form.on(FieldValidationSuccess, (event: JQuery.TriggeredEvent) => {
+    form.on(FieldValidationSuccess, (event: JQuery.TriggeredEvent) => {
     const data = (event.originalEvent as CustomEvent).detail;
     Logger.log("Field validation succeeded:", data);
   });
 
   // 6. Attach event listener for 'input' event to clear errors in real-time
   //    This clears the error message as the user types, providing immediate feedback.
-  formValidate.form.on('input', `${idsInput}`, (event: JQuery.Event | any) => {
+    form.on('input', `${idsInput}`, (event: JQuery.Event | any) => {
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
       if (target) {
@@ -2883,23 +2925,66 @@ jQuery(function TestvalidateInput() {
 
   // 7. Attach event listener for 'change' event to clear errors
   //    Similar to 'input', but typically used for select, checkbox, and radio inputs.
-  formValidate.form.on('change', `${idsChange}`, (event: JQuery.ChangeEvent) => {
+    form.on('change', `${idsChange}`, (event: JQuery.ChangeEvent) => {
     const target = event.target;
     if (target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement) { // Added HTMLSelectElement for completeness
       if (target) {
         clearErrorInput(jQuery(target));
-        formValidate.clearErrorDataChildren(target);
+        
       }
     }
     Logger.log("Change event triggered error clearing:", event);
   });
 
-  // You would also typically have a submit listener for `formValidate.autoValidateAllFields()`
-  // as shown in the `autoValidateAllFields` method documentation.
 });
+    
 ```
 
-\-\--
+------------------------------------------------------------------------
+
+## 3. Advanced Usage: Implementing a Custom Adapter
+
+If your project requires more robust or specific caching (e.g., using
+**Dexie.js** for IndexedDB, or a custom API), you must create a class
+that strictly implements the interface contract.
+
+### Contract Interface
+
+``` {style=" padding: 10px; border-radius: 5px; overflow-x: auto;"}
+        export interface FieldOptionsValidateCacheAdapterInterface {
+    /** Reads options from the cache. Must be ASYNCHRONOUS. */
+    getItem(key: string): Promise<OptionsValidate | undefined>;
+    
+    /** Writes options to the cache. Must be ASYNCHRONOUS. */
+    setItem(key: string, options: OptionsValidate): Promise<void>;
+}
+    
+```
+
+### Custom Implementation Example
+
+``` {style="padding: 15px; border-radius: 5px; overflow-x: auto;"}
+        // Note: You must manually import and handle any external cache dependencies (like Dexie.js).
+class CustomDexieAdapter implements FieldOptionsValidateCacheAdapterInterface {
+    
+    async getItem(key: string): Promise<OptionsValidate | undefined> {
+        // Your logic to read data from Dexie.js
+        // ...
+    }
+
+    async setItem(key: string, options: OptionsValidate): Promise<void> {
+        // Your logic to write data to Dexie.js
+        // Recommended: Avoid 'await' on setItem and use .catch() for non-blocking writes.
+    }
+}
+
+// Initialization with the Custom Adapter
+const customCache = new CustomDexieAdapter();
+const formValidate = new FormValidateController('#form_advanced', customCache);
+// ...
+    
+```
+:::
 
 ## Summary:
 

@@ -13,7 +13,7 @@
   "homepage": "https://github.com/Agbokoudjo/form_validator#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "2.0.0",
+  "version": "2.1.1",
   "type": "module",
   "keywords": [
     "jquery",
@@ -28,7 +28,27 @@
     "collection form",
     "collection type form",
     "collection form field",
-    "Validation, Form validation, HTML form validator"
+    "Validation, Form validation, HTML form validator",
+    "validate",
+    "image",
+    "detect",
+    "corrupt",
+    "images",
+    "files",
+    "check",
+    "url",
+    "img",
+    "photo",
+    "pic",
+    "picture",
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "validate image",
+    "validate-image",
+    "image validation",
+    "corrupt image"
   ],
   "scripts": {
     "dev": "vite",
@@ -38,7 +58,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "prepublishOnly": "yarn clean && yarn build",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "jest"
   },
   "files": [
     "dist",
@@ -48,25 +69,27 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "@types/jquery": "^3.5.32",
+    "@types/jest": "^30.0.0",
+    "@types/jquery": "^3.5.33",
     "@types/lodash.debounce": "^4.0.9",
     "@types/papaparse": "^5.3.16",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/xlsx": "^0.0.36",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
   },
   "dependencies": {
-    "@vitejs/plugin-legacy": "^7.0.0",
+    "@vitejs/plugin-legacy": "^7.2.1",
     "animate.css": "^4.1.1",
-    "image-validator": "^1.2.1",
     "jquery": "^3.7.1",
-    "libphonenumber-js": "^1.12.9",
+    "libphonenumber-js": "^1.12.24",
     "lodash.debounce": "^4.0.8",
     "papaparse": "^5.5.3",
-    "pdfjs-dist": "^5.3.31",
-    "sweetalert2": "^11.22.0",
+    "pdfjs-dist": "^5.4.296",
+    "sweetalert2": "^11.26.2",
     "xlsx": "^0.18.5"
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"

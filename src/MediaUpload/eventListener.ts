@@ -90,43 +90,8 @@ export class MediaUploadEventListener extends AbstractMediaUploadEventListener {
         Logger.error('Event Listener mediaChunkUploadFailedEvent:', chunk_detail_upload_failed)
     }
     protected async mediaChunkUploadMaxRetryExpireEvent(event: CustomEvent<ChunkMediaDetail>): Promise<void> {
-        const chunk_detail_upload_max = event.detail;
-        Swal.fire({
-            ...baseSweetAlert2Options,
-            title: `${translate("Error")} ${chunk_detail_upload_max.status ?? " "}...`,
-            html: `${translate(chunk_detail_upload_max.message!)}
-                    <hr /> <br/> <strong class="fw-bold progess-title">Progression:</strong>
-                    ${chunk_detail_upload_max.progressPercentage!}%
-            `,
-            icon: "error",
-            timer: 75000,
-            showCancelButton: true,
-            cancelButtonText: `${translate('Cancel')}`,
-            cancelButtonColor: "#d33",
-            showConfirmButton: true,
-            confirmButtonText: translate("Try again"),
-            reverseButtons: true,
-        }).then(async (result) => {
-            if (result.dismiss === Swal.DismissReason.cancel) {
-                Swal.fire({
-                    customClass: {
-                        confirmButton: "btn btn-success",
-                        cancelButton: "btn btn-danger"
-                    },
-                    buttonsStyling: false,
-                    title: translate("Cancelled"),
-                    background: "#283c63",
-                    color: "#fff",
-                    icon: "info",
-                    html: `<div class="alert alert-info" role="alert">
-                    ${translate(`You cancelled the upload of this chunk. The operation has been stopped.`)}
-                    </div>`
-                });
-            } else if (result.isConfirmed) {
-                await resumeMediaUploadFromCache(chunk_detail_upload_max, this.target, this.speedMbps, this.configOptions, { "TryAgain": "true" })
-            }
-        });
-        Logger.error('Event Listener mediaChunkUploadMaxRetryExpireEvent:', chunk_detail_upload_max)
+
+        Logger.error('Event Listener mediaChunkUploadMaxRetryExpireEvent:')
     }
     protected downloadMediaFailureEvent(event: CustomEvent<ChunkMediaDetail>): void { }
     protected downloadMediaCompleteEvent(event: CustomEvent<ChunkMediaDetail>): void {

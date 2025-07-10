@@ -23,14 +23,19 @@ export function checkHost(
     host: string,
     matches: Array<string | RegExp>
 ): boolean {
-    for (let i = 0; i < matches.length; i++) {
-        const match = matches[i];
-        if (typeof match === 'string') {
-            if (host === match) return true;
-        } else if (isRegExp(match)) {
-            if (match.test(host)) return true;
+    for (let match of matches) {
+        // 1. Vérifie si 'match' est une chaîne de caractères et correspond exactement à 'host'
+        if (typeof match === 'string' && host === match) {
+            return true; // Correspondance trouvée : on sort immédiatement
+        }
+
+        // 2. Vérifie si 'match' est une expression régulière et correspond à 'host'
+        if (isRegExp(match) && match.test(host)) {
+            return true; // Correspondance trouvée : on sort immédiatement
         }
     }
+
+    // Si aucune correspondance n'a été trouvée après avoir parcouru tout le tableau 'matches'
     return false;
 }
 
@@ -49,12 +54,16 @@ export function addParamToUrl(urlparam: string | URL,
     addparamUrlDependencie: Record<string, any> | null = null,
     returnUrl: boolean = true,
     baseUrl?: string | URL): string | URL {
+
     const url = new URL(urlparam, baseUrl || window.location.origin);
+
     if (addparamUrlDependencie) {
+
         for (const [keyparam, valueparam] of Object.entries(addparamUrlDependencie)) {
             url.searchParams.set(keyparam, valueparam);
         }
     }
+
     return returnUrl ? url.toString() : url;
 };
 
@@ -65,7 +74,7 @@ export function addParamToUrl(urlparam: string | URL,
  * @param form_action -Url relative pour laquelle les paramètres doivent être ajoutés
  * @param baseUrl - L'URL de base pour laquelle les paramètres doivent être ajoutés.
  * @param returnUrl - Si vrai, retourne une chaîne de caractères représentant l'URL, sinon retourne une instance de URL.
- * @returns Une chaîne de caractères ou une instance de URL avec les paramètres ajoutés.
+ * @returns string Une chaîne de caractères ou une instance de URL avec les paramètres ajoutés.
  */
 export function buildUrlFromForm(
     formData: FormData,
@@ -74,16 +83,21 @@ export function buildUrlFromForm(
     returnUrl: boolean = true,
     baseUrl?: string | URL
 ): string | URL {
+
     const searchParamsInstance = new URLSearchParams();
+
     formData.forEach((value, key) => {
         searchParamsInstance.append(key, value.toString());
     });
+
     const url = new URL(form_action, baseUrl);
     // Ajouter les paramètres au URL
     searchParamsInstance.forEach((value, key) => {
         url.searchParams.set(key, value);
     });
+
     const urlWithAddedParams = addParamToUrl(url, addparamUrlDependencie, returnUrl, baseUrl);
+
     return returnUrl ? urlWithAddedParams.toString() : urlWithAddedParams;
 }
 
@@ -92,8 +106,11 @@ export class CustomURLSearchParams {
     private readonly __query: string;
 
     constructor(query: string = '') {
+
         this.__params = new Map<string, string[]>();
+
         this.__query = query.startsWith('?') ? query.slice(1) : query;
+
         this.normalizedURLSearchParams();
     }
 
@@ -101,6 +118,7 @@ export class CustomURLSearchParams {
         if (this.__query.length === 0) return;
 
         const pairs = this.__query.split('&').filter(Boolean);
+
         for (const pair of pairs) {
             const [rawKey, rawValue] = pair.split('=');
             const key = decodeURIComponent(rawKey || '');
@@ -138,6 +156,7 @@ export class CustomURLSearchParams {
      */
     public getFirst(key: string): string | null {
         const values = this.__params.get(key);
+
         return values && values.length ? values[0] : null;
     }
 
@@ -167,7 +186,9 @@ export class CustomURLSearchParams {
      */
     public toString(): string {
         const entries: string[] = [];
+
         for (const [key, values] of this.__params.entries()) {
+
             for (const value of values) {
                 entries.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
             }
@@ -242,7 +263,9 @@ export class CustomURL {
     private __search: string;
     private __hash: string;
     private __isValid: boolean;
+
     constructor(private readonly url: string) {
+
         if (this.isNativeURLSupported()) {
             try {
                 this.__url = new URL(this.url);
@@ -261,7 +284,8 @@ export class CustomURL {
         this.__username = "";
         this.normalizedURL();
     }
-    private normalizedURL = (): this => {
+
+    private normalizedURL(): this {
         try {
             let url = this.url.trim(); //https://developer.mozilla.org/en-US/docs/Web/API/URL/href#examples
             // 1. Extraire hash
@@ -327,10 +351,12 @@ export class CustomURL {
         }
         return this;
     }
+
     public get hash(): string {
         if (this.urlHasFeature('hash') && this.__url) { return this.__url.hash; }
         return this.__hash;
     }
+
     public get search(): string {
         if (this.urlHasFeature('search') && this.__url) { return this.__url.search; }
         return this.__search;
@@ -347,29 +373,39 @@ export class CustomURL {
         if (this.urlHasFeature('password') && this.__url) { return this.__url.password; }
         return this.__password;
     }
+
     public get pathname(): string {
         if (this.urlHasFeature('pathname') && this.__url) { return this.__url.pathname; }
         return this.__pathname;
     }
+
     public get hostname(): string {
         if (this.urlHasFeature('hostname') && this.__url) { return this.__url.hostname; }
         return this.__hostname;
     }
+
     public get port(): string {
         if (this.urlHasFeature('port') && this.__url) { return this.__url.port; }
         return this.__port;
     }
+
     public get auth(): string {
         if (!this.username && !this.password) return '';
         return `${this.username}:${this.password}@`;
     }
+
     public get host(): string { return this.hostname + (this.port ? `:${this.port}` : ''); }
+
     public get origin(): string { return `${this.protocol}//${this.host}`; }
+
     public get href(): string {
         return `${this.protocol}//${this.auth}${this.host}${this.pathname}${this.search}${this.hash}`;
     }
+
     public get isValid(): boolean { return this.__isValid; }
+
     public get urlObject(): URL | undefined { return this.__url }
+
     public toJSON(): Record<string, string> {
         return {
             protocol: this.protocol,
@@ -385,9 +421,11 @@ export class CustomURL {
             href: this.href,
         };
     }
+
     public get searchParams(): CustomURLSearchParams {
         return new CustomURLSearchParams(this.search);
     }
+
     /**
      * Vérifie si l'objet global URL est bien supporté et instanciable.
      */
@@ -407,6 +445,7 @@ export class CustomURL {
  */
     public urlHasFeature(feature: keyof URL): boolean {
         if (!this.__url) return false;
+
         return feature in URL.prototype;
     }
 }

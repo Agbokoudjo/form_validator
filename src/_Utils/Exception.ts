@@ -1,5 +1,3 @@
-import { Logger } from ".";
-
 /**
  * Custom exception thrown when a required attribute is missing on a DOM element,
  * such as the `pattern` attribute on an `<input>` or `<textarea>` element.
@@ -37,14 +35,39 @@ export class AttributeException extends Error {
         private readonly parentNameOrIdOrTagName: string) {
         const message = `The ${attributeName} field named "${childrenName}" in the "${parentNameOrIdOrTagName}" container does not have a pattern attribute.`;
         super(message);
-        // Affecter le nom correct à l’erreur (utile pour les logs/debug)
+
         this.name = 'AttributeException';
-        // Logger l’erreur
-        Logger.error(message);
-        // Corrige le prototype pour les cas où l'erreur est catchée dans un contexte JS pur
+
+        console.error(message);
         Object.setPrototypeOf(this, AttributeException.prototype);
     }
+
     public get __attributeName(): string { return this.attributeName; }
+
     public get __childrenName(): string { return this.childrenName; }
+
     public get __parentNameOrIdOrTagName(): string { return this.parentNameOrIdOrTagName; }
+}
+
+export class FormAttributeNoFoundException extends Error {
+
+    public constructor(
+        private readonly form: HTMLFormElement,
+        private readonly attributeName: string,
+        private readonly contextChildrenName: string
+    ) {
+        const message = `The required attribute "${attributeName}" does not exist on the parent form element (Form HTML: ${form.outerHTML}). ` +
+            `This attribute is mandatory for validation logic initiated by the field "${contextChildrenName}".`
+        super(message);
+
+        this.name = "FormAttributeNoFoundException";
+        console.error(message);
+        Object.setPrototypeOf(this, FormAttributeNoFoundException.prototype);
+    }
+
+    public get __form(): HTMLFormElement { return this.form; }
+
+    public get __childrenName(): string { return this.contextChildrenName; }
+
+    public get __attributeName(): string { return this.attributeName; }
 }

@@ -1,35 +1,24 @@
 import "./style.css";
 import debounce from "lodash.debounce";
-import viteLogo from "./vite.svg";
 
-import typescriptLogo from "./typescript.svg";
-import Swal from "sweetalert2";
+
+//import "./test/testUrl";
+//import "./test/testForms";
 import {
-  addHashToIds, translate, clearErrorInput, Logger,
-  addErrorMessageFieldDom, HTMLFormChildrenElement,
-  mergeArrayValues, MergeArrayStrategy, deepMerge, deepMergeAll, CustomURL
+  Logger
 } from "./_Utils";
-import { FormFormattingEvent } from "./Formatting";
-import { uploadedMedia } from './MediaUpload/upload';
-import { addParamToUrl, httpFetchHandler, mapStatusToResponseType } from "./_Utils";
-import { FieldValidationEventData, FieldValidationFailed, FieldValidationSuccess, FormValidate, MediaUploadEventListener } from ".";
-
-const BASE_URL_UPLOADMEDIA = 'http://127.0.0.1:8001';
+// import "./test/testEmailValidate";
+// import "./test/testDeepMerge";
+// import "./test/testFormSubmit";
+// import "./test/testfqdnValidator";
+import "./test/testFormValidate";
+const BASE_HOST = 'http://127.0.0.1:8001';
 let logger = Logger.getInstance();
 logger.APP_ENV = "dev";
 logger.DEBUG = true;
-document.querySelector<HTMLDivElement>('#app-header')!.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h4>Vite + TypeScript</h4>
-  </div>
-`
-jQuery(function TestLogger() {
+
+
+/*jQuery(function TestLogger() {
   // 1. Sélectionner le bouton de test et les autres éléments avec jQuery
   const $testLoggerButton = $('#testLogger');
   // 2. Attacher un écouteur d'événement 'click' au bouton
@@ -221,52 +210,8 @@ jQuery(function TestFormatting() {
   formFormattingEvent.usernameFormatDom(document, " ", " ", "en")
 })
 
-jQuery(function TestvalidateInput() {
-  const formValidate = new FormValidate('#form_validate');
-  const idsBlur = addHashToIds(formValidate.idChildrenUsingEventBlur).join(",");
-  const idsInput = addHashToIds(formValidate.idChildrenUsingEventInput).join(",");
-  const idsChange = addHashToIds(formValidate.idChildrenUsingEventChange).join(",");
-  const __form = formValidate.form
-  __form.on("blur", `${idsBlur}`, async (event: JQuery.BlurEvent) => {
-    const target = event.target;
-    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-      await formValidate.validateChildrenForm(event.target as HTMLFormChildrenElement)
-      Logger.log(event);
-    }
-  })
-  __form.on(FieldValidationFailed, (event: JQuery.TriggeredEvent) => {
-    const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
-    addErrorMessageFieldDom(jQuery(data.targetChildrenForm), data.message)
-    Logger.log(data)
 
-  })
-  __form.on(FieldValidationSuccess, (event: JQuery.TriggeredEvent) => {
-    const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
-    Logger.log(data);
-
-  })
-  __form.on('input', `${idsInput}`, (event: JQuery.Event | any) => {
-    const target = event.target;
-    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-      if (target) {
-        clearErrorInput(jQuery(target))
-        formValidate.clearErrorDataChildren(target)
-      }
-    }
-
-  });
-  __form.on('change', `${idsChange}`, (event: JQuery.ChangeEvent) => {
-    const target = event.target;
-    if (target instanceof HTMLInputElement) {
-      if (target) {
-        clearErrorInput(jQuery(target))
-        formValidate.clearErrorDataChildren(target)
-      }
-    }
-    Logger.log(event)
-  });
-})
-
+*/
 /*jQuery(this).on('submit', 'form#upload-media-form', async (event: JQuery.SubmitEvent) => {
   event.preventDefault();
   const targetInput = new FormData(event.target as HTMLFormElement);
@@ -329,7 +274,7 @@ console.log(speedMbps_media)
 const mediaEventListener = new MediaUploadEventListener(speedMbps_media);
 await mediaEventListener.eventMediaListenerAll(this);
 })*/
-async function CallbaclSpeedMbps(): Promise<number | undefined> {
+/*async function CallbaclSpeedMbps(): Promise<number | undefined> {
   const timeStart = new Date().getTime();
   try {
     const response = await httpFetchHandler({
@@ -367,3 +312,4 @@ async function downloadTestFileConnectivityAndSpeed(): Promise<number | undefine
   console.log(media)
   return Math.round((sizeMb * 8) / (timeMs / 1000)) * 27;
 }
+*/

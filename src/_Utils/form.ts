@@ -9,7 +9,7 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { Logger } from ".";
+
 if (typeof window.jQuery === 'undefined') {
     console.error("jQuery is required for usage of these functions");
 }
@@ -156,6 +156,7 @@ export function addErrorMessageFieldDom(
     errormessagefield?: string[],
     className_container_ErrorMessage: string = "border border-3 border-light"
 ): void {
+
     if (!errormessagefield || errormessagefield.length === 0) { return; }
     const fieldId = elmtfield.attr("id");
 
@@ -174,6 +175,7 @@ export function addErrorMessageFieldDom(
         if (containerDivErrorMessage.length > 0) {
             containerDivErrorMessage.remove();
         }
+
         return; // All cleared, exit
     }
     // --- Handle Error Display / Update ---
@@ -188,11 +190,13 @@ export function addErrorMessageFieldDom(
 
     // Add 'is-invalid' class to the field if not already present
     if (!elmtfield.hasClass('is-invalid')) {
+
         elmtfield.addClass('is-invalid');
     }
 
     // Generate jQuery error message elements
     const errorMessagesJQuery = errormessagefield.map((errorMessageItem, keyError) => {
+
         return createSmallErrorMessage(fieldId, errorMessageItem, keyError);
     });
 
@@ -245,7 +249,8 @@ export function handleErrorsManyForm(
     // A more robust approach might be to have a common class on all error containers.
     const $form = jQuery(`#${formId}`);
     if ($form.length === 0) {
-        Logger.warn(`Form with ID "${formId}" not found for error handling. Cannot clear previous errors.`);
+
+        console.warn(`Form with ID "${formId}" not found for error handling. Cannot clear previous errors.`);
         // If the form itself isn't found, we can't reliably clear errors.
         // We might still try to apply errors if field IDs are globally unique,
         // but it's safer to assume a problem and exit if formId is meant for scoping.
@@ -264,11 +269,11 @@ export function handleErrorsManyForm(
 
     // Iterate over all potentially invalid fields and clear their errors
     $potentiallyInvalidFields.each(function () {
-        const $el = jQuery(this);
+        const $el = jQuery<HTMLElement>(this);
         // If it's a field (e.g., input, select, textarea)
         if ($el.is('input, select, textarea')) {
             // Call addErrorMessageFieldDom with an empty array to clear errors for this specific field
-            addErrorMessageFieldDom($el as JQuery<HTMLElement>, []);
+            addErrorMessageFieldDom($el, []);
         } else if ($el.attr('id')?.startsWith('container-div-error-message-')) {
             // If it's an error container div, just remove it directly
             $el.remove();
@@ -286,12 +291,10 @@ export function handleErrorsManyForm(
             const fieldId = `${formName}_${key.replace(/\./g, '_')}`;
 
             // Scope the element selection to the form if the form was found, otherwise search globally.
-            const element = $form.length > 0 ?
-                $form.find(`#${fieldId}`) as JQuery<HTMLElement> :
-                jQuery(`#${fieldId}`) as JQuery<HTMLElement>;
+            const element = $form.length > 0 ? $form.find(`#${fieldId}`) : jQuery(`#${fieldId}`);
 
             if (element.length === 0) {
-                Logger.warn(`handleErrorsManyForm: Field '${fieldId}' (derived from '${key}') not found in DOM or within form '#${formId}'.`);
+                console.warn(`handleErrorsManyForm: Field '${fieldId}' (derived from '${key}') not found in DOM or within form '#${formId}'.`);
                 continue;
             }
 
@@ -325,7 +328,7 @@ export function clearErrorInput(
     const fieldId = inputFieldJQuery.attr('id');
     // Assurez-vous que le champ a un ID pour éviter les erreurs de ciblage.
     if (!fieldId) {
-        Logger.warn("clearErrorInput : Le champ de saisie fourni n'a pas d'attribut 'id'. Impossible d'effacer les erreurs de manière fiable.", inputFieldJQuery);
+        console.warn("clearErrorInput : Le champ de saisie fourni n'a pas d'attribut 'id'. Impossible d'effacer les erreurs de manière fiable.", inputFieldJQuery);
         return;
     }
 
@@ -335,6 +338,7 @@ export function clearErrorInput(
         // Cela gère les cas où la classe 'is-invalid' a été retirée manuellement mais le div d'erreur est resté.
         const containerId = `container-div-error-message-${fieldId}`;
         const existingContainer = jQuery(`#${containerId}`);
+
         if (existingContainer.length > 0) {
             existingContainer.remove();
         }
@@ -435,14 +439,14 @@ export function getInputPatternRegex(
         children = jQuery<HTMLElement>(children);
     }
     if (children.length <= 0) {
-        Logger.warn(`The input element is not present in the DOM for ${formParentName}`);
+        console.warn(`The input element is not present in the DOM for ${formParentName}`);
         return undefined;
     }
 
     // Valider les flags
-    const isValidFlag = /^[gimuyss]*$/.test(flag);
+    const isValidFlag = /^[gimuys]*$/.test(flag);
     if (!isValidFlag) {
-        Logger.error(`Invalid regex flag(s) "${flag}" passed for the ${formParentName} form.`);
+        console.error(`Invalid regex flag(s) "${flag}" passed for the ${formParentName} form.`);
         return undefined;
     }
 
@@ -451,16 +455,19 @@ export function getInputPatternRegex(
         const fieldName = children.attr('name') ?? '[unknown name]';
 
         if (!pattern) {
-            Logger.error(
+            console.error(
                 `The ${fieldName} field in the ${formParentName} form does not have a pattern attribute.`
             );
+
             return undefined;
         }
         const regex = new RegExp(pattern, flag);
-        Logger.log('Pattern transform in javascript', regex)
+
+        console.log('Pattern transform in javascript:', regex)
+
         return regex;
     } catch (error: any) {
-        Logger.error(`Invalid pattern in ${formParentName} form field: ${error.message}`);
+        console.error(`Invalid pattern in ${formParentName} form field: ${error.message}`);
         throw error;
     }
 }
@@ -469,8 +476,11 @@ export function getInputPatternRegex(
  * @type 
  */
 export type MediaType = "video" | "document" | "image";
-export type FormInputType = "fqdn" | "file" | "radio" | "checkbox" | "number" | "text" | "email" | "password" | "url" | "select" | "textarea" | "date" | "tel" | "video" | "document" | "image";
+export type FormInputType = "fqdn" | "file" | "radio" | "checkbox" | "number" | "text" | "email" | "password" | "url" | "select" | "textarea" | "date" | "tel";
 export type HTMLFormChildrenElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+export type DataInput = string | string[] | number | null | undefined | File | FileList | Date;
+
+export const MediaTypeArray = ['video', 'image', 'document'];
 
 export function getAttr<T = unknown>(
     element: HTMLElement | null | undefined | JQuery<HTMLElement>,
@@ -478,23 +488,30 @@ export function getAttr<T = unknown>(
     defaults: unknown = null,
     toJson = false,
 ): T {
+
     if (!element) {
         return defaults as T;
     }
+
     if (element instanceof HTMLElement) {
         element = jQuery<HTMLElement>(element)
     }
+
     let value = element.attr(name);
+
     if (!value) { return defaults as T }
 
     if (toJson) {
         try {
+
             value = JSON.parse(value);
         } catch (error) {
-            Logger.error('error toJson getAttr:', error)
+            console.error('error toJson getAttr:', error)
+
             return defaults as T;
         }
     }
+
     return value as T;
 }
 
@@ -506,7 +523,7 @@ export function stringToRegex(regexString: string | null | undefined, flags: Fla
     try {
         return new RegExp(regexString, flags);
     } catch (e) {
-        Logger.error(`Invalid regex string: ${regexString}`, e);
+        console.error(`Invalid regex string: ${regexString}`, e);
         throw e; // Ou lancez une erreur si une regex invalide n'est pas acceptable
     }
 }

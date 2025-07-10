@@ -9,7 +9,9 @@
  * For more information, please feel free to contact the author.
  */
 export class ApiError {
-    constructor(private m_data: Record<string, unknown> | string, private m_status: number) { }
+    constructor(
+        private readonly m_data: Record<string, unknown> | string,
+        private readonly m_status: number) { }
     get status() { return this.m_status; }
     /**
      * Retrieves the list of validation error messages for a specific field.
@@ -102,4 +104,3 @@ export interface ApiView {
     previous?: string,
     next?: string
 }
-export class ApiSuccess { constructor() { throw new Error("I' am not implemented"); } }

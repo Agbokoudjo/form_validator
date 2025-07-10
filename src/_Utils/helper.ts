@@ -8,6 +8,7 @@
  *
  * For more information, please feel free to contact the author.
  */
+
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
     return (
         typeof value === 'object' &&
@@ -52,15 +53,17 @@ try {
  * ```
  */
 export function zipArray<T>(arr1: T[], arr2: T[]): [T, T][] {
+
     if (arr1.length !== arr2.length) {
-        // Lance une exception si les longueurs des tableaux sont différentes
         throw new Error("Arrays must have the same length to be zipped.");
     }
 
     const len = arr1.length;
     let result_array: [T, T][] = [];
+
     for (let d = 0; d < len; d++) {
         result_array.push([arr1[d], arr2[d]]);
     }
+
     return result_array;
 }
