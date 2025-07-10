@@ -5,10 +5,8 @@
  * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
  * Company: INTERNATIONALES WEB SERVICES
- *
  * For more information, please feel free to contact the author.
- */
-
+ * 
 # 📚 Form Validator Documentation
 
 _This README links to all the Markdown documentation files inside `docs/`._
