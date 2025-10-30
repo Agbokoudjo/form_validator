@@ -11,7 +11,6 @@
 import { AbstractFieldValidator } from "../FieldValidator";
 import { textInputValidator, TextInputOptions } from "./TextInputValidator";
 import {
-    AnalyzeWordOptions,
     WordScoringOptions,
     deepMerge,
     lowerRegex,

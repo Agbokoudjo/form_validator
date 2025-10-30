@@ -237,7 +237,7 @@ export async function httpFetchHandler<T = unknown>({
   if (isFormData && headers_requete instanceof Object) {
     delete (headers_requete as Record<string, string>)["Content-Type"];
   }
-  // ⛔ If keepalive is true, we should not retry nor set a timeout manually
+
   if (keepalive) {
     retryCount = 1;
     timeout = 0;

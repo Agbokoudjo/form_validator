@@ -451,11 +451,11 @@ export class FieldInputController extends AbstractFieldController implements For
             minNumbers: this.parseIntAttr('data-min-number'),
             minSymbols: this.parseIntAttr('data-min-symbol'),
             enableScoring: this.parseBooleanAttr('data-enable-scoring', true),
-            customUpperRegex: stringToRegex(this.getAttrChildren('data-custom-upper-regex')),
-            customLowerRegex: stringToRegex(this.getAttrChildren('data-custom-lower-regex')),
-            customNumberRegex: stringToRegex(this.getAttrChildren('data-custom-number-regex')),
-            customSymbolRegex: stringToRegex(this.getAttrChildren('data-custom-symbol-regex')),
-            customPunctuationRegex: stringToRegex(this.getAttrChildren('data-custom-punctuation-regex')),
+            customUpperRegex: stringToRegex(this.getAttrChildren('data-custom-upper-regex'),'u'),
+            customLowerRegex: stringToRegex(this.getAttrChildren('data-custom-lower-regex'),'u'),
+            customNumberRegex: stringToRegex(this.getAttrChildren('data-custom-number-regex'), 'u'),
+            customSymbolRegex: stringToRegex(this.getAttrChildren('data-custom-symbol-regex'), 'u'),
+            customPunctuationRegex: stringToRegex(this.getAttrChildren('data-custom-punctuation-regex'), 'u'),
             ...this.wordScoringOptions
         }
     }

@@ -515,7 +515,6 @@ export function getAttr<T = unknown>(
     return value as T;
 }
 
-// Exemple d'une fonction qui pourrait être utilisée
 export function stringToRegex(regexString: string | null | undefined, flags: FlagRegExp = 'iu'): RegExp | undefined {
     if (!regexString) {
         return undefined;
@@ -524,6 +523,6 @@ export function stringToRegex(regexString: string | null | undefined, flags: Fla
         return new RegExp(regexString, flags);
     } catch (e) {
         console.error(`Invalid regex string: ${regexString}`, e);
-        throw e; // Ou lancez une erreur si une regex invalide n'est pas acceptable
+        throw e;
     }
 }

@@ -15,7 +15,7 @@ import { FormErrorStoreInterface } from "./FormErrorStoreInterface";
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
 * @package <https://github.com/Agbokoudjo/form_validator>
 */
-class FormErrorStore implements FormErrorStoreInterface {
+export class FormErrorStore implements FormErrorStoreInterface {
 
     private static instance: FormErrorStore;
 

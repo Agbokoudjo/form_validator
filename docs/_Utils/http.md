@@ -1,352 +1,678 @@
-# 📘 Function Documentation
+# HTTP Fetch Handler Documentation
 
-::: toc
-## 📌 Table of contents
+## Table of Contents
 
--   [addParamToUrl](#addParamToUrl)
--   [buildUrlFromForm](#buildUrlFromForm)
--   [responseTypeHandle](#responseTypeHandle)
--   [detectedResponseTypeNoOk](#detectedResponseTypeNoOk)
--   [mapStatusToResponseType](#mapStatusToResponseType)
--   [HttpFetchError](#HttpFetchError)
--   [httpFetchHandler](#httpFetchHandler)
-:::
+### Core Utilities
+- [HttpResponse Class](#HttpResponse)
+- [HttpFetchError Class](#HttpFetchError)
 
-::: {#addParamToUrl .section .function-doc}
-## 🔧 Function: `addParamToUrl`
+### Response Handling
+- [Response Type Handling](#responseTypeHandle)
+- [Automatic Response Detection](#detectedResponseTypeNoOk)
+- [Status Code Mapping](#mapStatusToResponseType)
 
-This function dynamically adds query parameters to an existing URL and
-returns the updated URL, either as a string or as a `URL` instance.
+### Main Handler
+- [HTTP Fetch Handler](#httpFetchHandler)
+- [Parameters Reference](#parameters-reference)
+- [Usage Examples](#usage-examples)
+- [Error Handling](#error-handling)
+- [Retry Mechanism](#retry-mechanism)
 
-### 📥 Parameters
+### Integration
+- [jQuery Form Submission](#jquery-form-submission)
+- [SweetAlert2 Integration](#sweetalert2-integration)
 
--   `urlparam: string | URL` -- The base URL to which query parameters
-    will be added.
--   `addparamUrlDependencie: Record<string, any> | null` -- Key-value
-    pairs to be added as query parameters (default: `null`).
--   `returnUrl: boolean` -- If `true` (default), returns the URL as a
-    string. If `false`, returns it as a `URL` instance.
--   `baseUrl: string | URL | undefined` -- The base URL to use if
-    `urlparam` is relative (default: `window.location.origin`).
+---
 
-### 📤 Returns
+## Class `HttpResponse` {#HttpResponse}
 
-`string | URL` -- The updated URL, either as a string or a `URL` object.
+**Generic HTTP response wrapper for type-safe response handling.**
 
-### 💡 Example
-
-    const result = addParamToUrl("https://example.com", { lang: "fr", user: "test" });
-    console.log(result); 
-    // "https://example.com/?lang=fr&user=test"
-      
-:::
-
-::: {#buildUrlFromForm .section .function-doc}
-## 🔧 Function: `buildUrlFromForm`
-
-This function extracts data from an HTML form and converts it into URL
-parameters, which are then appended to a target URL. It can also merge
-additional parameters into the final URL.
-
-### 📥 Parameters
-
--   `formElement: HTMLFormElement` -- The source form whose data should
-    be converted into URL parameters.
--   `form_action: string | null` -- An alternative action URL to use if
-    `formElement.action` is empty (default: `null`).
--   `addparamUrlDependencie: Record<string, any> | null` -- Additional
-    parameters to be merged into the generated URL (default: `null`).
--   `returnUrl: boolean` -- If `true` (default), returns a string;
-    otherwise returns a `URL` instance.
--   `baseUrl: string | URL | undefined` -- The base URL to use in case
-    of a relative path (default: `window.location.origin`).
-
-### 📤 Returns
-
-`string | URL` -- The resulting URL enriched with form data and
-optionally additional parameters.
-
-### 💡 Example
-
-    // HTML
-    <form id="searchForm">
-      <input name="q" value="javascript">
-      <input name="sort" value="asc">
-    </form>
-
-    // JavaScript
-    const form = document.getElementById("searchForm");
-    const result = buildUrlFromForm(form, null, { page: 2 });
-    console.log(result);
-    // "http://.../search?q=javascript&sort=asc&page=2"
-      
-:::
-
-::: {#responseTypeHandle .section .function-doc}
-## 🔧 Function: `responseTypeHandle`
-
-This asynchronous function handles different HTTP response types
-(`json`, `text`, `blob`, etc.) and returns a `HttpResponse` instance
-containing the extracted data based on the specified type.
-
-### 📥 Parameters
-
--   **`responseType: string`** -- The expected type of the response. Can
-    be `"json"`, `"text"`, `"blob"`, `"arrayBuffer"`, `"formData"`, or
-    `"stream"`.
--   **`response: Response`** -- The HTTP `Response` object to be
-    handled.
-
-### 📤 Returns
-
-A `Promise` that resolves to an instance of `HttpResponse` with the
-following properties:
-
--   `status` -- The HTTP status code
--   `headers` -- The HTTP response headers
--   `data` -- The parsed response data according to the specified type
-
-### 💡 Example
-
-``` ts
-// Example usage with fetch
-const response = await fetch("/api/data");
-const result = await responseTypeHandle("json", response);
-console.log(result.data); // Outputs the extracted JSON data
-  
-```
-:::
-
-::: {#detectedResponseTypeNoOk .section .function-doc}
-## 🔧 Function: `detectedResponseTypeNoOk`
-
-This function automatically detects the content type of an HTTP response
-based on the `Content-Type` header when an error status is returned
-(e.g., status code 4xx or 5xx). It then uses `responseTypeHandle` to
-properly parse the response data.
-
-### 📥 Parameters
-
--   **`response: Response`** -- The HTTP response object to analyze.
-
-### 📤 Returns
-
-A `Promise` resolving to an instance of `HttpResponse` containing the
-parsed response body. The data type depends on the actual content
-returned by the server: JSON, plain text, XML, or raw status message.
-
-### 🔍 Behavior by Content-Type
-
--   `application/json`, `application/ld+json`, or any type containing
-    `"json"` → **Parsed as JSON**
--   `text/html`, `text/plain` → **Parsed as text**
--   `application/xml`, `text/xml`, or any type containing `"xml"` →
-    **Parsed as text**
--   *Other types* → Raw `statusText` is returned as the data
-
-### 💡 Example
-
-``` ts
-// Example usage
-const response = await fetch("/api/404");
-const result = await detectedResponseTypeNoOk(response);
-console.log(result.data); // Outputs error text or JSON
-  
-```
-:::
-
-::: {#mapStatusToResponseType .section .function-doc}
-## 🔧 Function: `mapStatusToResponseType`
-
-This function maps an HTTP status code (`statusCodeHttpResponse`) to a
-simplified logical response type that can be used to display user
-messages or apply styling (e.g., success, error, etc.).
-
-### 📥 Parameters
-
--   **`statusCodeHttpResponse: number`** -- The HTTP response code to
-    evaluate (e.g., 200, 404, 301, etc.).
-
-### 📤 Returns
-
-A value of type `'success'` \| `'info'` \| `'warning'` \| `'error'`,
-representing the mapped logical status.
-
-### 🔍 Status Mapping
-
--   **\< 200** → `'info'` (informational, custom redirects\...)
--   **200--299** → `'success'` (request successful)
--   **300--399** → `'warning'` (redirection, attention needed)
--   **400+** → `'error'` (client or server error)
-
-### 💡 Example
-
-``` ts
-// Example usage
-const type = mapStatusToResponseType(404);
-console.log(type); // 'error'
-  
-```
-:::
-
-------------------------------------------------------------------------
-
-::: {#HttpFetchError .section}
-## HttpFetchError
-
-`HttpFetchError` is a custom class that extends `Error`. It represents a
-specific error during an HTTP request, with additional metadata useful
-for debugging and monitoring, such as retry attempts, status code, or
-the response body.
+Encapsulates HTTP response data with status code, headers, and parsed response body.
 
 ### Constructor
 
-``` ts
-new HttpFetchError(
-  message: string,
-  url: string | URL | Request,
-  options?: {
-    attempt?: number;
-    responseStatus?: number;
-    responseBody?: any;
-    cause?: any;
-  }
-)
-  
+```typescript
+constructor(response_data: HttpResponseData<T>)
 ```
-
-### Parameters
-
--   **message** (`string`) -- The error message.
--   **url** (`string | URL | Request`) -- The URL related to the failed
-    HTTP request.
--   **options** (optional):
-    -   **attempt** (`number`) -- Number of attempts made before the
-        failure.
-    -   **responseStatus** (`number`) -- The returned HTTP status code.
-    -   **responseBody** (`any`) -- The body of the HTTP response.
-    -   **cause** (`any`) -- The original cause of the error (e.g.,
-        internal exception).
 
 ### Properties
 
--   `name` -- Always set to `"HttpFetchError"` for easy identification.
--   `url` -- The URL or request associated with the error.
--   `attempt` -- The number of retry attempts made.
--   `responseStatus` -- The returned HTTP status code.
--   `responseBody` -- The body of the HTTP response.
--   `cause` -- Details or exception that caused the error.
+- **`status: number`** - HTTP status code (200, 404, 500, etc.)
+- **`headers: Headers`** - Response headers object
+- **`data: T`** - Parsed response body (generic type)
 
-### Usage Example
+### Example
 
-``` ts
-// Create a custom HTTP error
-throw new HttpFetchError("Network error", "https://example.com/api", {
-  attempt: 3,
-  responseStatus: 500,
-  responseBody: { error: "Internal Server Error" },
+```typescript
+const response = new HttpResponse({
+    status: 200,
+    headers: new Headers({ 'content-type': 'application/json' }),
+    data: { id: 1, name: 'John' }
 });
-  
+
+console.log(response.status);  // 200
+console.log(response.data);    // { id: 1, name: 'John' }
 ```
-:::
 
-------------------------------------------------------------------------
+---
 
-::: {#httpFetchHandler .section}
-## 🔄 Function: `httpFetchHandler`
+## Class `HttpFetchError` {#HttpFetchError}
 
-`httpFetchHandler` is an advanced asynchronous utility for handling HTTP
-requests with built-in support for retries, timeout handling, error
-categorization, and automatic response parsing. It encapsulates common
-fetch operations and adds resilience through retry logic and
-fine-grained error management.
+**Custom error class for HTTP fetch operation failures.**
 
-### 📥 Parameters
+Extends native Error with HTTP context information for debugging.
 
--   **`url: string | URL | Request`** -- The URL or request object to
-    send the HTTP request to.
+### Constructor
 
--   **`methodSend: string`** -- HTTP method (e.g. `"GET"`, `"POST"`,
-    `"PUT"`, etc.). Default is `"GET"`.
+```typescript
+constructor(
+    message: string,
+    url: string | URL | Request,
+    options?: HttpFetchErrorOptions
+)
+```
 
--   **`data: any`** -- The request payload. If it is an instance of
-    `FormData`, headers will be adjusted automatically.
+### Properties
 
--   **`optionsheaders: HeadersInit`** -- Custom request headers.
-    Defaults to:
+- **`url: string | URL | Request`** - The URL that failed
+- **`attempt?: number`** - Which retry attempt failed
+- **`responseStatus?: number`** - HTTP response status code
+- **`responseBody?: any`** - Response body if available
+- **`cause?: any`** - Underlying error (AbortError, NetworkError, etc.)
 
-        {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest"
-        }
+### Example
 
--   **`timeout: number`** -- Timeout in milliseconds. Default is `45000`
-    (45 seconds). Ignored if `keepalive` is `true`.
+```typescript
+try {
+    // Network request
+} catch (error) {
+    if (error instanceof HttpFetchError) {
+        console.log(`Failed URL: ${error.url}`);
+        console.log(`Attempt: ${error.attempt}`);
+        console.log(`Status: ${error.responseStatus}`);
+        console.log(`Cause: ${error.cause}`);
+    }
+}
+```
 
--   **`retryCount: number`** -- Maximum number of retry attempts for
-    recoverable errors. Default is `3`.
+---
 
--   **`responseType: string`** -- Expected response type. Can be
-    `"json"`, `"text"`, `"blob"`, etc.
+## Function `responseTypeHandle` {#responseTypeHandle}
 
--   **`retryOnStatusCode: boolean`** -- Whether to retry requests on
-    error HTTP status codes (like 500). Default is `false`.
+**Parses HTTP response based on specified response type.**
 
--   **`keepalive: boolean`** -- Enables the keepalive flag for
-    background requests (e.g., during page unload). Disables timeout and
-    retries if `true`.
+Automatically converts Response object to desired format (JSON, text, blob, etc.).
 
-### 📤 Returns
+### Signature
 
-A `Promise` that resolves to an `HttpResponse` object containing the
-response status, headers, and parsed data based on the specified
-`responseType`.
+```typescript
+async function responseTypeHandle<T = unknown>(
+    responseType: string,
+    response: Response
+): Promise<HttpResponse>
+```
 
-### 🚦Behavior & Features
+### Response Types
 
--   💡 Automatically retries failed requests (e.g., network errors,
-    server issues) up to `retryCount` times.
--   ⏱️ Applies a timeout using `AbortController`, unless `keepalive` is
-    enabled.
--   🧠 Intelligent content parsing with `responseTypeHandle` and
-    fallback handling via `detectedResponseTypeNoOk`.
--   🪝 Logs responses, warnings, and errors with contextual information
-    including the attempt count.
--   ❗ Throws an `HttpFetchError` when all attempts fail or when an
-    unrecoverable error occurs.
+| Type | Description | Use Case |
+|------|-------------|----------|
+| `"json"` | Parses as JSON object | API responses |
+| `"text"` | Plain text response | HTML, XML, plain text |
+| `"blob"` | Binary large object | Images, files |
+| `"arrayBuffer"` | Raw binary data | Binary processing |
+| `"formData"` | Form data object | Form submissions |
+| `"stream"` | ReadableStream | Streaming responses |
 
-### 💡 Example
+### Example
 
-``` ts
+```typescript
+const response = await fetch('https://api.example.com/users');
+const parsed = await responseTypeHandle('json', response);
+console.log(parsed.data);  // Parsed JSON
+```
+
+---
+
+## Function `detectedResponseTypeNoOk` {#detectedResponseTypeNoOk}
+
+**Automatically detects response type from Content-Type header.**
+
+Smart type detection for error responses (4xx, 5xx status codes).
+
+### Signature
+
+```typescript
+async function detectedResponseTypeNoOk<T = unknown>(
+    response: Response
+): Promise<HttpResponse>
+```
+
+### Auto-Detection Rules
+
+| Content-Type | Detected As |
+|--------------|-------------|
+| `application/json`, `application/ld+json` | JSON |
+| `text/html`, `text/plain` | Text |
+| `application/xml`, `text/xml` | Text (XML) |
+| Other | Status text |
+
+### Example
+
+```typescript
+try {
+    const response = await fetch('https://api.example.com/invalid');
+    if (!response.ok) {
+        const errorData = await detectedResponseTypeNoOk(response);
+        console.log(errorData.data);  // Auto-detected error format
+    }
+} catch (error) {
+    console.error(error);
+}
+```
+
+---
+
+## Function `mapStatusToResponseType` {#mapStatusToResponseType}
+
+**Maps HTTP status codes to semantic response types.**
+
+Categorizes HTTP status codes into logical groups.
+
+### Signature
+
+```typescript
+function mapStatusToResponseType(statusCodeHttpResponse: number): 'success' | 'info' | 'warning' | 'error'
+```
+
+### Status Mapping
+
+| Status Code | Type |
+|-------------|------|
+| < 200 | `'info'` |
+| 200-299 | `'success'` |
+| 300-399 | `'warning'` |
+| ≥ 400 | `'error'` |
+
+### Example
+
+```typescript
+const status1 = mapStatusToResponseType(200);  // 'success'
+const status2 = mapStatusToResponseType(404);  // 'error'
+const status3 = mapStatusToResponseType(301);  // 'warning'
+const status4 = mapStatusToResponseType(100);  // 'info'
+```
+
+---
+
+## Function `httpFetchHandler` {#httpFetchHandler}
+
+**Advanced HTTP request handler with timeout, retry, and parsing.**
+
+Main utility function for making HTTP requests with built-in resilience.
+
+### Signature
+
+```typescript
+async function httpFetchHandler<T = unknown>(options: FetchOptions): Promise<HttpResponse>
+```
+
+### Parameters Reference {#parameters-reference}
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | `string \| URL \| Request` | **Required** | Target API endpoint |
+| `methodSend` | `HttpMethod` | `"GET"` | HTTP method (GET, POST, PUT, DELETE, etc.) |
+| `data` | `any` | `null` | Request body (JSON object or FormData) |
+| `optionsheaders` | `HeadersInit` | See below | Custom HTTP headers |
+| `timeout` | `number` | `45000` | Request timeout in milliseconds |
+| `retryCount` | `number` | `3` | Number of retry attempts |
+| `responseType` | `HttpResponseType` | `'json'` | Expected response format |
+| `retryOnStatusCode` | `boolean` | `false` | Retry on 5xx errors |
+| `keepalive` | `boolean` | `false` | Send request with keepalive flag |
+
+### Default Headers
+
+```typescript
+{
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
+}
+```
+
+### Behavior Details
+
+#### FormData Handling
+- Automatically removes `Content-Type` header for FormData
+- Browser sets correct multipart encoding
+
+#### JSON Data Handling
+- Automatically calls `JSON.stringify()` on data
+- **Do NOT pre-stringify data**
+
+```typescript
+// ✅ Correct
+await httpFetchHandler({
+    url: '/api/users',
+    data: { name: 'John' }  // Plain object
+});
+
+// ❌ Wrong
+await httpFetchHandler({
+    url: '/api/users',
+    data: JSON.stringify({ name: 'John' })  // Double encoding!
+});
+```
+
+#### Timeout Mechanism
+- Uses `AbortController` for request cancellation
+- Triggers after specified timeout (default: 45s)
+- Throws `HttpFetchError` on timeout
+
+#### Retry Logic
+- Automatic retries on network errors
+- Exponential backoff: `500ms * (attempt + 1)`
+- Configurable retry count (minimum 3)
+- Optional retry on specific HTTP status codes
+
+### Retry Flow
+
+```
+Attempt 1: Immediate
+    ↓
+Fail? → Yes → Wait 500ms
+            ↓
+Attempt 2
+    ↓
+Fail? → Yes → Wait 1000ms
+            ↓
+Attempt 3
+    ↓
+Fail? → Throw error
+```
+
+---
+
+## Usage Examples {#usage-examples}
+
+### Simple GET Request
+
+```typescript
 const response = await httpFetchHandler({
-  url: "https://api.example.com/data",
-  methodSend: "POST",
-  data: { username: "john", password: "secret" },
-  retryOnStatusCode: true,
-  timeout: 10000,
-  responseType: "json"
+    url: 'https://api.example.com/posts',
+    responseType: 'json'
 });
 
-console.log(response.data); // Parsed response data
-  
+console.log(response.status);  // 200
+console.log(response.data);    // Array of posts
 ```
 
-### 🔁 Retry Strategy
+### POST with JSON Data
 
-The function attempts the request up to `retryCount` times in the
-following cases:
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/users',
+    methodSend: 'POST',
+    data: { 
+        name: 'Alice',
+        email: 'alice@example.com'
+    },
+    responseType: 'json'
+});
 
--   **Timeout** -- The server doesn\'t respond in time.
--   **Network Error** -- The connection fails (e.g., no internet).
--   **Error HTTP Status** -- Only if `retryOnStatusCode` is `true`.
--   Each retry is delayed by a backoff timer (e.g., 500ms × attempt
-    index).
+console.log(response.data);  // Created user object
+```
 
-### ⚠️ Errors Thrown
+### File Upload with FormData
 
--   `HttpFetchError` -- When the request fails after all retries or in
-    case of unexpected failures.
--   Includes useful metadata: attempted URL, response status, body (if
-    available), and original cause.
-:::
+```typescript
+const formElement = document.querySelector('form');
+const formData = new FormData(formElement);
+
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/upload',
+    methodSend: 'POST',
+    data: formData,  // FormData automatically handled
+    responseType: 'json'
+});
+
+console.log(response.data);  // Upload response
+```
+
+### With Custom Headers
+
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/protected',
+    optionsheaders: {
+        'Authorization': `Bearer ${token}`,
+        'X-Custom-Header': 'value'
+    },
+    responseType: 'json'
+});
+```
+
+### Retry Configuration
+
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://unstable-api.example.com/data',
+    timeout: 30000,       // 30 second timeout
+    retryCount: 5,        // Try 5 times
+    retryOnStatusCode: true,  // Retry on 5xx errors
+    responseType: 'json'
+});
+```
+
+### Blob Download
+
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/file.pdf',
+    responseType: 'blob'
+});
+
+// Download file
+const url = URL.createObjectURL(response.data);
+const link = document.createElement('a');
+link.href = url;
+link.download = 'file.pdf';
+link.click();
+```
+
+### Stream Response
+
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/stream',
+    responseType: 'stream'
+});
+
+// Handle streaming
+const reader = response.data.getReader();
+const { value, done } = await reader.read();
+```
+
+---
+
+## Error Handling {#error-handling}
+
+### Handling HttpFetchError
+
+```typescript
+try {
+    const response = await httpFetchHandler({
+        url: 'https://api.example.com/data',
+        timeout: 5000
+    });
+} catch (error) {
+    if (error instanceof HttpFetchError) {
+        if (error.name.includes('Timeout')) {
+            console.log('Request timed out');
+        } else if (error.message.includes('NetworkError')) {
+            console.log('Network connection failed');
+        } else {
+            console.log('Other error:', error.message);
+        }
+    }
+}
+```
+
+### Handling HTTP Errors (4xx, 5xx)
+
+```typescript
+const response = await httpFetchHandler({
+    url: 'https://api.example.com/users/999',
+    responseType: 'json'
+});
+
+if (mapStatusToResponseType(response.status) === 'error') {
+    console.log(`Error ${response.status}:`, response.data);
+}
+```
+
+### Handling Non-OK Status Codes
+
+```typescript
+try {
+    const response = await httpFetchHandler({
+        url: 'https://api.example.com/data',
+        responseType: 'json'
+    });
+
+    const responseType = mapStatusToResponseType(response.status);
+    
+    if (responseType === 'error') {
+        throw response;  // Handle as error
+    }
+    
+    // Handle success
+    console.log(response.data);
+} catch (error) {
+    if (error instanceof HttpResponse) {
+        console.error(`HTTP ${error.status}:`, error.data);
+    }
+}
+```
+
+---
+
+## Retry Mechanism {#retry-mechanism}
+
+### Automatic Retry Scenarios
+
+| Error Type | Retries | Behavior |
+|-----------|---------|----------|
+| Timeout (AbortError) | Yes | Wait 500ms × attempt count |
+| Network error | Yes | Wait 1000ms × attempt count |
+| 5xx status codes | Conditional | Only if `retryOnStatusCode: true` |
+| Parse errors | No | Throw immediately |
+
+### Exponential Backoff Example
+
+```typescript
+// Retry delays: 500ms → 1000ms → 1500ms
+await httpFetchHandler({
+    url: 'https://unstable.example.com',
+    retryCount: 3,
+    timeout: 10000
+});
+```
+
+---
+
+## jQuery Form Submission {#jquery-form-submission}
+
+**Real-world integration with jQuery form handling.**
+
+### HTML Structure
+
+```html
+<form class="form_submit" name="contactForm" id="contactForm">
+    <input type="text" name="name" required />
+    <input type="email" name="email" required />
+    <textarea name="message" required></textarea>
+    <button type="submit">Send</button>
+</form>
+```
+
+### jQuery Handler Setup
+
+```typescript
+jQuery(function() {
+    jQuery(document).on('submit', 'form.form_submit', async (event) => {
+        event.preventDefault();
+        
+        const form = jQuery(event.target);
+        const $submitButton = jQuery('button[type="submit"]', form);
+        
+        // Disable button and show loading state
+        const originalText = $submitButton.text();
+        $submitButton.prop('disabled', true).text('Sending...');
+
+        try {
+            // Submit form data
+            const response = await httpFetchHandler({
+                url: 'https://api.example.com/submit',
+                methodSend: 'POST',
+                data: new FormData(form.get()[0]),
+                timeout: 60000,
+                retryCount: 2,
+                responseType: 'json'
+            });
+
+            if (mapStatusToResponseType(response.status) === 'success') {
+                alert('Form submitted successfully!');
+                form.get()[0].reset();
+            } else {
+                alert('Submission failed. Please try again.');
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            // Restore button
+            $submitButton.text(originalText).prop('disabled', false);
+        }
+    });
+});
+```
+
+---
+
+## SweetAlert2 Integration {#sweetalert2-integration}
+
+**Complete example with SweetAlert2 for user feedback.**
+
+### Base Configuration
+
+```typescript
+const baseSweetAlert2Options = {
+    animation: true,
+    allowEscapeKey: false,
+    background: '#00427E',
+    color: '#fff',
+    showClass: {
+        popup: 'animate__animated animate__fadeInUp animate__faster'
+    },
+    hideClass: {
+        popup: 'animate__animated animate__fadeOutDown animate__faster'
+    }
+};
+```
+
+### Form Submission with SweetAlert2
+
+```typescript
+jQuery(function() {
+    let originalText;
+
+    jQuery(document).on('submit', 'form.form_submit', async (event) => {
+        event.preventDefault();
+
+        const form = jQuery(event.target);
+        const $submitButton = jQuery('button[type="submit"]', form);
+        originalText = $submitButton.text();
+
+        // Show loading alert
+        Swal.fire({
+            title: 'Processing',
+            icon: 'info',
+            html: '<div class="alert alert-info">Sending data. Please wait...</div>',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            timer: 60000,
+            timerProgressBar: true,
+            ...baseSweetAlert2Options
+        });
+
+        Swal.showLoading();
+
+        try {
+            const response = await httpFetchHandler({
+                url: '/api/submit',
+                methodSend: 'POST',
+                data: new FormData(form.get()[0]),
+                timeout: 60000,
+                retryCount: 2,
+                responseType: 'json'
+            });
+
+            if (mapStatusToResponseType(response.status) === 'error') {
+                throw response;
+            }
+
+            // Success alert
+            Swal.fire({
+                title: response.data.title,
+                icon: 'success',
+                html: `<div class="alert alert-success">${response.data.message}</div>`,
+                showConfirmButton: false,
+                showCloseButton: true,
+                ...baseSweetAlert2Options
+            });
+
+            form.get()[0].reset();
+            $submitButton.text(originalText).prop('disabled', false);
+
+        } catch (error) {
+            // Error alert
+            let title = 'Error';
+            let message = 'An error occurred. Please try again.';
+
+            if (error instanceof HttpResponse) {
+                title = error.data?.title || `Error ${error.status}`;
+                message = error.data?.message || error.data;
+            } else if (error instanceof HttpFetchError) {
+                title = 'Network Error';
+                message = error.message;
+            }
+
+            Swal.fire({
+                title: title,
+                icon: 'error',
+                html: `<div class="alert alert-danger">${message}</div>`,
+                showConfirmButton: false,
+                showCloseButton: true,
+                ...baseSweetAlert2Options
+            });
+
+            $submitButton.text('Retry').prop('disabled', false);
+        }
+    });
+});
+```
+
+---
+
+## Best Practices
+
+### ✅ Do's
+
+- Pass plain objects, not stringified JSON
+- Use appropriate response types
+- Set reasonable timeouts (10-60 seconds)
+- Handle errors with specific error classes
+- Use retry for network operations
+- Clear user feedback on errors
+
+### ❌ Don'ts
+
+- Don't pre-stringify JSON data
+- Don't set timeout to 0 (unless keepalive)
+- Don't ignore network errors
+- Don't forget error handling
+- Don't use retryOnStatusCode carelessly
+- Don't forget to restore UI on completion
+
+---
+
+## Performance Tips
+
+1. **Use keepalive for non-critical requests**
+2. **Set appropriate timeouts for different operations**
+3. **Use blob/arrayBuffer for binary data**
+4. **Stream large responses when possible**
+5. **Implement request deduplication**
+6. **Cache responses when appropriate**

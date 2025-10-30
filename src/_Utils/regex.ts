@@ -7,12 +7,12 @@ export function isRegExp(obj: unknown): obj is RegExp {
     return Object.prototype.toString.call(obj) === '[object RegExp]';
 }
 
-export const letterRegex = /^\p{L}+$/u;       // Lettre (majuscule ou minuscule) de n'importe quelle langue
-export const upperRegex = /^\p{Lu}+$/u;      // Majuscule de n'importe quelle langue
-export const lowerRegex = /^\p{Ll}+$/u;      // Minuscule de n'importe quelle langue
-export const numberRegex = /^\p{N}+$/u;       // Tout chiffre (0-9 ou autre chiffre d'autres systèmes)
-export const symbolRegex = /^\p{S}+$/u;
-export const punctuationRegex = /^\p{P}+$/u;
+export const letterRegex = /\p{L}/u;       // Lettre (majuscule ou minuscule) de n'importe quelle langue
+export const upperRegex = /\p{Lu}/u;      // Majuscule de n'importe quelle langue
+export const lowerRegex = /\p{Ll}/u;      // Minuscule de n'importe quelle langue
+export const numberRegex = /\p{N}/u;       // Tout chiffre (0-9 ou autre chiffre d'autres systèmes)
+export const symbolRegex = /\p{S}\p{P}/u;
+export const punctuationRegex = /\p{P}/u;
 export const regex = /^[\p{L}\p{S}\p{N}]+$/u; // L: letters, S: symbols, N: numbers
 export const passwordCharRegex = /^[\p{L}\p{N}\p{S}\p{P}]+$/u; // L = letters, N = numbers, S = symbols, P = punctuation
 export const strongPasswordWithUpperRegex = /^(?=.*\p{Lu})(?=.*\p{Ll})(?=.*\p{N})(?=.*[\p{S}\p{P}]).{8,}$/u;

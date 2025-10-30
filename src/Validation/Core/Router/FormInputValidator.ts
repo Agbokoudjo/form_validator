@@ -93,7 +93,7 @@ export interface FormInputValidatorInterface {
 		datainput: DataInput,
 		targetInputname: string,
 		type_field: FormInputType | MediaType,
-		options_validator: OptionsValidate) => Promise<void>;
+		options_validator: OptionsValidate, ...othersArg: any) => Promise<void>;
 }
 
 export interface ContainerValidatorInterface {
@@ -134,7 +134,8 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
 		datainput: DataInput,
 		targetInputname: string,
 		type_field: FormInputType | MediaType,
-		options_validator: OptionsValidate
+		options_validator: OptionsValidate,
+		...othersArg: any
 	): Promise<void> => {
 
 		if (datainput instanceof File || datainput instanceof FileList) {

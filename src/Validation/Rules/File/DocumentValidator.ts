@@ -213,7 +213,7 @@ export class DocumentValidator extends AbstractMediaValidator {
         });
     }
 
-    public detecteMimetype = (filename: string, hexasignatureFile: string, uint8Array: Uint8Array): this => {
+    protected detecteMimetype = (filename: string, hexasignatureFile: string, uint8Array: Uint8Array): this => {
         let mimeType = 'unknown';
         if (this.signatureHexadecimalFormatDocument.pdf.includes(hexasignatureFile)) {
             mimeType = 'application/pdf';

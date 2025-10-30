@@ -53,7 +53,7 @@ export interface FieldValidatorInterface {
 	* @returns {Promise<this> | this} Returns the instance (`this`) for synchronous validation, or a 
 	* Promise resolving to the instance for asynchronous validation.
 	*/
-	validate(value: DataInput, fieldName: string, optionsValidate: any, ignoreMergeWithDefaultOptions?: boolean): Promise<this> | this;
+	validate(value: DataInput, fieldName: string, optionsValidate: any,...otherAgrs:any): Promise<this> | this;
 }
 
 /**
@@ -96,7 +96,7 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 		};
 	};
 
-	public abstract validate(value: DataInput, fieldName: string, optionsValidate: any, ignoreMergeWithDefaultOptions?: boolean): Promise<this> | this;
+	public abstract validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherAgrs: any): Promise<this> | this;
 
 	protected getRawStringValue(value?: string): string {
 
