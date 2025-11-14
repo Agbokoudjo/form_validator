@@ -9,7 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 
-import { FormAttributeNoFoundException } from "../../../../../_Utils";
+import { FormAttributeNoFoundException,hasProperty } from "../../../../../_Utils";
 import { OptionsValidate } from "../../../Router";
 import { FieldOptionsValidateCacheAdapterInterface } from "../../FieldOptionsValidateCacheAdapter";
 
@@ -30,7 +30,7 @@ export class LocalStorageCacheAdapter implements FieldOptionsValidateCacheAdapte
             try {
                 const formCache: Record<string, OptionsValidate> = this.getFormOptionsValidateCache(fieldName) ?? {};
 
-                resolve(formCache.hasOwnProperty(fieldName) ? formCache[fieldName] : undefined);
+                resolve(hasProperty(formCache,fieldName) ? formCache[fieldName] : undefined);
             } catch (e) {
                 console.error("LocalStorage read error:", e);
                 resolve(undefined);

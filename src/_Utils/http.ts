@@ -110,7 +110,7 @@ export class HttpFetchError extends Error {
 }
 
 // 🔒 Allowed HTTP methods
-type HttpMethod =
+export type HttpMethod =
   | 'GET'
   | 'POST'
   | 'PUT'

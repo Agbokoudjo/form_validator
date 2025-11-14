@@ -184,34 +184,35 @@ export class PasswordInputValidator extends AbstractFieldValidator {
             return this.setValidationState(false, "Password must contain at least one punctuation character.", targetInputname);
         }
 
-        // ✅ Analyse du mot et scoring si demandé
-        if (enableScoring) {
-            const analysis = analyzeWord(datainput, {
-                customUpperRegex: customUpperRegex,
-                customLowerRegex: customLowerRegex,
-                customNumberRegex: customNumberRegex,
-                customSymbolRegex: customSymbolRegex,
-                customPunctuationRegex: customPunctuationRegex,
-                analyzeCharTypes: {
-                    allowedLower: lowerCaseAllow,
-                    allowedNumber: numberAllow,
-                    allowedPunctuation: punctuationAllow,
-                    allowedSymbol: symbolAllow,
-                    allowedUpper: upperCaseAllow
-                }
-            });
-            const score = scoreWord(analysis, scoringPasswordOptions);
-            document.dispatchEvent(new CustomEvent(typeof SCOREANALYSISPASSWORD, {
-                cancelable: true,
-                bubbles: false,
-                detail: {
-                    score,
-                    analysis,
-                    input: targetInputname
-                }
-            }))
+        if (typeof window !== "undefined" && typeof document !== "undefined") {
+            // ✅ Analyse du mot et scoring si demandé
+            if (enableScoring) {
+                const analysis = analyzeWord(datainput, {
+                    customUpperRegex: customUpperRegex,
+                    customLowerRegex: customLowerRegex,
+                    customNumberRegex: customNumberRegex,
+                    customSymbolRegex: customSymbolRegex,
+                    customPunctuationRegex: customPunctuationRegex,
+                    analyzeCharTypes: {
+                        allowedLower: lowerCaseAllow,
+                        allowedNumber: numberAllow,
+                        allowedPunctuation: punctuationAllow,
+                        allowedSymbol: symbolAllow,
+                        allowedUpper: upperCaseAllow
+                    }
+                });
+                const score = scoreWord(analysis, scoringPasswordOptions);
+                document.dispatchEvent(new CustomEvent(typeof SCOREANALYSISPASSWORD, {
+                    cancelable: true,
+                    bubbles: false,
+                    detail: {
+                        score,
+                        analysis,
+                        input: targetInputname
+                    }
+                }))
+            }
         }
-
         return this;
     }
 

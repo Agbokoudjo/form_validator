@@ -1,119 +1,188 @@
 /*
- * This file is part of the project by AGBOKOUDJO Franck.
- *
- * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
- * Phone: +229 0167 25 18 86
+ * Logger Utility Module
+ * 
+ * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+ * @version 1.0.0
+ * @license MIT
+ * 
+ * Company: INTERNATIONALES WEB APPS & SERVICES
+ * Contact: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
- * Company: INTERNATIONALES WEB SERVICES
- *
- * For more information, please feel free to contact the author.
  */
-export type Env = "dev" | "prod" | "test";
 
 /**
- * @example 
+ * Supported environment types
+ */
+export type Env = 'dev' | 'prod' | 'test';
+
+/**
+ * LogLevel enum for type-safe logging levels
+ */
+enum LogLevel {
+    LOG = 'log',
+    INFO = 'info',
+    WARN = 'warn',
+    ERROR = 'error',
+}
+
+/**
+ * Prefix configuration interface
+ */
+interface PrefixConfig {
+    prefixString: string;
+    styles: string[];
+}
+
+/**
+ * Logger class - Singleton pattern for consistent application-wide logging
  * 
+ * Provides formatted console logging with environment-aware output and color-coded messages.
+ * Supports multiple log levels (log, info, warn, error) with automatic timestamp injection.
+ * 
+ * @example
  * ```typescript
- *  Logger.log('Application started');
- *   Logger.info('User logged in', { id: 123, name: "Alice" });
-  *  Logger.warn('Deprecated function called');
-  *  Logger.error(new Error('Something went wrong'));
-   * [LOG]     2025-05-26T10:20:30.123Z  "Application started"
-    [INFO]    2025-05-26T10:20:30.456Z  "User logged in" { id: 123, name: "Alice" }
-    [WARN]    2025-05-26T10:20:30.789Z  "Deprecated function called"
-    [ERROR]   2025-05-26T10:20:31.000Z  "Error: Something went wrong"
-    ```
+ * Logger.log('Application started');
+ * Logger.info('User logged in', { id: 123, name: 'Alice' });
+ * Logger.warn('Deprecated function called');
+ * Logger.error(new Error('Something went wrong'));
+ * 
+ * // Output:
+ * // [LOG]     2025-05-26T10:20:30.123Z  "Application started"
+ * // [INFO]    2025-05-26T10:20:30.456Z  "User logged in" { id: 123, name: "Alice" }
+ * // [WARN]    2025-05-26T10:20:30.789Z  "Deprecated function called"
+ * // [ERROR]   2025-05-26T10:20:31.000Z  "Error: Something went wrong"
+ * ```
+ * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+ * @package @wlindabla/form_validator
  */
 export class Logger {
-    private static loggerInstance: Logger;
-    public APP_ENV: Env = "dev";
-    public DEBUG: boolean = true;
+    private static instance: Logger;
+    public readonly APP_ENV: Env = 'dev';
+    public readonly DEBUG: boolean = true;
 
+    /**
+     * Private constructor - prevents direct instantiation
+     */
     private constructor() { }
 
+    /**
+     * Gets or creates the singleton Logger instance
+     * @returns {Logger} The singleton Logger instance
+     */
     public static getInstance(): Logger {
-        if (!Logger.loggerInstance) {
-            Logger.loggerInstance = new Logger();
+        if (!Logger.instance) {
+            Logger.instance = new Logger();
         }
-        return Logger.loggerInstance;
+        return Logger.instance;
     }
 
+    /**
+     * Formats arguments for console output
+     * Handles Error objects, complex objects, and primitive values
+     * 
+     * @param {any[]} args - Arguments to format
+     * @returns {any[]} Formatted arguments ready for console output
+     * @private
+     */
     private formatArgs(args: any[]): any[] {
-        return args.map(arg => {
-            if (arg instanceof Error) { return `Error:${arg.name}:${arg.message}\n${arg.stack}\n\t${arg.cause}`; }  // Retourne une seule chaîne qui inclut le nom, le message et la pile
-            else if (typeof arg == "object" && arg !== null) {
+        return args.map((arg) => {
+            if (arg instanceof Error) {
+                return `Error: ${arg.name}: ${arg.message}\n${arg.stack}\n\t${arg.cause ?? ''}`;
+            }
+
+            if (typeof arg === 'object' && arg !== null) {
                 try {
-                    // Retourne un objet transformé en chaîne JSON
                     return JSON.stringify(arg, null, 2);
                 } catch {
                     return '[Unserializable object]';
                 }
-            } else {
-                // Retourne les valeurs primitives directement
-                return arg;
             }
+
+            return arg;
         });
     }
 
-    private getPrefix(type: string): { prefixString: string, styles: string[] } {
-
+    /**
+     * Generates console prefix with styling based on log level
+     * 
+     * @param {LogLevel} level - The log level type
+     * @returns {PrefixConfig} Object containing prefix string and CSS styles
+     * @private
+     */
+    private getPrefix(level: LogLevel): PrefixConfig {
         const timestamp = new Date().toISOString();
+        const levelUpper = level.toUpperCase();
 
-        let typeColor: string = 'color: #333; font-weight: bold;';// Couleur par défaut pour 'log'
+        const colorMap: Record<LogLevel, string> = {
+            [LogLevel.LOG]: 'color: #333; font-weight: bold;',
+            [LogLevel.INFO]: 'color: #0066cc; font-weight: bold;',
+            [LogLevel.WARN]: 'color: #ff9900; font-weight: bold;',
+            [LogLevel.ERROR]: 'color: #cc0000; font-weight: bold;',
+        };
 
-        let timestampColor: string = 'color: gray;'; // Couleur par défaut pour l'horodatage
-        if (type === "error") { typeColor = 'color: red; font-weight: bold;'; }
-
-        else if (type === "warn") { typeColor = 'color: orange; font-weight: bold;'; }
-
-        else if (type === "info") { typeColor = 'color:blue; font-weight: bold;'; }
-
-        // Construit la chaîne de format avec deux %c pour deux styles
-        const prefixString = `%c[${type.toUpperCase()}]%c ${timestamp}`;
-
-        // L'ordre est important : typeColor pour le premier %c, timestampColor pour le second %c
+        const typeColor = colorMap[level];
+        const timestampColor = 'color: #666; font-size: 0.85em;';
+        const prefixString = `%c[${levelUpper}]%c ${timestamp}`;
         const styles = [typeColor, timestampColor];
 
         return { prefixString, styles };
     }
 
+    /**
+     * Logs a general message
+     * Only outputs in non-production environments with DEBUG enabled
+     * 
+     * @param {...any[]} args - Arguments to log
+     */
     public static log(...args: any[]): void {
-        const logger = this.getInstance();
+        const logger = Logger.getInstance();
 
-        if (logger.DEBUG && logger.APP_ENV !== "prod") {
-
-            const { prefixString, styles } = logger.getPrefix('log');
-            // Passe la chaîne de préfixe, puis tous les arguments de style, puis les messages formatés réels
+        if (logger.DEBUG && logger.APP_ENV !== 'prod') {
+            const { prefixString, styles } = logger.getPrefix(LogLevel.LOG);
             console.log(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
 
+    /**
+     * Logs an informational message
+     * Only outputs in development environment with DEBUG enabled
+     * 
+     * @param {...any[]} args - Arguments to log
+     */
+    public static info(...args: any[]): void {
+        const logger = Logger.getInstance();
+
+        if (logger.DEBUG && logger.APP_ENV === 'dev') {
+            const { prefixString, styles } = logger.getPrefix(LogLevel.INFO);
+            console.info(prefixString, ...styles, ...logger.formatArgs(args));
+        }
+    }
+
+    /**
+     * Logs a warning message
+     * Outputs in non-production environments or when DEBUG is enabled
+     * 
+     * @param {...any[]} args - Arguments to log
+     */
     public static warn(...args: any[]): void {
+        const logger = Logger.getInstance();
 
-        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
-
-        if (logger.DEBUG || logger.APP_ENV !== "prod") { // Logique corrigée basée sur l'original, souvent les avertissements s'affichent même en production si le débogage est activé
-            const { prefixString, styles } = logger.getPrefix('warn');
+        if (logger.DEBUG || logger.APP_ENV !== 'prod') {
+            const { prefixString, styles } = logger.getPrefix(LogLevel.WARN);
             console.warn(prefixString, ...styles, ...logger.formatArgs(args));
         }
     }
 
+    /**
+     * Logs an error message
+     * Always outputs regardless of environment or DEBUG setting
+     * Critical for error tracking and debugging
+     * 
+     * @param {...any[]} args - Arguments to log
+     */
     public static error(...args: any[]): void {
-
-        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
-
-        const { prefixString, styles } = logger.getPrefix('error');
-        // Les erreurs sont toujours journalisées
+        const logger = Logger.getInstance();
+        const { prefixString, styles } = logger.getPrefix(LogLevel.ERROR);
         console.error(prefixString, ...styles, ...logger.formatArgs(args));
-    }
-
-    public static info(...args: any[]): void {
-
-        const logger = this.getInstance(); // S'assurer que getInstance est appelé dans chaque méthode statique
-
-        if (logger.DEBUG && logger.APP_ENV === "dev") {
-            const { prefixString, styles } = logger.getPrefix('info');
-            console.info(prefixString, ...styles, ...logger.formatArgs(args));
-        }
     }
 }

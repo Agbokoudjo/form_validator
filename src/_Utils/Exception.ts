@@ -71,3 +71,23 @@ export class FormAttributeNoFoundException extends Error {
 
     public get __attributeName(): string { return this.attributeName; }
 }
+
+/**
+ * Error thrown when required DOM attributes are missing
+ */
+export class MissingAttributeError extends Error {
+    public readonly attribute: string;
+    public readonly elementHTML: string;
+
+    constructor(attribute: string, elementHTML: string) {
+        super(`"${attribute}" attribute is required on element: ${elementHTML}`);
+        this.name = "MissingAttributeError";
+        this.attribute = attribute;
+        this.elementHTML = elementHTML;
+
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, MissingAttributeError);
+        }
+    }
+}
+

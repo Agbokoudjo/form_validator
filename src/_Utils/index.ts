@@ -8,6 +8,8 @@
  *
  * For more information, please feel free to contact the author.
  */
+export * from "./jQueryExtension";
+export * from "./dom";
 export * from "./logger";
 export * from "./Exception";
 export * from "./helper"

@@ -32,6 +32,7 @@
 - [VideoValidator](#VideoValidator)
 
 ### Controllers
+- [AbstractFieldValidator](#AbstractFieldValidator)
 - [FieldInputController](#FieldInputController)
 - [FormValidateController](#FormValidateController)
 
@@ -60,7 +61,7 @@
 
 ### Events & Utilities
 - [EventClearError](#EventClearError)
-- [AbstractFieldValidator](#AbstractFieldValidator)
+
 
 ---
 
@@ -4816,6 +4817,676 @@ document.getElementById('registrationForm').addEventListener('submit', async (e)
 - Works with modern browsers supporting HTML5 File API.
 - Requires jQuery for DOM manipulation.
 - Supports all HTML5 input types.
+
+
+## Abstract Class `AbstractFieldController` {#AbstractFieldController}
+
+**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
+**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+
+The `AbstractFieldController` class is the foundational base class for all form field controllers. It extends the validation system to the DOM layer, providing a bridge between HTML form elements and the validation engine. This abstract class handles DOM interaction, event management, attribute parsing, and validation state synchronization for any form field type.
+
+### Key Features
+
+- **DOM Element Management:** Encapsulates and manages individual form field elements using jQuery.
+- **Form Context Tracking:** Maintains reference to parent form for group field operations (checkboxes, radios).
+- **Attribute Parsing:** Intelligently extracts validation rules from HTML5 data attributes.
+- **Event System:** Dispatches custom validation events (success/failure) with detailed context.
+- **Type Detection:** Automatically detects field type and handles media types (image, video, document).
+- **Value Extraction:** Smart value retrieval for different field types (file, checkbox, radio, text).
+- **Error Management:** Clears and manages validation errors through the error store.
+- **Event Binding Configuration:** Determines which events trigger validation and error clearing.
+
+### Custom Validation Events
+
+#### Event Constants
+
+```typescript
+// Fired when validation fails
+FieldValidationFailed = 'field:validation:failed'
+
+// Fired when validation succeeds
+FieldValidationSuccess = 'field:validation:success'
+```
+
+#### Event Data Structure
+
+```typescript
+interface FieldValidationEventData {
+    id: string                          // Field ID or name
+    name: string                        // Field name attribute
+    value: DataInput                    // Current field value
+    formParentName: string              // Parent form name
+    message?: string | string[]         // Error message(s) if failed
+    target: HTMLFormChildrenElement     // Reference to DOM element
+}
+```
+
+### Constructor
+
+```typescript
+protected constructor(children: HTMLFormChildrenElement)
+```
+
+**Parameters:**
+- **`children`** (`HTMLFormChildrenElement`): The DOM element (input, textarea, select) to manage.
+
+**Throws:** Error if element is not inside a `<form>` tag.
+
+**Example:**
+```typescript
+protected constructor(emailField: HTMLInputElement) {
+    super(emailField);
+    // Field is now wrapped and ready for management
+}
+```
+
+### Core Properties
+
+#### Field Identity
+
+**`id: string`**
+- Returns the `id` attribute of the field
+- For checkboxes, returns the `name` instead
+- Throws `AttributeException` if missing
+
+**`name: string`**
+- Returns the `name` attribute of the field
+- Required for all form fields
+- Throws `AttributeException` if missing
+
+**`type: FormInputType | MediaType`**
+- Returns the field type (text, email, checkbox, file, textarea, etc.)
+- For file inputs, reads `data-media-type` attribute
+- Falls back to tag name (e.g., "textarea")
+- Throws `AttributeException` if media-type not specified for files
+
+
+#### Field Values
+## Field Type Detection with Browser Fallback
+
+**Smart type detection strategy for cross-browser compatibility using Progressive Enhancement**
+
+### The Problem
+
+HTML5 input types (date, email, tel, etc.) aren't supported in older browsers. A field with `type="date"` will be treated as `type="text"` in legacy browsers, causing validation to fail.
+
+### The Solution: 4-Level Fallback Strategy
+
+```typescript
+protected get type(): FormInputType | MediaType {
+    // Level 1: Explicit data-type attribute (highest priority)
+    let type = this.getAttrChildren('data-type') 
+    
+    // Level 2: Native HTML5 type attribute
+    ?? this.getAttrChildren('type');
+
+    // Level 3: Tag name for textarea/select
+    if (!type) {
+        type = this.htmlElementChildren.tagName.toLowerCase();
+    }
+
+    // Level 4: Media type for file inputs
+    if (type === "file") {
+        type = this.getAttrChildren('data-media-type');
+        if (!type) {
+            throw new AttributeException('data-media-type', this.name, ...);
+        }
+    }
+
+    return type as FormInputType | MediaType;
+}
+```
+
+### How It Works
+
+| Level | Attribute | Used For | Browser Support |
+|-------|-----------|----------|-----------------|
+| 1 | `data-type` | Explicit override | All browsers |
+| 2 | `type` | HTML5 native | Modern browsers |
+| 3 | `tagName` | textarea, select | All browsers |
+| 4 | `data-media-type` | File uploads | All browsers |
+
+### Real-World Examples
+
+#### Modern Browser - HTML5 Email
+
+```html
+<input type="email" name="email" />
+```
+
+Flow:
+1. Checks `data-type` → Not found
+2. Checks `type="email"` → Found ✅
+3. Returns "email"
+
+Result: Validates as email using HTML5 support
+
+#### Legacy Browser - Email Fallback
+
+```html
+<input 
+    type="email" 
+    name="email" 
+    data-type="email"
+/>
+```
+
+Flow:
+1. Checks `data-type="email"` → Found ✅
+2. Returns "email" (ignores unsupported type="email")
+
+Result: Validates correctly even in IE11
+
+#### Textarea (No Type Attribute)
+
+```html
+<textarea name="message"></textarea>
+```
+
+Flow:
+1. Checks `data-type` → Not found
+2. Checks `type` → Not found (textarea has no type)
+3. Checks `tagName` → "textarea" ✅
+4. Returns "textarea"
+
+Result: Correctly identified as textarea
+
+#### File Media Upload
+
+```html
+<input 
+    type="file" 
+    name="avatar"
+    data-media-type="image"
+/>
+```
+
+Flow:
+1. Checks `data-type` → Not found
+2. Checks `type="file"` → Found (supported everywhere)
+3. Detects type is "file"
+4. Checks `data-media-type="image"` → Found ✅
+5. Returns "image"
+
+Result: Validates as image upload
+
+#### Date Field - Complete Fallback Chain
+
+```html
+<input 
+    type="date" 
+    name="eventDate"
+    data-type="date"
+/>
+```
+
+**Modern Browser:**
+- Reads `data-type="date"` ✅
+- Uses date validation logic
+- HTML5 date picker also available
+
+**Legacy Browser (IE11):**
+- Reads `data-type="date"` ✅
+- Uses date validation logic
+- Input appears as text box but validates correctly
+
+### Progressive Enhancement Pattern
+
+This approach follows **Progressive Enhancement** best practices:
+
+```
+Layer 1: Semantic HTML
+<input type="date" name="birthdate" />
+✅ Works in modern browsers with native date picker
+
+Layer 2: Data Attribute Fallback
+data-type="date"
+✅ Works in legacy browsers with custom validation
+
+Layer 3: Graceful Degradation
+Falls back to text input if everything fails
+✅ Still functional, just less polished
+```
+
+### Best Practices
+
+**DO:**
+```html
+<!-- Explicit + Fallback -->
+<input 
+    type="email" 
+    name="email"
+    data-type="email"
+/>
+
+<!-- Media type specified -->
+<input 
+    type="file" 
+    name="photo"
+    data-media-type="image"
+/>
+
+<!-- Select uses tag name -->
+<select name="country">
+    <option>Choose...</option>
+</select>
+```
+
+**DON'T:**
+```html
+<!-- Missing data-type for old browser support -->
+<input type="date" name="eventDate" />
+
+<!-- Missing data-media-type for file inputs -->
+<input type="file" name="document" />
+
+<!-- Wrong media type -->
+<input type="file" data-media-type="pdf" />
+<!-- Should be "document" not "pdf" -->
+```
+
+### Supported Field Types
+
+**Text-Based Types:**
+- text
+- email
+- password
+- tel
+- url
+- search
+
+**Numeric Types:**
+- number
+- range
+
+**Date/Time Types:**
+- date
+- datetime
+- time
+- month
+- week
+
+**Binary Types:**
+- checkbox
+- radio
+- file (with data-media-type)
+
+**Container Types:**
+- textarea
+- select
+
+**Media Types (for file inputs):**
+- image
+- video
+- document
+
+### Implementation Example
+
+```typescript
+// HTML
+<form class="form-validate">
+    <input 
+        type="email" 
+        name="userEmail"
+        data-type="email"
+        data-event-validate="blur"
+        required
+    />
+    
+    <input 
+        type="date" 
+        name="birthDate"
+        data-type="date"
+        data-event-validate="change"
+    />
+    
+    <input 
+        type="file" 
+        name="profilePic"
+        data-media-type="image"
+        data-event-validate="change"
+    />
+</form>
+
+// JavaScript
+const emailField = document.querySelector('input[name="userEmail"]');
+const controller = new FieldInputController(emailField);
+
+console.log(controller.type); // "email" (works everywhere)
+```
+
+### Browser Compatibility
+
+| Browser | Support | Method Used |
+|---------|---------|-------------|
+| Chrome 90+ | ✅ | `type="date"` or `data-type` |
+| Firefox 88+ | ✅ | `type="date"` or `data-type` |
+| Safari 14+ | ✅ | `type="date"` or `data-type` |
+| Edge 90+ | ✅ | `type="date"` or `data-type` |
+| IE 11 | ✅ | `data-type` (fallback) |
+| IE 10 | ✅ | `data-type` (fallback) |
+| Mobile Safari 12+ | ✅ | `type="date"` or `data-type` |
+
+### Why This Matters
+
+1. **Future-Proof:** Works with modern HTML5 features
+2. **Legacy Support:** Gracefully handles older browsers
+3. **Single Codebase:** No browser detection needed
+4. **Semantic HTML:** Uses proper HTML5 semantics
+5. **Zero Dependencies:** Pure JavaScript fallback
+6. **Progressive:** Enhanced experience in capable browsers
+
+
+**`value: DataInput`**
+- Intelligently extracts value based on field type
+- For checkboxes: returns count of checked items
+- For radio buttons: returns selected value
+- For file inputs: returns File or FileList
+- For other inputs: returns string value
+
+#### Field State
+
+**`isValid(): boolean`**
+- Returns validation state of the field
+- Accesses validator from error store
+- Returns `true` if validator not found (safe default)
+
+### Attribute Parsing Methods
+
+#### Getting HTML Attributes
+
+**`getAttrChildren(attributeName: string): string | undefined`**
+- Retrieves any attribute from the field element
+- Returns `undefined` if attribute doesn't exist
+
+**Example:**
+```typescript
+const maxSize = this.getAttrChildren('data-maxsize-file');
+const mediaType = this.getAttrChildren('data-media-type');
+```
+
+#### Boolean Attributes
+
+**`parseBooleanAttr(attrName: string, defaultValue: boolean = true): boolean`**
+- Converts string attribute to boolean
+- Handles "true", "false", "1", "0", etc.
+
+**Example:**
+```typescript
+const isRequired = this.parseBooleanAttr('data-required', false);
+const allowScoring = this.parseBooleanAttr('data-enable-scoring', true);
+```
+
+#### Numeric Attributes
+
+**`parseIntAttr(attrName: string, defaultValue: number = 1, radix?: number): number`**
+- Parses string attribute to integer
+
+**`parseFloatAttr(attrName: string, defaultValue: number = 1): number`**
+- Parses string attribute to float
+
+**Example:**
+```typescript
+const minWidth = this.parseIntAttr('data-min-width', 512);
+const opacity = this.parseFloatAttr('data-opacity', 1.0);
+```
+
+#### Length Constraints
+
+**`getMaxLength(defaultValue?: number): number | undefined`**
+- Extracts maximum length from attributes
+- Checks: `maxLength`, `max-length`, `data-max-length`
+- Returns parsed integer or default
+
+**`getMinLength(defaultValue: number = 1): number | undefined`**
+- Extracts minimum length from attributes
+- Checks: `minLength`, `min-length`, `data-min-length`
+- Returns parsed integer or default
+
+**Example:**
+```typescript
+const maxUsername = this.getMaxLength(50);
+const minPassword = this.getMinLength(8);
+```
+
+#### Date Constraints
+
+**`minDate: Date | undefined`**
+- Extracts minimum date from `data-min-date` or `min` attributes
+- Returns Date object or undefined
+
+**`maxDate: Date | undefined`**
+- Extracts maximum date from `data-max-date` or `max` attributes
+- Returns Date object or undefined
+
+#### Pattern & Regex
+
+**`patternRegExp: RegExp | undefined`**
+- Extracts regex pattern from `pattern` attribute
+- Compiles with flags from `data-flag-pattern` (default: "iu")
+- Returns compiled RegExp or undefined
+
+**`flagRegExp: string`**
+- Returns regex flags from `data-flag-pattern` attribute
+- Defaults to "iu" (case-insensitive, unicode)
+
+#### Delimiter Configuration
+
+**`delimiters: string[]`**
+- Extracts date/format delimiters from `data-delimiters`
+- Splits by comma
+- Defaults to `['/', '-']`
+
+#### Error & Help Text
+
+**`errorMessage: string | undefined`**
+- Gets custom error message from `data-error-message-input`
+
+**`egAwait: string | undefined`**
+- Gets example format from `data-eg-await`
+- Used in error messages to guide users
+
+#### HTML/PHP Safety
+
+**`escapestripHtmlAndPhpTags: boolean`**
+- Checks if HTML/PHP tags should be escaped
+- From `data-escapestrip-html-and-php-tags`
+- Defaults to `true` for security
+
+### Field State Checks
+
+**`isRequiredField(): boolean`**
+- Checks for `required` or `data-required` attribute
+
+**`isDisabledField(): boolean`**
+- Checks for `disabled` attribute
+
+**`isMultipleFieldTypeFile(): boolean`**
+- Checks for `multiple` or `data-multiple` attribute
+
+**`required: boolean`**
+- Alias for `isRequiredField()`
+
+**`isMultiple: boolean`**
+- Alias for `isMultipleFieldTypeFile()`
+
+### Event Management
+
+#### Event Detection
+
+**`eventValidate(): EventValidate`**
+- Returns the event that triggers validation
+- Reads from `data-event-validate` attribute
+- Supports: 'blur', 'input', 'change', 'focus'
+- Defaults to 'blur'
+
+**`eventClearError(): EventValidate`**
+- Returns the event that clears errors
+- Reads from `data-event-clear-error` attribute
+- Defaults to 'input'
+
+**Example:**
+```html
+<input 
+    type="email" 
+    data-event-validate="blur"
+    data-event-clear-error="input"
+/>
+```
+
+#### Event Dispatching
+
+**`protected emitEvent(eventType: FormChildrenValidateEvent, data: FieldValidationEventData): void`**
+- Dispatches a custom validation event from the form element
+- Events bubble up from form to listeners
+
+**`protected emitEventHandler(): void`**
+- Determines validation state and dispatches appropriate event
+- Sends `FieldValidationFailed` or `FieldValidationSuccess`
+- Includes full context in event detail
+
+**Example:**
+```typescript
+// Listen to validation events
+form.addEventListener('field:validation:failed', (event) => {
+    const { name, message } = event.detail;
+    console.log(`Field ${name} failed:`, message);
+});
+
+form.addEventListener('field:validation:success', (event) => {
+    const { name } = event.detail;
+    console.log(`Field ${name} is valid!`);
+});
+```
+
+### Error Management
+
+**`clearErrorField(): void`**
+- Clears validation errors for this field
+- Accesses error store through validator instance
+- Logs warning if validator not found
+
+**`public isValid(): boolean`**
+- Returns whether field passes validation
+- Queries error store for validation state
+- Safe fallback returns `true` if validator not found
+
+### DOM Element Access
+
+**`htmlElementChildren: HTMLFormChildrenElement`**
+- Returns raw HTML element (unwrapped from jQuery)
+
+**`htmlElementFormParent: HTMLFormElement`**
+- Returns raw parent form element
+
+### Abstract Methods
+
+**`abstract validate(): Promise<void>`**
+- Must be implemented by subclasses
+- Performs actual validation logic
+- Can be synchronous or asynchronous
+
+**`protected abstract get errorStoreAccessor(): FieldValidatorInterface | undefined`**
+- Must return the validator instance for this field
+- Used to access validation state
+- Allows centralized or distributed validator storage
+
+### HTML Attributes Reference
+
+#### Validation Events
+
+| Attribute | Values | Default | Purpose |
+|-----------|--------|---------|---------|
+| `data-event-validate` | blur, input, change, focus | blur | When to trigger validation |
+| `data-event-clear-error` | blur, input, change, focus | input | When to clear errors |
+
+#### Validation Rules
+
+| Attribute | Type | Purpose |
+|-----------|------|---------|
+| `data-min-length` | number | Minimum field length |
+| `data-max-length` | number | Maximum field length |
+| `data-min-date` | ISO date | Minimum date value |
+| `data-max-date` | ISO date | Maximum date value |
+| `data-error-message-input` | string | Custom error message |
+| `data-eg-await` | string | Example format for errors |
+| `data-escapestrip-html-and-php-tags` | boolean | Escape HTML/PHP (default: true) |
+
+#### Field Options
+
+| Attribute | Type | Purpose |
+|-----------|------|---------|
+| `required` / `data-required` | boolean | Field is mandatory |
+| `disabled` | boolean | Field is disabled |
+| `multiple` / `data-multiple` | boolean | Multiple files allowed (file input) |
+| `data-media-type` | image, video, document | Media type for file input |
+
+### Complete Usage Example
+
+```typescript
+// HTML
+<form name="registrationForm" id="reg-form">
+    <input 
+        type="email"
+        id="email"
+        name="email"
+        data-event-validate="blur"
+        data-event-clear-error="input"
+        data-error-message-input="Please enter a valid email"
+        required
+    />
+</form>
+
+// TypeScript
+class EmailFieldController extends AbstractFieldController {
+    protected get errorStoreAccessor(): FieldValidatorInterface | undefined {
+        return formInputValidator.getValidator(this.name);
+    }
+
+    public async validate(): Promise<void> {
+        // Custom validation logic
+        await formInputValidator.allTypesValidator(
+            this.value,
+            this.name,
+            this.type as FormInputType,
+            this.fieldOptionsValidate
+        );
+        
+        this.emitEventHandler();
+    }
+}
+
+// Usage
+const emailField = new EmailFieldController(
+    document.getElementById('email')
+);
+
+// Listen to events
+form.addEventListener('field:validation:failed', (e) => {
+    console.log('Validation failed:', e.detail.message);
+});
+
+form.addEventListener('field:validation:success', (e) => {
+    console.log('Field is valid!');
+});
+```
+
+### Design Patterns
+
+- **Template Method Pattern:** Abstract `validate()` defines structure, subclasses implement
+- **Observer Pattern:** Custom events notify listeners of validation state changes
+- **Adapter Pattern:** Bridges HTML form elements and validation engine
+- **Data Attribute Pattern:** Configuration driven by HTML5 data attributes
+
+### Best Practices
+
+1. **Always Provide `name` Attribute:** Required for field identification
+2. **Use Data Attributes:** Keep configuration in HTML, not JavaScript
+3. **Listen to Events:** Use custom validation events for UI updates
+4. **Error Handling:** Always handle both success and failure events
+5. **Default Values:** Provide sensible defaults in parsing methods
+6. **Type Safety:** Use TypeScript for compile-time safety
 
 
 ## Class `FormValidateController` {#FormValidateController}

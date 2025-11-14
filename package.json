@@ -1,6 +1,6 @@
 {
   "name": "@wlindabla/form_validator",
-  "author": "AGBOKOUJO Franck (franckagbokoudjo301@gmail.com)",
+  "author": "AGBOKOUJO Franck <internationaleswebservices@gmail.com>",
   "description": "**Form Validator** is a powerful JavaScript/TypeScript library designed to validate various types of fields in HTML forms. It supports input fields such as `text`, `email`, `tel`, `password`, as well as file types like `images`, `PDFs`, `Word documents`, `CSV`, `Excel`, and more. The library offers customizable configurations to suit different validation needs.",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,7 @@
   "homepage": "https://github.com/Agbokoudjo/form_validator#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "type": "module",
   "keywords": [
     "jquery",
@@ -48,7 +48,9 @@
     "validate image",
     "validate-image",
     "image validation",
-    "corrupt image"
+    "corrupt image",
+    "email-validation",
+    "password-validation"
   ],
   "scripts": {
     "dev": "vite",

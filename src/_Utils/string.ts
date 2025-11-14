@@ -60,7 +60,7 @@ export function escapeHtmlBalise(
     if (typeof content === 'object') {
         const escapedObject: Record<string, any> = {};
         for (const key in content) {
-            if (Object.prototype.hasOwnProperty.call(content, key)) {
+            if (hasProperty(content, key)) {
                 const value = content[key];
                 if (
                     typeof value === 'string' ||
@@ -141,7 +141,7 @@ export function unescapeHtmlBalise(
     if (typeof content === 'object') {
         const unescapedObject: Record<string, any> = {};
         for (const key in content) {
-            if (Object.prototype.hasOwnProperty.call(content, key)) {
+            if (hasProperty(content, key)) {
                 const value = content[key];
                 if (
                     typeof value === 'string' ||
@@ -675,3 +675,58 @@ export function scoreWord(
  * pad("");
  */
 export function pad(val: string): string { return val.length === 1 ? `0${val}` : val; }
+
+/**
+ * Checks if an object has a specific property as its own property (not inherited).
+ *
+ * This function uses the modern and safer `Object.hasOwn()` if available in the runtime
+ * environment to prevent prototype pollution attacks and ensure reliable checks.
+ * If `Object.hasOwn()` is not supported, it falls back to the secure
+ * `Object.prototype.hasOwnProperty.call()` method.
+ *
+ * @param obj The object to check for the property.
+ * @param prop The name or Symbol of the property to test.
+ * @returns {boolean} True if the object has the specified property as its own property, false otherwise.
+ * 
+ * @example
+ * const runHasPropertyExample = () => {
+    console.log("--- Running hasProperty Example ---");
+
+    const settings = {
+        theme: 'dark',
+        cache: true,
+        // The object does not have the 'toString' method as its own property
+    };
+
+    // 1. Check for an existing own property
+    console.log(`Has 'theme' property? ${hasProperty(settings, 'theme')}`); // Expected: true
+
+    // 2. Check for a non-existent property
+    console.log(`Has 'language' property? ${hasProperty(settings, 'language')}`); // Expected: false
+
+    // 3. Check for an inherited property (should return false)
+    // The hasProperty function ensures we only check *own* properties.
+    console.log(`Has 'toString' inherited property? ${hasProperty(settings, 'toString')}`); // Expected: false
+
+    // 4. Test with a potentially "polluted" object (demonstrates reliability)
+    const polluted = {
+        value: 10,
+        hasOwnProperty: () => false // Overriding the built-in method
+    };
+
+    // Using the secure method ensures the check is correct despite pollution
+    console.log(`Has 'value' property (polluted test)? ${hasProperty(polluted, 'value')}`); // Expected: true (Correctly identifies 'value')
+    console.log("-------------------------------------");
+};
+
+runHasPropertyExample();
+ */
+export const hasProperty = (obj: object, prop: string | number | symbol): boolean => {
+    // Check for modern support (The future standard)
+    if (typeof Object.hasOwn === 'function') {
+        return Object.hasOwn(obj, prop);
+    }
+
+    // Fallback for older environments (The secure method)
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+};

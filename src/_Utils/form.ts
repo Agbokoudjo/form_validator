@@ -1,11 +1,11 @@
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
  *
- * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * (c) AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
  * Github: https://github.com/Agbokoudjo/form_validator
- * Company: INTERNATIONALES WEB SERVICES
+ * Company: INTERNATIONALES WEB APPS & SERVICES
  *
  * For more information, please feel free to contact the author.
  */
@@ -25,8 +25,6 @@ if (typeof window.jQuery === 'undefined') {
  * @returns Une chaîne de caractères représentant la balise <small> HTML.
  */
 export function smallError(message_error: string, className: string, id: string, key?: number): string {
-    // Si 'key' est fourni et n'est pas undefined/null, ajoute l'attribut data-key.
-    // Sinon, l'attribut data-key n'est pas inclus.
     const dataKeyAttribute = (key !== undefined && key !== null) ? ` data-key="${key}"` : '';
 
     return `<small id="${id}" class="${className}"  ${dataKeyAttribute}>${message_error}</small>`;
@@ -160,7 +158,6 @@ export function addErrorMessageFieldDom(
     if (!errormessagefield || errormessagefield.length === 0) { return; }
     const fieldId = elmtfield.attr("id");
 
-    // --- Input Validation ---
     if (!fieldId) {
         console.error("addErrorMessageFieldDom: The provided element does not have an 'id' attribute.", elmtfield);
         return; // Exit if no ID, as it's crucial for error message management
@@ -168,7 +165,7 @@ export function addErrorMessageFieldDom(
 
     const containerId = `container-div-error-message-${fieldId}`;
     let containerDivErrorMessage = jQuery(`#${containerId}`);
-    // --- Handle Error Clearing ---
+    
     if (!errormessagefield || errormessagefield.length === 0) {
         // If no errors provided, remove the invalid state and the error container
         elmtfield.removeClass('is-invalid');
@@ -178,7 +175,7 @@ export function addErrorMessageFieldDom(
 
         return; // All cleared, exit
     }
-    // --- Handle Error Display / Update ---
+  
     // If container doesn't exist, create it
     if (containerDivErrorMessage.length === 0) {
         containerDivErrorMessage = jQuery(`<div class="${className_container_ErrorMessage}" id="${containerId}"></div>`);
