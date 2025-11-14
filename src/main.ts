@@ -11,7 +11,8 @@ import {
 // import "./test/testDeepMerge";
 // import "./test/testFormSubmit";
 // import "./test/testfqdnValidator";
-import "./test/testFormValidate";
+// import "./test/testFormValidate";
+import "./test/testToggleUserAccount";
 const BASE_HOST = 'http://127.0.0.1:8001';
 let logger = Logger.getInstance();
 logger.APP_ENV = "dev";

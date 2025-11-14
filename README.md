@@ -66,14 +66,14 @@ yarn add @wlindabla/form_validator
   - [translate](./docs/_Utils/translate.md)
   - [Dom](./docs/_Utils/Dom/getMetaContent.md)
   
-  ## Toggle User Account
+  ## Translation
   - [AppTranslation](./docs/Translation/AppTranslation.md)
   - [Cache](./docs/Translation/cache.md)
   - [FetchErrorTranslator](./docs/Translation/FetchErrorTranslator.md)
   
   ## Toggle User Account
   - [ToggleAccountListener](./docs/User/listener_toggle_user.md)
-  - [ToggleAccountListener](./docs/User/toggle_user_account.md)
+  - [ToggleUserAccount](./docs/User/toggle_user_account.md)
   
   ## Validators
   - [index](./docs/Validators/index.md)

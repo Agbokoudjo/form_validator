@@ -95,8 +95,6 @@ document.addEventListener('account:toggle:confirmed', async (event: CustomEvent)
     try {
         const response = await processToggleAction({
             eventDetail: event.detail,
-            httpHandler: httpFetchHandler,
-            dialogHandler: Swal.fire,
             httpMethod: 'PATCH',
             retryCount: 2,
             
@@ -315,7 +313,7 @@ public function toggleAction(Request $request): JsonResponse
         return new JsonResponse([
             'title' => 'Error',
             'message' => $e->getMessage()
-        ], 500);
+        ], 500); 
     }
 }
 
@@ -519,8 +517,6 @@ async function processToggleAction(
 ```typescript
 interface ProcessToggleActionParams {
     eventDetail: ToggleEventDetail;          // Required
-    httpHandler: HttpHandler;                 // Required
-    dialogHandler: DialogHandler;             // Required (Swal.fire)
     translator?: Translator | null;           // Optional
     loadingConfig?: Partial<SweetAlertOptions>;    // Optional
     successConfig?: Partial<SweetAlertOptions>;    // Optional
@@ -544,7 +540,6 @@ try {
     const response = await processToggleAction({
         eventDetail: event.detail,
         httpHandler: fetchHandler,
-        dialogHandler: Swal.fire,
         
         // Optional: Translation
         translator: (key, error, lang) => {
@@ -634,8 +629,7 @@ async function processToggleActionSafe(
 ```typescript
 const result = await processToggleActionSafe({
     eventDetail: event.detail,
-    httpHandler: fetchHandler,
-    dialogHandler: Swal.fire
+    httpHandler: fetchHandler
 });
 
 if (result.success) {
@@ -661,7 +655,6 @@ function showLoadingDialog(
 
 ```typescript
 interface ShowLoadingDialogOptions {
-    dialogHandler: DialogHandler;
     translator?: Translator | null;
     config?: Partial<SweetAlertOptions>;
 }
@@ -673,7 +666,6 @@ interface ShowLoadingDialogOptions {
 
 ```typescript
 const { timerInterval } = showLoadingDialog({
-    dialogHandler: Swal.fire,
     translator: (key) => translations[key],
     config: {
         title: 'Custom Loading...',
@@ -712,7 +704,6 @@ interface ShowSuccessDialogOptions {
 
 ```typescript
 await showSuccessDialog({
-    dialogHandler: Swal.fire,
     title: 'Success!',
     message: 'Operation completed successfully',
     config: {
@@ -739,7 +730,6 @@ function showErrorDialog(
 
 ```typescript
 interface ShowErrorDialogOptions {
-    dialogHandler: DialogHandler;
     title: string;
     message: string;
     config?: Partial<SweetAlertOptions>;
@@ -750,7 +740,6 @@ interface ShowErrorDialogOptions {
 
 ```typescript
 await showErrorDialog({
-    dialogHandler: Swal.fire,
     title: 'Error',
     message: 'Operation failed. Please try again.',
     config: {
@@ -812,7 +801,6 @@ const DEFAULT_ERROR_DIALOG_CONFIG = {
 ```typescript
 import { processToggleAction } from '@wlindabla/form_validator';
 import Swal from 'sweetalert2';
-import { httpFetchHandler } from './http-handler';
 
 // Initialize listener
 document.addEventListener('DOMContentLoaded', () => {
@@ -824,8 +812,6 @@ function initToggleListener() {
         try {
             await processToggleAction({
                 eventDetail: event.detail,
-                httpHandler: httpFetchHandler,
-                dialogHandler: Swal.fire,
                 httpMethod: 'PATCH',
                 retryCount: 2,
                 onSuccess: async (data) => {
@@ -853,8 +839,6 @@ jQuery(document).ready(function($) {
         try {
             await processToggleAction({
                 eventDetail: detail,
-                httpHandler: jQueryAjaxHandler,
-                dialogHandler: Swal.fire,
                 httpMethod: 'POST',
                 onSuccess: (data) => {
                     console.log('Success:', data);
@@ -908,8 +892,6 @@ export function useToggleListener(eventName: string, onSuccess?: () => void) {
             try {
                 await processToggleAction({
                     eventDetail: customEvent.detail,
-                    httpHandler: fetchHandler,
-                    dialogHandler: Swal.fire,
                     onSuccess: async (data) => {
                         console.log('Success:', data);
                         if (onSuccess) onSuccess();
@@ -962,8 +944,6 @@ onMounted(() => {
         try {
             await processToggleAction({
                 eventDetail: customEvent.detail,
-                httpHandler: fetchHandler,
-                dialogHandler: Swal.fire,
                 onSuccess: () => {
                     emit('success');
                 }
@@ -1013,8 +993,6 @@ export class ToggleListenerService implements OnDestroy {
             try {
                 await processToggleAction({
                     eventDetail: customEvent.detail,
-                    httpHandler: fetchHandler,
-                    dialogHandler: Swal.fire,
                     onSuccess: (data) => {
                         this.toggleSuccess$.next(data);
                     },
@@ -1058,8 +1036,6 @@ export class ToggleListenerService implements OnDestroy {
 try {
     await processToggleAction({
         eventDetail: event.detail,
-        httpHandler: fetchHandler,
-        dialogHandler: Swal.fire
     });
 } catch (error) {
     if (error instanceof HttpResponse) {
@@ -1075,8 +1051,6 @@ try {
 try {
     await processToggleAction({
         eventDetail: event.detail,
-        httpHandler: fetchHandler,
-        dialogHandler: Swal.fire,
         translator: (key, error, lang) => {
             // Use FetchErrorTranslator for network errors
             if (error) {
@@ -1104,8 +1078,6 @@ try {
 // ✅ Good
 await processToggleAction({
     eventDetail: event.detail,
-    httpHandler: fetchHandler,
-    dialogHandler: Swal.fire,
     
     onSuccess: async (data) => {
         // Update UI, reload, etc.
@@ -1126,8 +1098,6 @@ await processToggleAction({
 // ❌ Bad - No callbacks
 await processToggleAction({
     eventDetail: event.detail,
-    httpHandler: fetchHandler,
-    dialogHandler: Swal.fire
 });
 ```
 
@@ -1137,8 +1107,6 @@ await processToggleAction({
 // ✅ Good
 await processToggleAction({
     eventDetail: event.detail,
-    httpHandler: fetchHandler,
-    dialogHandler: Swal.fire,
     translator: (key, error, lang) => {
         if (error) {
             return fetchErrorTranslator.translate(error.name, error, lang);
@@ -1154,8 +1122,6 @@ await processToggleAction({
 // ✅ Good
 await processToggleAction({
     eventDetail: event.detail,
-    httpHandler: fetchHandler,
-    dialogHandler: Swal.fire,
     retryCount: 3 // Try 3 times before failing
 });
 ```
@@ -1184,12 +1150,6 @@ type HttpHandler = (options: {
     retryCount: number;
 }) => Promise<HttpResponse<unknown>>;
 
-// Dialog handler
-type DialogHandler = typeof Swal.fire & {
-    close?: () => void;
-    getPopup?: () => HTMLElement | null;
-    getTimerLeft?: () => number;
-};
 
 // Translator
 type Translator = (
@@ -1209,7 +1169,6 @@ type Translator = (
 
 ### Issue: "Loading dialog doesn't close"
 
-**Solution:** Ensure `dialogHandler.close()` is available or catch errors properly.
 
 ### Issue: "Success dialog shows wrong message"
 

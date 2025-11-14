@@ -410,8 +410,6 @@ async function handleToggleConfirmation(
 interface ToggleConfirmationParams {
     element: HTMLElement;                    // Required
     eventName: string;                       // Required
-    dialogHandler: (options) => Promise<...>;// Required (Swal.fire)
-    translator?: (key: string) => string;    // Optional
     confirmDialogConfig?: Partial<SweetAlertOptions>; // Optional
     cancelDialogConfig?: Partial<SweetAlertOptions>;  // Optional
     onConfirm?: (data, event) => void | Promise<void>; // Optional
@@ -430,10 +428,7 @@ interface ToggleConfirmationParams {
 const confirmed = await handleToggleConfirmation({
     element: buttonElement,
     eventName: 'account:toggle:confirmed',
-    dialogHandler: Swal.fire,
-    
-    // Optional: Translation function
-    translator: (key) => translations[key],
+
     
     // Optional: Custom dialog config
     confirmDialogConfig: {
@@ -559,7 +554,6 @@ const DEFAULT_CANCEL_DIALOG_CONFIG = {
 await handleToggleConfirmation({
     element: buttonElement,
     eventName: 'toggle:confirmed',
-    dialogHandler: Swal.fire,
     
     confirmDialogConfig: {
         icon: 'warning',
@@ -760,9 +754,7 @@ function initToggleHandlers() {
         
         await handleToggleConfirmation({
             element: this,
-            eventName: 'account:toggle:confirmed',
-            dialogHandler: Swal.fire,
-            translator: (key) => window.SonataTranslator?.trans(key) || key
+            eventName: 'account:toggle:confirmed'
         });
     });
 }
@@ -804,9 +796,7 @@ function initToggleListener() {
 (function($) {
     $.fn.toggleConfirmation = function(options) {
         const settings = $.extend({
-            eventName: 'toggle:confirmed',
-            dialogHandler: Swal.fire,
-            translator: null,
+            eventName: 'toggle:confirmed'
             onConfirm: null,
             onCancel: null,
             onError: null
@@ -819,8 +809,6 @@ function initToggleListener() {
                 await handleToggleConfirmation({
                     element: this,
                     eventName: settings.eventName,
-                    dialogHandler: settings.dialogHandler,
-                    translator: settings.translator,
                     onConfirm: settings.onConfirm,
                     onCancel: settings.onCancel,
                     onError: settings.onError
@@ -834,7 +822,6 @@ function initToggleListener() {
 jQuery(document).ready(function($) {
     $('.btn-toggle-account').toggleConfirmation({
         eventName: 'account:toggle:confirmed',
-        translator: (key) => window.SonataTranslator.trans(key),
         onConfirm: (data) => {
             console.log('Confirmed:', data);
         }
@@ -1027,8 +1014,7 @@ export function useToggleConfirmation(eventName: string) {
         try {
             const confirmed = await handleToggleConfirmation({
                 element,
-                eventName,
-                dialogHandler: Swal.fire
+                eventName
             });
             
             return confirmed;
@@ -1479,8 +1465,7 @@ Thrown when confirmation handling fails.
 try {
     await handleToggleConfirmation({
         element: buttonElement,
-        eventName: 'toggle:confirmed',
-        dialogHandler: Swal.fire
+        eventName: 'toggle:confirmed'
     });
 } catch (error) {
     if (error instanceof ToggleConfirmationError) {
@@ -1505,8 +1490,7 @@ async function safeToggleConfirmation(element: HTMLElement, eventName: string) {
         // Attempt confirmation
         const confirmed = await handleToggleConfirmation({
             element,
-            eventName,
-            dialogHandler: Swal.fire,
+            eventName
             
             onError: (error) => {
                 // Log error for debugging
@@ -1601,9 +1585,7 @@ document.addEventListener('account:toggle:confirmed', (event: any) => {
 // ✅ Good - User sees localized messages
 await handleToggleConfirmation({
     element,
-    eventName: 'toggle:confirmed',
-    dialogHandler: Swal.fire,
-    translator: (key) => translations[key] || key
+    eventName: 'toggle:confirmed'
 });
 
 // ❌ Bad - English only
@@ -1622,7 +1604,6 @@ await handleToggleConfirmation({
 await handleToggleConfirmation({
     element,
     eventName: 'toggle:confirmed',
-    dialogHandler: Swal.fire,
     
     onConfirm: async (data) => {
         // Track analytics
@@ -1663,8 +1644,6 @@ interface ExtractedToggleData {
 interface ToggleConfirmationParams {
     element: HTMLElement;
     eventName: string;
-    dialogHandler: (options: SweetAlertOptions) => Promise<SweetAlertResult>;
-    translator?: ((key: string) => string) | null;
     confirmDialogConfig?: Partial<SweetAlertOptions>;
     cancelDialogConfig?: Partial<SweetAlertOptions>;
     onConfirm?: ((data: ExtractedToggleData, event: CustomEvent) => void | Promise<void>) | null;
@@ -1797,6 +1776,6 @@ document.addEventListener('toggle:confirmed', (e) => {
 
 **Made with ❤️ by AGBOKOUDJO Franck**
 
-*Last Updated: 2024*
+*Last Updated: 2025*
 
 [⬆ Back to Top](#toggle-confirmation-handler---complete-documentation)

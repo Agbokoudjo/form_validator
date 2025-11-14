@@ -11,7 +11,7 @@
  * @phone +229 0167 25 18 86
  * @linkedin https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * @package https://github.com/Agbokoudjo/
- * @version 2.0.0
+ * @version 2.0.1
  * @license MIT
  */
 
@@ -55,8 +55,6 @@ export type Translator = (key: string, error?: Error | null, language?: string) 
  * Options for showLoadingDialog
  */
 export interface ShowLoadingDialogOptions {
-    /** Dialog handler function (Swal.fire) */
-    dialogHandler: DialogHandler;
     /** Translation function (optional) */
     translator?: Translator | null;
     /** Custom configuration */
@@ -67,8 +65,6 @@ export interface ShowLoadingDialogOptions {
  * Options for showSuccessDialog
  */
 export interface ShowSuccessDialogOptions {
-    /** Dialog handler function */
-    dialogHandler: DialogHandler;
     /** Dialog title */
     title: string;
     /** Success message */
@@ -81,8 +77,6 @@ export interface ShowSuccessDialogOptions {
  * Options for showErrorDialog
  */
 export interface ShowErrorDialogOptions {
-    /** Dialog handler function */
-    dialogHandler: DialogHandler;
     /** Dialog title */
     title: string;
     /** Error message */
@@ -97,8 +91,7 @@ export interface ShowErrorDialogOptions {
 export interface ProcessToggleActionParams {
     /** Event detail from custom event */
     eventDetail: ToggleEventDetail;
-    /** Dialog handler function (Swal.fire) */
-    dialogHandler: DialogHandler;
+    optionsheaders?: HeadersInit;
     /** Translation function (optional) */
     translator?: Translator | null;
     /** Custom loading dialog config */
@@ -190,7 +183,6 @@ export const DEFAULT_ERROR_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
  * @example
  * ```typescript
  * const { timerInterval } = showLoadingDialog({
- *     dialogHandler: Swal.fire,
  *     translator: (key) => translations[key]
  * });
  * 
@@ -201,7 +193,7 @@ export const DEFAULT_ERROR_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
 export function showLoadingDialog(
     options: ShowLoadingDialogOptions
 ): TimerWrapper {
-    const { dialogHandler, translator = null, config = {} } = options;
+    const { translator = null, config = {} } = options;
 
     let timerInterval: NodeJS.Timeout | undefined;
 
@@ -211,16 +203,13 @@ export function showLoadingDialog(
         showConfirmButton: false,
         timer: 50000,
         timerProgressBar: true,
-        background: "#00427E",
-        color: "#fff",
-        title: translator
-            ? translator("ACTION_PENDING_TITLE")
-            : (config.title as string | undefined) || "Processing...",
-        html: translator
-            ? `<div class="alert alert-info" role="alert">
-                ${translator("ACTION_PENDING_MESSAGE")}
+        background: config.background || "#00427E",
+        color: config.color || "#fff",
+        title: config.title || "Processing..." ,
+        html: `<div class="alert alert-info" role="alert">
+               ${config.text || 'Please wait...'}
                </div>`
-            : (config.html as string | undefined) || '<div class="alert alert-info">Please wait...</div>',
+               ,
         didOpen: (): void => {
             // Update timer in UI
             const container = document.querySelector<HTMLElement>(".swal2-container");
@@ -228,10 +217,10 @@ export function showLoadingDialog(
                 container.style.zIndex = "99999";
             }
             Swal.showLoading();
-            const timerElement = dialogHandler.getPopup?.()?.querySelector<HTMLElement>("b");
+            const timerElement =Swal.getPopup()?.querySelector<HTMLElement>("b");
             if (timerElement) {
                 timerInterval = setInterval(() => {
-                    const timeLeft = dialogHandler.getTimerLeft?.() || 0;
+                    const timeLeft = Swal.getTimerLeft() || 0;
                     timerElement.textContent = `${timeLeft}ms`;
                 }, 100);
             }
@@ -262,7 +251,7 @@ export function showLoadingDialog(
        
     };
 
-    dialogHandler(finalConfig);
+    Swal.fire(finalConfig);
 
     return { timerInterval };
 }
@@ -278,7 +267,6 @@ export function showLoadingDialog(
  * @example
  * ```typescript
  * await showSuccessDialog({
- *     dialogHandler: Swal.fire,
  *     title: 'Success!',
  *     message: 'Operation completed successfully'
  * });
@@ -287,13 +275,13 @@ export function showLoadingDialog(
 export function showSuccessDialog(
     options: ShowSuccessDialogOptions
 ): Promise<SweetAlertResult> {
-    const { dialogHandler, title, message, config = {} } = options;
+    const {title, message, config = {} } = options;
 
     const finalConfig: SweetAlertOptions = {
         animation: true,
         allowEscapeKey: false,
-        background: "#00427E",
-        color: "#fff",
+        background: config.background || "#00427E",
+        color: config.color || "#fff",
         showClass: {
             popup: `
                 animate__animated
@@ -315,7 +303,7 @@ export function showSuccessDialog(
         showCloseButton: true
     };
 
-    return dialogHandler(finalConfig);
+    return Swal.fire(finalConfig);
 }
 
 /**
@@ -330,7 +318,6 @@ export function showSuccessDialog(
  * @example
  * ```typescript
  * await showErrorDialog({
- *     dialogHandler: Swal.fire,
  *     title: 'Error',
  *     message: 'Something went wrong'
  * });
@@ -339,7 +326,7 @@ export function showSuccessDialog(
 export function showErrorDialog(
     options: ShowErrorDialogOptions
 ): Promise<SweetAlertResult> {
-    const { dialogHandler, title, message, config = {} } = options;
+    const { title, message, config = {} } = options;
 
     const finalConfig: SweetAlertOptions = {
         icon: "error",
@@ -348,10 +335,12 @@ export function showErrorDialog(
         confirmButtonText: "OK",
         showCloseButton: true,
         title:title,
-        html: `<div class="alert alert-danger" role="alert">${message}</div>`
+        html: `<div class="alert alert-danger" role="alert">${message}</div>`,
+        background:config.background || "#00427E",
+        color:config.color || "#fff"
     };
 
-    return dialogHandler(finalConfig);
+    return Swal.fire(finalConfig);
 }
 
 // ============================================================================
@@ -383,8 +372,6 @@ export function showErrorDialog(
  * try {
  *     const response = await processToggleAction({
  *         eventDetail: event.detail,
- *         httpHandler: fetchHandler,
- *         dialogHandler: Swal.fire,
  *         translator: (key) => translations[key],
  *         httpMethod: 'PATCH',
  *         retryCount: 2,
@@ -407,11 +394,11 @@ export async function processToggleAction(
 ): Promise<HttpResponse<unknown>> {
     const {
         eventDetail,
-        dialogHandler,
         translator = null,
         loadingConfig = {},
         successConfig = {},
         errorConfig = {},
+        optionsheaders,
         httpMethod = "PATCH",
         retryCount = 2,
         onSuccess = null,
@@ -423,13 +410,10 @@ export async function processToggleAction(
 
     try {
         // 1. Close any previously opened modal
-        if (dialogHandler.close) {
-            dialogHandler.close();
-        }
+        Swal.close();
 
         // 2. Show loading dialog
         const timer = showLoadingDialog({
-            dialogHandler,
             translator,
             config: loadingConfig
         });
@@ -440,14 +424,14 @@ export async function processToggleAction(
             url: eventDetail.url_action_confirm,
             data: eventDetail.data,
             methodSend: httpMethod,
+            optionsheaders:optionsheaders,
             retryCount:retryCount,
             responseType:"json"
         });
 
         // 4. Close loading dialog
-        if (dialogHandler.close) {
-            dialogHandler.close();
-        }
+           Swal.close();
+
         if (timerInterval) {
             clearInterval(timerInterval);
             timerInterval = undefined;
@@ -466,7 +450,6 @@ export async function processToggleAction(
 
         // 8. Show success dialog
         await showSuccessDialog({
-            dialogHandler,
             title: (responseData as { title?: string }).title || "Success",
             message: (responseData as { message?: string }).message || "Action completed successfully",
             config: successConfig
@@ -481,9 +464,8 @@ export async function processToggleAction(
 
     } catch (error) {
         // 10. Close loading dialog on error
-        if (dialogHandler.close) {
-            dialogHandler.close();
-        }
+          Swal.close();
+
         if (timerInterval) {
             clearInterval(timerInterval);
         }
@@ -494,7 +476,6 @@ export async function processToggleAction(
         // 12. Determine error message and title
         let errorMessage = "An error occurred";
         let errorTitle = "Error";
-
         if (error instanceof HttpResponse) {
             // HTTP response error
             console.error(`HTTP ${error.status}:`, error.data);
@@ -503,6 +484,7 @@ export async function processToggleAction(
             errorTitle = errorData.title || `HTTP ${error.status}`;
         } else if (error instanceof Error) {
             // JavaScript error (network, timeout, etc.)
+            console.log(translator)
             if (translator) {
                 // Use translator if available (e.g., fetchErrorTranslator)
                 errorMessage = translator(error.name, error, document.documentElement.lang);
@@ -514,7 +496,6 @@ export async function processToggleAction(
 
         // 13. Show error dialog
         await showErrorDialog({
-            dialogHandler,
             title: errorTitle,
             message: errorMessage,
             config: errorConfig
@@ -551,7 +532,6 @@ export async function processToggleAction(
  * const result = await processToggleActionSafe({
  *     eventDetail: event.detail,
  *     httpHandler: fetchHandler,
- *     dialogHandler: Swal.fire
  * });
  * 
  * if (result.success) {

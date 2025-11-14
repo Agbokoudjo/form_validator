@@ -206,6 +206,27 @@
          name="video"/><br/>
         <button type="submit" class="btn-submit btn">Valider</button>
       </form>
+      <div class="user-list mt-4 d-flex flex-column">
+         <strong class="text-center fw-bolder mb-4">ToggleUserAccount</strong><br/>
+    <!-- Account toggle button -->
+    <a href="/admin/users/123/toggle"
+       class="btn btn-toggle-account btn-danger mt-4"
+       data-action-confirm="Are you sure you want to deactivate this account?"
+       data-toggle-enabled="true"
+       title="Deactivate Account"
+       data-additional='{"userId": 123, "userName": "john.doe"}'>
+        <i class="fa fa-ban"></i> Deactivate
+    </a>
+    <button
+    class="btn btn-warning btn-toggle-account mt-4"
+    data-action-confirm="Enable premium features for this user?"
+    data-toggle-enabled="false"
+    data-bs-toggle="tooltip"
+    data-bs-original-title="Enable Premium Features"
+    data-url="/api/users/789/enable-premium">
+    Enable Premium
+</button>
+</div>
     </div>
     </div>
     

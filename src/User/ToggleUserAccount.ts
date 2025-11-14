@@ -15,7 +15,7 @@
  * @license MIT
  */
 
-import { SweetAlertOptions, SweetAlertResult } from "sweetalert2";
+import Swal,{ SweetAlertOptions} from "sweetalert2";
 import {
     toBoolean,
     MissingAttributeError,
@@ -46,10 +46,6 @@ export interface ToggleConfirmationParams {
     element: HTMLElement;
     /** Custom event name to dispatch */
     eventName: string;
-    /** Dialog handler function (e.g., Swal.fire) */
-    dialogHandler: (options: SweetAlertOptions) => Promise<SweetAlertResult>;
-    /** Translation function (optional) */
-    translator?: ((key: string) => string) | null;
     /** Custom configuration for confirmation dialog */
     confirmDialogConfig?: Partial<SweetAlertOptions>;
     /** Custom configuration for cancellation dialog */
@@ -127,8 +123,6 @@ export const DEFAULT_CANCEL_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
  * const confirmed = await handleToggleConfirmation({
  *     element: buttonElement,
  *     eventName: 'account:toggle:confirmed',
- *     dialogHandler: Swal.fire,
- *     translator: (key) => translations[key],
  *     onConfirm: async (data) => {
  *         console.log('Confirmed:', data);
  *     }
@@ -145,8 +139,6 @@ export async function handleToggleConfirmation(
     const {
         element,
         eventName,
-        dialogHandler,
-        translator = null,
         confirmDialogConfig = {},
         cancelDialogConfig = {},
         onConfirm = null,
@@ -157,7 +149,6 @@ export async function handleToggleConfirmation(
     try {
         // 1. Extract and validate data
         const toggleData = extractToggleData(element);
-
         // 2. Prepare confirmation dialog configuration
         const finalConfirmConfig:SweetAlertOptions= {
             icon: "question",
@@ -166,17 +157,14 @@ export async function handleToggleConfirmation(
             animation: true,
             allowOutsideClick: false,
             allowEscapeKey: false,
-            background: "#00427E",
-            color: "#fff",
+            background: confirmDialogConfig.background || "#00427E",
+            color: confirmDialogConfig.color || "#fff",
             title: toggleData.title,
             text: toggleData.actionConfirmText,
-            confirmButtonText: translator
-                ? translator("LABEL_BTN_CONFIRM")
-                : (confirmDialogConfig.confirmButtonText as string | undefined) || "Confirm",
-            cancelButtonText: translator
-                ? translator("LABEL_BTN_CANCEL")
-                : (cancelDialogConfig.cancelButtonText as string | undefined) || "Cancel",
-        
+            confirmButtonText: confirmDialogConfig.confirmButtonText || "Confirm",
+            cancelButtonText: cancelDialogConfig.cancelButtonText || "Cancel",
+            confirmButtonColor: confirmDialogConfig.confirmButtonColor || '#3085d6',
+            cancelButtonColor: confirmDialogConfig.cancelButtonColor || '#d33',
             didOpen: ():void => {
                 const container = document.querySelector<HTMLElement>('.swal2-container');
                 if (container) {
@@ -188,26 +176,21 @@ export async function handleToggleConfirmation(
             },
             hideClass: {
                 popup: "animate__animated animate__fadeOutDown animate__faster"
-            }
+            },
         }  ;
-
         // 3. Show confirmation dialog
-        const result = await dialogHandler(finalConfirmConfig);
-
+        const result = await Swal.fire(finalConfirmConfig);
         // 4. Handle confirmation
         if (result.isConfirmed) {
             // Create and dispatch custom event
             const customEvent = createToggleEvent(eventName, toggleData, element);
             document.dispatchEvent(customEvent);
-
             // Execute onConfirm callback
             if (onConfirm && typeof onConfirm === "function") {
                 await onConfirm(toggleData, customEvent);
             }
-
             return true;
         }
-
         // 5. Handle cancellation
         if (result.dismiss) {
             const finalCancelConfig: SweetAlertOptions = {
@@ -215,15 +198,13 @@ export async function handleToggleConfirmation(
                 position: 'top',
                 showConfirmButton: false,
                 timer: 3000,
-                background: "#00427E",
+                background: cancelDialogConfig.background || "#00427E",
                 color: "#fff",
                 showCloseButton: true,
-                title: translator
-                    ? translator("ACTION_CANCELLED_SUCCESS")
-                    : (cancelDialogConfig.title as string | undefined) || "Action cancelled"
+                title:cancelDialogConfig.title || "Action cancelled",
+                text:cancelDialogConfig.text 
             };
-
-            await dialogHandler(finalCancelConfig);
+            await Swal.fire(finalCancelConfig);
 
             // Execute onCancel callback
             if (onCancel && typeof onCancel === "function") {
@@ -234,7 +215,6 @@ export async function handleToggleConfirmation(
         }
 
         return false;
-
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("[ToggleConfirmation] Error in toggle confirmation handler:", error);
@@ -245,7 +225,7 @@ export async function handleToggleConfirmation(
         } else {
             // Re-throw if no error handler provided
             throw new ToggleConfirmationError(
-                "Toggle confirmation failed: " + errorMessage,
+                `Toggle confirmation failed: ${errorMessage}` ,
                 error instanceof Error ? error : undefined
             );
         }
