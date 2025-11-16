@@ -187,7 +187,7 @@ export class FormFormattingEvent {
 }
 const formatterEvent = FormFormattingEvent.getInstance();
 
-export default{,
+export default{
 FormFormattingEvent,
 formatterEvent
 }
