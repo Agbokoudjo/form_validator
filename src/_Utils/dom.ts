@@ -378,17 +378,3 @@ export function detectLanguageFromDom(defaultLanguage:string="en"): string {
     return defaultLanguage;
 }
 
-export default {
-    getMetaContent,
-    getMetaContentSafe,
-    hasMetaTag,
-    getMultipleMetaContents,
-    getMetaContentAsJSON,
-    getMetaContentAsNumber,
-    getMetaContentAsBoolean,
-    MetaTagNotFoundError,
-    EmptyContentError,
-    detectLanguageFromDom
-};
-
-

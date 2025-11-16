@@ -778,12 +778,3 @@ export class FetchErrorTranslator implements ConfigCacheAdapterTranslation {
  * ```
  */
 export const fetchErrorTranslator = FetchErrorTranslator.getInstance();
-
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export default {
-    FetchErrorTranslator,
-    fetchErrorTranslator
-};

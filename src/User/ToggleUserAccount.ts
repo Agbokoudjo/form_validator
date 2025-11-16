@@ -445,14 +445,3 @@ export class ToggleConfirmationError extends Error {
         }
     }
 }
-
-export default {
-    extractToggleData,
-    createToggleEvent,
-    handleToggleConfirmation,
-    handleToggleConfirmationSafe,
-    hasRequiredToggleAttributes,
-    DEFAULT_CONFIRM_DIALOG_CONFIG,
-    DEFAULT_CANCEL_DIALOG_CONFIG,
-    ToggleConfirmationError,
-};

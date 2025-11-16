@@ -185,9 +185,4 @@ export class FormFormattingEvent {
         Logger.info(`The listener 'usernameFormatDom' is attached to ${jQuery(subject).prop('tagName') || subject.constructor.name}.`);
     }
 }
-const formatterEvent = FormFormattingEvent.getInstance();
-
-export default{
-FormFormattingEvent,
-formatterEvent
-}
+export const formatterEvent = FormFormattingEvent.getInstance();

@@ -721,15 +721,3 @@ export class TranslationCacheError extends Error {
  * ```
  */
 export const appTranslation = new AppTranslation();
-
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export default {
-    AppTranslation,
-    appTranslation,
-    TranslationKeyNotFoundError,
-    TranslationLoadError,
-    TranslationCacheError
-};

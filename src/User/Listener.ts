@@ -555,17 +555,3 @@ export async function processToggleActionSafe(
     }
 }
 
-// ============================================================================
-// EXPORTS
-// ============================================================================
-
-export default {
-    showLoadingDialog,
-    showSuccessDialog,
-    showErrorDialog,
-    processToggleAction,
-    processToggleActionSafe,
-    DEFAULT_LOADING_DIALOG_CONFIG,
-    DEFAULT_SUCCESS_DIALOG_CONFIG,
-    DEFAULT_ERROR_DIALOG_CONFIG
-};
