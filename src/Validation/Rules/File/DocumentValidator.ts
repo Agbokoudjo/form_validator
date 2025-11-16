@@ -15,7 +15,7 @@ import * as XLSX from 'xlsx';
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import { OptionsFile } from './InterfaceMedia';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.394/build/pdf.worker.min.mjs';
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

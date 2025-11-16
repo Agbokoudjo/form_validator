@@ -8,7 +8,12 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { lowerRegex, punctuationRegex, numberRegex, symbolRegex, upperRegex } from "./regex";
+import { 
+lowerRegex, 
+punctuationRegex, 
+numberRegex, 
+symbolRegex, 
+upperRegex } from "./regex";
 import { deepMerge } from "./merge";
 
 /**

@@ -55,8 +55,6 @@ export type Translator = (key: string, error?: Error | null, language?: string) 
  * Options for showLoadingDialog
  */
 export interface ShowLoadingDialogOptions {
-    /** Translation function (optional) */
-    translator?: Translator | null;
     /** Custom configuration */
     config?: Partial<SweetAlertOptions>;
 }
@@ -193,7 +191,7 @@ export const DEFAULT_ERROR_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
 export function showLoadingDialog(
     options: ShowLoadingDialogOptions
 ): TimerWrapper {
-    const { translator = null, config = {} } = options;
+    const { config = {} } = options;
 
     let timerInterval: NodeJS.Timeout | undefined;
 
@@ -414,7 +412,6 @@ export async function processToggleAction(
 
         // 2. Show loading dialog
         const timer = showLoadingDialog({
-            translator,
             config: loadingConfig
         });
         timerInterval = timer.timerInterval;
@@ -484,14 +481,13 @@ export async function processToggleAction(
             errorTitle = errorData.title || `HTTP ${error.status}`;
         } else if (error instanceof Error) {
             // JavaScript error (network, timeout, etc.)
-            console.log(translator)
             if (translator) {
                 // Use translator if available (e.g., fetchErrorTranslator)
                 errorMessage = translator(error.name, error, document.documentElement.lang);
             } else {
                 errorMessage = error.message || errorMessage;
             }
-            errorTitle = error.name || errorTitle;
+            errorTitle = errorTitle || error.name;
         }
 
         // 13. Show error dialog

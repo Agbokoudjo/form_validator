@@ -674,7 +674,7 @@ export class FetchErrorTranslator implements ConfigCacheAdapterTranslation {
             fr: {
                 'AbortError': 'La requête a expiré car le serveur n\'a pas répondu dans le délai imparti.',
                 'TypeError': 'Erreur réseau - Vérifiez votre connexion internet',
-                'NetworkError': 'Erreur réseau - Connexion impossible',
+                'NetworkError': 'Erreur réseau - Connexion impossible,Vérifiez votre connexion internet',
                 'SecurityError': 'Erreur de sécurité - Accès non autorisé (CORS)',
                 'NotFoundError': 'Ressource non trouvée',
                 'TimeoutError': 'Délai d\'attente dépassé',

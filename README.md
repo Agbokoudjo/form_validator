@@ -64,7 +64,7 @@ yarn add @wlindabla/form_validator
   - [merge](./docs/_Utils/merge.md)
   - [string](./docs/_Utils/string.md)
   - [translate](./docs/_Utils/translate.md)
-  - [Dom](./docs/_Utils/Dom/getMetaContent.md)
+  - [getMetaContent](./docs/_Utils/Dom/getMetaContent.md)
   
   ## Translation
   - [AppTranslation](./docs/Translation/AppTranslation.md)

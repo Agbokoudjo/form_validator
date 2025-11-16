@@ -164,7 +164,7 @@ export async function handleToggleConfirmation(
             confirmButtonText: confirmDialogConfig.confirmButtonText || "Confirm",
             cancelButtonText: cancelDialogConfig.cancelButtonText || "Cancel",
             confirmButtonColor: confirmDialogConfig.confirmButtonColor || '#3085d6',
-            cancelButtonColor: confirmDialogConfig.cancelButtonColor || '#d33',
+            cancelButtonColor: cancelDialogConfig.cancelButtonColor || '#d33',
             didOpen: ():void => {
                 const container = document.querySelector<HTMLElement>('.swal2-container');
                 if (container) {
@@ -194,12 +194,12 @@ export async function handleToggleConfirmation(
         // 5. Handle cancellation
         if (result.dismiss) {
             const finalCancelConfig: SweetAlertOptions = {
-                icon: "info",
+                icon: cancelDialogConfig.icon || "info",
                 position: 'top',
                 showConfirmButton: false,
-                timer: 3000,
+                timer: cancelDialogConfig.timer || 3000,
                 background: cancelDialogConfig.background || "#00427E",
-                color: "#fff",
+                color:cancelDialogConfig.color ||  "#fff",
                 showCloseButton: true,
                 title:cancelDialogConfig.title || "Action cancelled",
                 text:cancelDialogConfig.text 

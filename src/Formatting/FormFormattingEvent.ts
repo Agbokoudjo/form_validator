@@ -1,12 +1,18 @@
-import { Logger, capitalizeString, escapeHtmlBalise, usernameFormat } from "../_Utils";
+import { 
+Logger, 
+capitalizeString, 
+escapeHtmlBalise, 
+usernameFormat ,
+detectLanguageFromDom
+} from "../_Utils";
 
 /*
  * This file is part of the project by AGBOKOUDJO Franck.
  *
- * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * (c) AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * Phone: +229 0167 25 18 86
- * LinkedIn: https://www.linkedin.com/in/internationales-web-services-120520193/
- * Company: INTERNATIONALES WEB SERVICES
+ * LinkedIn: https://www.linkedin.com/in/internationales-web-apps-services-120520193/
+ * Company: INTERNATIONALES WEB APP & SERVICES
  *
  * For more information, please feel free to contact the author.
  */
@@ -19,7 +25,7 @@ export class FormFormattingEvent {
     private static m_instance_formatting: FormFormattingEvent;
     private constructor() {
         // Définir la locale par défaut ici, si non fournie via init ou des appels de méthode spécifiques
-        this.m_option_module = { locales: "en" };
+        this.m_option_module = { locales: detectLanguageFromDom() };
     }
     public static readonly getInstance = (): FormFormattingEvent => {
         if (!FormFormattingEvent.m_instance_formatting) {
@@ -178,4 +184,10 @@ export class FormFormattingEvent {
         });
         Logger.info(`The listener 'usernameFormatDom' is attached to ${jQuery(subject).prop('tagName') || subject.constructor.name}.`);
     }
+}
+const formatterEvent = FormFormattingEvent.getInstance();
+
+export default{,
+FormFormattingEvent,
+formatterEvent
 }
