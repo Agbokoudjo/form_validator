@@ -1,17 +1,20 @@
+import { HttpMethod } from "../_Utils";
+
 /**
  * Custom event detail structure
- * Event detail structure from toggle confirmation
+ * Event detail structure from CRUDAction
  */
-export interface ToggleEventDetail {
-    /** Toggle data including status and additional data */
-    data: {
-        status: boolean;
-        [key: string]: unknown;
-    };
+export interface CRUDActionEventDetail {
+    /** CRUDAction data including status and additional data */
+    data: {[key: string]: unknown;};
     /** Action URL for HTTP request confirmation */
-    url_action_confirm: string;
+    urlActionRequest: string;
     /** Source DOM element */
     sourceElement: HTMLElement;
     /** Event timestamp */
     timestamp: string;
+    httpMethodRequestAction:HttpMethod
+
 }
+
+export const CRUD_ACTION_CONFIRMED_EVENT ="crud:action:confirmed"

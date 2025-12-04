@@ -101,6 +101,7 @@ These getters return **arrays of IDs** of form fields grouped by the event type 
   * `event-validate-input="input"`
   * `event-validate-change="change"`
   * `event-validate-focus="focus"`
+  * `event-validate-dragenter="dragenter"`
 
 This setup allows the system to know exactly which fields need validation on which DOM event, optimizing event listener attachment.
 
@@ -127,6 +128,10 @@ This setup allows the system to know exactly which fields need validation on whi
 ### `idChildrenUsingEventChange: string[]`
 
 * Returns IDs of children whose attribute `event-validate-change` is set to `"change"`.
+
+### `idChildrenUsingEventdragenter: string[]`
+
+* Returns IDs of children whose attribute `event-validate-dragenter` is set to `"dragenter"`.
 
 ---
 
@@ -158,7 +163,7 @@ This setup allows the system to know exactly which fields need validation on whi
 | `event-validate-input`  | On any field needing input validation  | Indicates validation on the input event.                                                        |
 | `event-validate-change` | On any field needing change validation | Indicates validation on the change event.                                                       |
 | `event-validate-focus`  | On any field needing focus validation  | Indicates validation on the focus event.                                                        |
-
+| `event-validate-dragenter`| On any field needing dragenter validation | Indicates validation on the dragenter event for files. 
 ---
 
 ## Summary
@@ -304,6 +309,14 @@ export class FormValidateController {
     public get idChildrenUsingEventChange(): string[] {
         return this.childrens.filter((_index, children) => {
             return jQuery(children).attr('data-event-validate-change') === "change";
+        })
+            .get()
+            .map((el, _i) => el.id)
+    }
+
+    public get idChildrenUsingEventDragenter(): string[] {
+        return this.childrens.filter((_index, children) => {
+            return jQuery(children).attr('data-event-validate-dragenter') === "dragenter";
         })
             .get()
             .map((el, _i) => el.id)

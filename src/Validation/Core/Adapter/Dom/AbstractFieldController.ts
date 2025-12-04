@@ -276,7 +276,6 @@ export abstract class AbstractFieldController {
 
             return;
         }
-
         console.warn(`the validator instance of ${this.name} no exist in container `);
     }
 

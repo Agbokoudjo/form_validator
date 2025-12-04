@@ -38,10 +38,10 @@ export class TextareaValidator extends AbstractFieldValidator {
         value: string | undefined,
         targetInputname: string,
         optionsinputtext: TextInputOptions,
-        ignoreMergeWithDefaultOptions: boolean = false
+        ignoreMergeWithDefaultOptions: boolean = true
     ): this => {
 
-        textInputValidator.validate(value, targetInputname, optionsinputtext, true);
+        textInputValidator.validate(value, targetInputname, optionsinputtext, ignoreMergeWithDefaultOptions);
 
         return this;
     }

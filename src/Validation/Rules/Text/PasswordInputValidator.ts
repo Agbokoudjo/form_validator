@@ -185,7 +185,7 @@ export class PasswordInputValidator extends AbstractFieldValidator {
         }
 
         if (typeof window !== "undefined" && typeof document !== "undefined") {
-            // ✅ Analyse du mot et scoring si demandé
+            //Analyse du mot et scoring si demandé
             if (enableScoring) {
                 const analysis = analyzeWord(datainput, {
                     customUpperRegex: customUpperRegex,

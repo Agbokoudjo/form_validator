@@ -1,17 +1,17 @@
 /**
- * Toggle Action Processor
+ * CRUD Action Processor
  * 
- * Framework-agnostic system for listening to and processing toggle events.
+ * Framework-agnostic system for listening to and processing CRUDAction events.
  * Handles HTTP requests with loading states, success/error notifications,
  * and configurable callbacks.
  * 
- * @module ToggleActionProcessor
+ * @module CRUDActionProcessor
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * @company INTERNATIONALES WEB APPS & SERVICES
  * @phone +229 0167 25 18 86
  * @linkedin https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * @package https://github.com/Agbokoudjo/
- * @version 2.0.1
+ * @version 2.1.0
  * @license MIT
  */
 
@@ -20,31 +20,11 @@ import {
     mapStatusToResponseType,
     HttpResponse,
     httpFetchHandler,
-    HttpMethod
+    HttpMethod,
+    Logger,
+    detectLanguageFromDom
 } from "../_Utils";
-import { ToggleEventDetail } from "./event";
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
-
-/**
- * HTTP handler function signature
- */
-export type HttpHandler = (options: {
-    url: string;
-    data: unknown;
-    methodSend: string;
-    retryCount: number;
-}) => Promise<HttpResponse<unknown>>;
-
-/**
- * Dialog handler function signature
- */
-export type DialogHandler = typeof Swal.fire & {
-    close?: () => void;
-    getPopup?: () => HTMLElement | null;
-    getTimerLeft?: () => number;
-};
+import { CRUDActionEventDetail } from "./event";
 
 /**
  * Translator function signature
@@ -86,9 +66,9 @@ export interface ShowErrorDialogOptions {
 /**
  * Parameters for processToggleAction
  */
-export interface ProcessToggleActionParams {
+export interface ProcessCRUDActionParams {
     /** Event detail from custom event */
-    eventDetail: ToggleEventDetail;
+    eventDetail: CRUDActionEventDetail;
     optionsheaders?: HeadersInit;
     /** Translation function (optional) */
     translator?: Translator | null;
@@ -103,11 +83,11 @@ export interface ProcessToggleActionParams {
     /** Retry count (default: 2) */
     retryCount?: number;
     /** Callback after success */
-    onSuccess?: ((data: unknown, eventDetail: ToggleEventDetail) => void | Promise<void>) | null;
+    onSuccess?: ((data: unknown, eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
     /** Callback after error */
-    onError?: ((error: Error | HttpResponse<unknown>, eventDetail: ToggleEventDetail) => void | Promise<void>) | null;
+    onError?: ((error: Error | HttpResponse<unknown>, eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
     /** Callback after completion (always called) */
-    onComplete?: ((eventDetail: ToggleEventDetail) => void | Promise<void>) | null;
+    onComplete?: ((eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
 }
 
 /**
@@ -209,7 +189,6 @@ export function showLoadingDialog(
                </div>`
                ,
         didOpen: (): void => {
-            // Update timer in UI
             const container = document.querySelector<HTMLElement>(".swal2-container");
             if (container) {
                 container.style.zIndex = "99999";
@@ -295,7 +274,9 @@ export function showSuccessDialog(
                 `
         },
         title:title,
-        html: message,
+        html: `<div class="alert alert-success" role="alert">
+               ${message}
+               </div>`,
         icon: "success",
         showConfirmButton: false,
         showCloseButton: true
@@ -348,7 +329,7 @@ export function showErrorDialog(
 /**
  * Processes toggle action with HTTP request
  * 
- * Main function that orchestrates the entire toggle action process:
+ * Main function that orchestrates the entire CRUD action process:
  * 1. Shows loading dialog
  * 2. Executes HTTP request with retry logic
  * 3. Handles success/error responses
@@ -368,7 +349,7 @@ export function showErrorDialog(
  * @example
  * ```typescript
  * try {
- *     const response = await processToggleAction({
+ *     const response = await processCRUDAction({
  *         eventDetail: event.detail,
  *         translator: (key) => translations[key],
  *         httpMethod: 'PATCH',
@@ -387,8 +368,8 @@ export function showErrorDialog(
  * }
  * ```
  */
-export async function processToggleAction(
-    params: ProcessToggleActionParams
+export async function processCRUDAction(
+    params: ProcessCRUDActionParams
 ): Promise<HttpResponse<unknown>> {
     const {
         eventDetail,
@@ -418,7 +399,7 @@ export async function processToggleAction(
 
         // 3. Execute HTTP request
         const response = await httpFetchHandler<HttpResponse>({
-            url: eventDetail.url_action_confirm,
+            url: eventDetail.urlActionRequest,
             data: eventDetail.data,
             methodSend: httpMethod,
             optionsheaders:optionsheaders,
@@ -440,7 +421,7 @@ export async function processToggleAction(
         }
 
         // 6. Log success
-        console.log("✅ Toggle action successful:", response);
+        Logger.log("✅ CRUD action successful:", response);
 
         // 7. Extract response data
         const responseData = response.data || response;
@@ -468,22 +449,22 @@ export async function processToggleAction(
         }
 
         // 11. Log error
-        console.error("❌ Toggle action failed:", error);
+        Logger.error("❌ CRUD action failed:", error);
 
         // 12. Determine error message and title
         let errorMessage = "An error occurred";
         let errorTitle = "Error";
         if (error instanceof HttpResponse) {
             // HTTP response error
-            console.error(`HTTP ${error.status}:`, error.data);
-            const errorData = error.data as { message?: string; title?: string };
-            errorMessage = errorData.message || errorMessage;
+            Logger.error(`HTTP ${error.status}:`, error.data);
+            const errorData = error.data as { message?: string; title?: string,detail?:string };
+            errorMessage = errorData.message || errorData.detail || errorMessage;
             errorTitle = errorData.title || `HTTP ${error.status}`;
         } else if (error instanceof Error) {
             // JavaScript error (network, timeout, etc.)
             if (translator) {
                 // Use translator if available (e.g., fetchErrorTranslator)
-                errorMessage = translator(error.name, error, document.documentElement.lang);
+                errorMessage = translator(error.name, error,detectLanguageFromDom());
             } else {
                 errorMessage = error.message || errorMessage;
             }
@@ -518,14 +499,14 @@ export async function processToggleAction(
 // ============================================================================
 
 /**
- * Safe version of processToggleAction that doesn't throw
+ * Safe version of processCRUDAction that doesn't throw
  * 
  * @param params - Configuration parameters
  * @returns Promise resolving to result object
  * 
  * @example
  * ```typescript
- * const result = await processToggleActionSafe({
+ * const result = await processCRUDActionSafe({
  *     eventDetail: event.detail,
  *     httpHandler: fetchHandler,
  * });
@@ -537,15 +518,15 @@ export async function processToggleAction(
  * }
  * ```
  */
-export async function processToggleActionSafe(
-    params: ProcessToggleActionParams
+export async function processCRUDActionSafe(
+    params: ProcessCRUDActionParams
 ): Promise<{
     success: boolean;
     response?: HttpResponse<unknown>;
     error?: Error | HttpResponse<unknown>;
 }> {
     try {
-        const response = await processToggleAction(params);
+        const response = await processCRUDAction(params);
         return { success: true, response };
     } catch (error) {
         return {

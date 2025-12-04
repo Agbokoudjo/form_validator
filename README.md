@@ -71,9 +71,8 @@ yarn add @wlindabla/form_validator
   - [Cache](./docs/Translation/cache.md)
   - [FetchErrorTranslator](./docs/Translation/FetchErrorTranslator.md)
   
-  ## Toggle User Account
-  - [ToggleAccountListener](./docs/User/listener_toggle_user.md)
-  - [ToggleUserAccount](./docs/User/toggle_user_account.md)
+  ## CRUD Action 
+  - [CRUDAction](./docs/User/action_and_listener.md)
   
   ## Validators
   - [index](./docs/Validators/index.md)

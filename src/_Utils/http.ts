@@ -120,8 +120,9 @@ export type HttpMethod =
   | 'PURGE'
   | 'OPTIONS'
   | 'TRACE'
-  | 'CONNECT';
-
+  | 'CONNECT'
+  | 'QUERY'
+  ;
 // 🎯 Supported response types for parsing
 type HttpResponseType = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'stream' | 'formData';
 

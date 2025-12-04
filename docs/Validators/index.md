@@ -1,75 +1,619 @@
-# Form Validator Documentation
+# Form Validator Library Documentation
+
+## Introduction
+
+The **Form Validator Library** is a centralized form error state management solution designed to provide a Single Source of Truth for form validation across your application. This library implements the Singleton pattern to ensure consistent form state management throughout your project.
+
+Built with TypeScript, it offers type-safe error tracking, field validity management, and intuitive chainable methods for seamless integration into modern web applications.
+
+**Author:** AGBOKOUDJO Franck  
+**Email:** internationaleswebservices@gmail.com  
+**Phone:** +229 01 67 25 18 86  
+**Company:** INTERNATIONALES WEB APPS & SERVICES  
+**Repository:** https://github.com/Agbokoudjo/form_validator
+
+---
 
 ## Table of Contents
 
-### Getting Started
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-
-### Core Validators
-
+#### Core Validators
+1. [Form Error Store Interface](#form-error-store-interface)
+2. [Form Error Store Class](#form-error-store-class)
+3. [Field Validator Interface](#field-validator-interface)
+4. [Abstract Field Validator](#abstract-field-validator)
 #### Text & Password
-- [TextInputValidator](#TextInputValidator)
-- [PasswordInputValidator](#PasswordInputValidator)
-
+3. [Text Input Validator](#text-input-validator)
+4. [Utility Types](#utility-types)
+5. [Textarea Validator](#textarea-validator)
+6. [Password Input Validator](#password-input-validator)
 #### Numeric & Contact
-- [NumberInputValidator](#NumberInputValidator)
-- [TelInputValidator](#TelInputValidator)
-- [EmailInputValidator](#EmailInputValidator)
-
+7. [Tel Input Validator](#tel-input-validator)
+8. [Email Input Validator](#email-input-validator)
+9. [Number Input Validator](#number-input-validator)
 #### Web & Network
-- [URLInputValidator](#URLInputValidator)
-- [FQDNInputValidator](#FQDNInputValidator)
+10. [FQDN Input Validator](#fqdn-input-validator) 
+11. [URL Input Validator ](#url-input-validator)
+#### Date
+12. [Date Input Validator](#date-input-validator)
+#### Selection && Choices
+13. [Select Validator](#select-validator)
+14. [CheckBox Validator](#checkbox-validator)
+15. [Radio Validator](#radio-validator)
 
-#### Date & Selection
-- [DateInputValidator](#DateInputValidator)
-- [ChoiceInputValidator](#ChoiceInputValidator)
+#### Media & Files 
+16. [Abstract Media Validator](#abstrac-media-validator)
+17. [Image Validator](#image-validator)
+18. [Document Validator](#document-validator)
+19. [Video Validator](#video-validator)
+#### The Router Disptaching
+20.  [Form Input Validator](#form-input-validator)
+### DOM Controllers
+21. [Abstract Field Controller](#abstract-field-controller)
+22.  [Field Input Controller](#field-input-controller)
+23.  [Form Validate Controller](#form-validate-controller)
+---
 
-#### Media & Files
-- [ImageValidator](#ImageValidator)
-- [DocumentValidator](#DocumentValidator)
-- [VideoValidator](#VideoValidator)
+## Form Error Store Interface
 
-### Controllers
-- [AbstractFieldValidator](#AbstractFieldValidator)
-- [FieldInputController](#FieldInputController)
-- [FormValidateController](#FormValidateController)
+### Overview
 
-### Configuration Options
+The `FormErrorStoreInterface` defines the contract for the centralized form error state manager (Store). It establishes the core functionality required to manage field validity and error messages across your application.
 
-#### Input Validators Options
-- [TextInputOptions](#TextInputOptions)
-- [PasswordRuleOptions](#PasswordRuleOptions)
-- [NumberOptions](#NumberOptions)
-- [TelInputOptions](#TelInputOptions)
-- [EmailInputOptions](#EmailInputOptions)
-- [URLOptions](#URLOptions)
-- [FQDNOptions](#FQDNOptions)
-- [DateInputOptions](#DateInputOptions)
+### Methods
 
-#### Form Elements Options
-- [SelectOptions](#SelectOptions)
-- [OptionsCheckbox](#OptionsCheckbox)
-- [OptionsRadio](#OptionsRadio)
-- [OptionsValidateTextarea](#OptionsValidateTextarea)
+#### `isFormValid(): boolean`
 
-#### Media Options
-- [OptionsImage](#OptionsImage)
-- [OptionsMediaVideo](#OptionsMediaVideo)
-- [OptionsFile](#OptionsFile)
+Checks the validity status of the entire form.
 
-### Events & Utilities
-- [EventClearError](#EventClearError)
+**Returns:**
+- `true` if no field is explicitly marked as invalid
+- `false` otherwise
+
+**Example:**
+```typescript
+if (formErrorStore.isFormValid()) {
+    console.log('Form is valid, ready to submit');
+}
+```## Form Error Store Interface
+
+### Overview
+
+The `FormErrorStoreInterface` defines the contract for the centralized form error state manager (Store). It establishes the core functionality required to manage field validity and error messages across your application.
+
+### Methods
+
+#### `isFormValid(): boolean`
+
+Checks the validity status of the entire form.
+
+**Returns:**
+- `true` if no field is explicitly marked as invalid
+- `false` otherwise
+
+**Example:**
+```typescript
+if (formErrorStore.isFormValid()) {
+    console.log('Form is valid, ready to submit');
+}
+```
+---
+
+#### `setFieldValid(fieldName: string, isValid: boolean): this`
+
+Explicitly sets the validity state of a specific field in the store.
+
+**Parameters:**
+- `fieldName` (string): The name (key) of the field whose state should be updated
+- `isValid` (boolean): The validity status to record (`true` for valid, `false` for invalid)
+
+**Returns:**
+- The store instance for method chaining
+
+**Example:**
+```typescript
+formErrorStore
+    .setFieldValid('email', true)
+    .setFieldValid('password', false);
+```
+
+---
+
+#### `addFieldError(fieldName: string, messages: string | string[]): this`
+
+Adds one or more error messages to the list of errors for a given field. Existing error messages will not be added again (duplicates are prevented).
+
+**Parameters:**
+- `fieldName` (string): The name of the field concerned
+- `messages` (string | string[]): The error message or an array of messages to add
+
+**Returns:**
+- The store instance for method chaining
+
+**Example:**
+```typescript
+formErrorStore
+    .addFieldError('email', 'Email is required')
+    .addFieldError('password', ['Password too short', 'Must contain uppercase']);
+```
+
+---
+
+#### `getFieldErrors(fieldName: string): string[]`
+
+Retrieves the complete list of error messages associated with a field.
+
+**Parameters:**
+- `fieldName` (string): The name of the field to retrieve errors for
+
+**Returns:**
+- An array containing the error messages
+- An empty array if no errors are found
+
+**Example:**
+```typescript
+const errors = formErrorStore.getFieldErrors('email');
+console.log(errors); // ['Email is required', 'Invalid format']
+```
+
+---
+
+#### `isFieldValid(fieldName: string): boolean`
+
+Checks if a specific field is considered valid according to the recorded state.
+
+**Parameters:**
+- `fieldName` (string): The name of the field to check
+
+**Returns:**
+- `true` if the field has not been explicitly marked as invalid
+- `false` if the field has been marked as invalid
+
+**Example:**
+```typescript
+if (formErrorStore.isFieldValid('email')) {
+    console.log('Email field is valid');
+}
+```
+
+---
+
+#### `clearFieldState(fieldName: string): this`
+
+Completely clears the recorded state for a field. This removes both the error messages and the validity status from the store.
+
+**Parameters:**
+- `fieldName` (string): The name of the field to clear
+
+**Returns:**
+- The store instance for method chaining
+
+**Example:**
+```typescript
+formErrorStore.clearFieldState('email');
+```
+
+---
+
+#### `removeFieldError(fieldName: string, messageToRemove: string): this`
+
+Removes a specific error message for a field. If this action empties the list of errors, the field's entry is removed from the store.
+
+**Parameters:**
+- `fieldName` (string): The name of the field
+- `messageToRemove` (string): The exact error message to remove
+
+**Returns:**
+- The store instance for method chaining
+
+**Example:**
+```typescript
+formErrorStore.removeFieldError('email', 'Email is required');
+```
+
+---
+
+
+## Form Error Store Class
+
+### Overview
+
+The `FormErrorStore` class implements the `FormErrorStoreInterface` and provides the concrete implementation of the centralized form error management system. It follows the Singleton pattern to ensure only one instance exists throughout the application lifecycle.
+
+### Features
+
+- **Singleton Pattern:** Ensures a single instance manages all form state
+- **Method Chaining:** All mutation methods return `this` for fluent API usage
+- **Duplicate Prevention:** Error messages are automatically deduplicated
+- **Type-Safe:** Built with TypeScript for full type safety
+
+### Usage
+
+#### Getting the Store Instance
+
+```typescript
+import { formErrorStore } from '@wlindabla/form_validator';
+
+// or
+
+import { FormErrorStore } from '@wlindabla/form_validator';
+const store = FormErrorStore.getInstance();
+```
+
+#### Basic Usage Example
+
+```typescript
+import { formErrorStore } from '@wlindabla/form_validator';
+
+// Add validation errors
+formErrorStore
+    .addFieldError('email', 'Email is required')
+    .addFieldError('password', 'Password is too short')
+    .setFieldValid('email', false);
+
+// Check field validity
+if (!formErrorStore.isFieldValid('email')) {
+    console.log('Email has errors');
+    console.log(formErrorStore.getFieldErrors('email'));
+}
+
+// Check entire form
+if (formErrorStore.isFormValid()) {
+    // Submit form
+}
+
+// Clear field
+formErrorStore.clearFieldState('email');
+
+// Remove specific error
+formErrorStore.removeFieldError('password', 'Password is too short');
+```
+
+#### Advanced Example: Form Validation Flow
+
+```typescript
+import { formErrorStore } from '@wlindabla/form_validator';
+
+function validateForm(formData) {
+    // Clear previous state
+    formErrorStore.clearFieldState('email');
+    formErrorStore.clearFieldState('password');
+
+    // Validate email
+    if (!formData.email) {
+        formErrorStore
+            .addFieldError('email', 'Email is required')
+            .setFieldValid('email', false);
+    } else if (!isValidEmail(formData.email)) {
+        formErrorStore
+            .addFieldError('email', 'Invalid email format')
+            .setFieldValid('email', false);
+    } else {
+        formErrorStore.setFieldValid('email', true);
+    }
+
+    // Validate password
+    if (!formData.password) {
+        formErrorStore
+            .addFieldError('password', 'Password is required')
+            .setFieldValid('password', false);
+    } else if (formData.password.length < 8) {
+        formErrorStore
+            .addFieldError('password', 'Password must be at least 8 characters')
+            .setFieldValid('password', false);
+    } else {
+        formErrorStore.setFieldValid('password', true);
+    }
+
+    // Check overall form validity
+    return formErrorStore.isFormValid();
+}
+```
+
+### Exported Instance
+
+A pre-instantiated singleton instance is exported as `formErrorStore`:
+
+```typescript
+export const formErrorStore = FormErrorStore.getInstance();
+```
+
+Use this directly in your application for immediate access to the store without needing to call `getInstance()` manually.
+
+### Implementation Details
+
+The class maintains two internal Maps:
+- `fieldValidity`: Tracks the boolean validity status of each field
+- `fieldErrors`: Stores arrays of error messages for each field
+
+All public methods provide a clean interface to manipulate and query these internal states while maintaining data integrity.
+
+---
+
+## Field Validator Interface
+
+### Overview
+
+The `FieldValidatorInterface` defines the contract for any single field validator implementation. It establishes the core utilities required for interacting with the global error store and performing validation on individual form fields.
+
+### Types
+
+#### `FieldStateValidating`
+
+Represents the current validation state of a field.
+
+```typescript
+interface FieldStateValidating {
+    errors: string[];      // Array of error messages for the field
+    isValid: boolean;      // Whether the field is currently valid
+}
+```
+
+### Properties
+
+#### `formErrorStore: FormErrorStoreInterface`
+
+Provides read-only access to the central error management store.
+
+**Type:** `FormErrorStoreInterface` (readonly)
+
+**Example:**
+```typescript
+const store = validator.formErrorStore;
+const isValid = store.isFormValid();
+```
+
+### Methods
+
+#### `setValidationState(isValid: boolean, errorMessage: string | string[], fieldName: string): this`
+
+Sets the validation state (validity status and error message) for the field.
+
+**Parameters:**
+- `isValid` (boolean): The validation status (`true` for valid, `false` for invalid)
+- `errorMessage` (string | string[]): The error message(s) to associate with the field if invalid
+- `fieldName` (string): The name of the input field to update
+
+**Returns:**
+- The current instance for method chaining
+
+**Example:**
+```typescript
+validator
+    .setValidationState(false, 'Email is invalid', 'email')
+    .setValidationState(true, '', 'password');
+```
+
+---
+
+#### `getState(fieldName: string): FieldStateValidating`
+
+Retrieves the current validation state of the field.
+
+**Parameters:**
+- `fieldName` (string): The name of the input field to check
+
+**Returns:**
+- `FieldStateValidating` object containing:
+  - `isValid` (boolean): Whether the field is valid
+  - `errors` (string[]): Array of error messages
+
+**Example:**
+```typescript
+const state = validator.getState('email');
+console.log(state.isValid);  // true or false
+console.log(state.errors);   // ['Email is invalid']
+```
+
+---
+
+#### `validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherArgs: any): Promise<this> | this`
+
+Executes the specific validation logic for this field and updates the error state. This method supports both synchronous and asynchronous validation.
+
+**Parameters:**
+- `value` (DataInput): The value to be validated
+- `fieldName` (string): The name of the field
+- `optionsValidate` (any): Validation options (e.g., min/max, patterns, etc.)
+- `...otherArgs` (any): Additional arguments for extended validation
+
+**Returns:**
+- `this` for synchronous validation (allows method chaining)
+- `Promise<this>` for asynchronous validation
+
+**Example:**
+```typescript
+// Synchronous validation
+validator.validate('john@example.com', 'email', { required: true });
+
+// Asynchronous validation
+await validator.validate('john@example.com', 'email', { checkUniqueness: true });
+```
+
+---
+
+## Abstract Field Validator
+
+### Overview
+
+The `AbstractFieldValidator` class implements the `FieldValidatorInterface` and serves as the base class for all field validators. It provides core validation utilities, state management, and common validation rules (required, length) that can be inherited by specific field validator implementations.
+
+### Features
+
+- **Abstract Base Class:** Designed to be extended by specific field validators
+- **Error Store Integration:** Direct access to the global error store
+- **Common Validation Rules:** Built-in required and length validators
+- **Method Chaining:** Supports fluent API for validation pipelines
+- **Flexible Value Handling:** Automatically handles various input types
+
+### Properties
+
+#### `formErrorStore: FormErrorStoreInterface`
+
+Inherited from `FieldValidatorInterface`, provides read-only access to the central error store.
+
+**Example:**
+```typescript
+const store = this.formErrorStore;
+```
+
+### Methods
+
+#### `setValidationState(isValid: boolean, errorMessage: string | string[], fieldName: string): this`
+
+Sets the validation state for the field. If the field is invalid, error messages are added to the store. If valid, the field is marked as valid.
+
+**Parameters:**
+- `isValid` (boolean): The validation status
+- `errorMessage` (string | string[]): Error message(s) to record
+- `fieldName` (string): The field name
+
+**Returns:**
+- `this` for method chaining
+
+**Example:**
+```typescript
+this.setValidationState(false, 'Invalid input', 'username');
+```
+
+---
+
+#### `getState(fieldName: string): FieldStateValidating`
+
+Retrieves the current validation state of a field from the error store.
+
+**Parameters:**
+- `fieldName` (string): The name of the field
+
+**Returns:**
+- `FieldStateValidating` object with `isValid` and `errors` properties
+
+**Example:**
+```typescript
+const state = this.getState('email');
+if (!state.isValid) {
+    console.log('Errors:', state.errors);
+}
+```
+
+---
+
+#### `validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherArgs: any): Promise<this> | this` (Abstract)
+
+Abstract method that must be implemented by subclasses. Defines the specific validation logic for each field type.
+
+**Note:** Subclasses must override this method with their own validation logic.
+
+---
+
+#### `getRawStringValue(value?: string): string` (Protected)
+
+Internal helper method that converts various input types to a string value safely.
+
+**Parameters:**
+- `value` (string | undefined | null): The input value to convert
+
+**Returns:**
+- A normalized string value (empty string if null/undefined)
+
+**Behavior:**
+- Returns the value as-is if it's already a string
+- Returns an empty string if value is null or undefined
+- Converts other types to string using `String(value)`
+
+**Example:**
+```typescript
+const val1 = this.getRawStringValue('hello');        // 'hello'
+const val2 = this.getRawStringValue(undefined);      // ''
+const val3 = this.getRawStringValue(123);            // '123'
+```
+
+---
+
+#### `requiredValidator(value: string | undefined, fieldName: string, required?: boolean): this` (Protected)
+
+Built-in rule that checks if a required field has a value.
+
+**Parameters:**
+- `value` (string | undefined): The field value to check
+- `fieldName` (string): The name of the field
+- `required` (boolean | undefined): Whether the field is required
+
+**Returns:**
+- `this` for method chaining
+
+**Behavior:**
+- If `required` is `true` and the value is empty or whitespace-only, marks the field as invalid with message "This input field is mandatory."
+- Otherwise, returns without setting an error
+
+**Example:**
+```typescript
+this.requiredValidator(userInput, 'username', true);
+```
+
+---
+
+#### `lengthValidator(value: string, fieldName: string, minLength?: number, maxLength?: number): this` (Protected)
+
+Built-in rule that checks if the field value respects min/max length constraints.
+
+**Parameters:**
+- `value` (string): The field value to validate
+- `fieldName` (string): The name of the field
+- `minLength` (number | undefined): Minimum allowed length
+- `maxLength` (number | undefined): Maximum allowed length
+
+**Returns:**
+- `this` for method chaining
+
+**Behavior:**
+- If `minLength` is specified and value is shorter, marks field invalid with appropriate message
+- If `maxLength` is specified and value is longer, marks field invalid with appropriate message
+- If both constraints are satisfied, proceeds without error
+
+**Example:**
+```typescript
+this.lengthValidator('password123', 'password', 8, 20);
+// Validates that password is between 8 and 20 characters
+```
+
+### Extending AbstractFieldValidator
+
+Subclasses should implement the `validate()` method with their specific validation logic:
+
+```typescript
+export class EmailValidator extends AbstractFieldValidator {
+    public validate(value: DataInput, fieldName: string, options?: any): this {
+        const stringValue = this.getRawStringValue(value as string);
+        
+        // Apply required rule
+        this.requiredValidator(stringValue, fieldName, options?.required);
+        
+        // Apply length rule
+        this.lengthValidator(stringValue, fieldName, 5, 100);
+        
+        // Custom email validation logic
+        if (stringValue && !this.isValidEmail(stringValue)) {
+            this.setValidationState(false, 'Invalid email format', fieldName);
+        } else if (stringValue) {
+            this.setValidationState(true, '', fieldName);
+        }
+        
+        return this;
+    }
+    
+    private isValidEmail(email: string): boolean {
+        // Email validation logic
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+}
+```
+
+---
 
 
 ---
 
-## Class `TextInputValidator` {#TextInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
+## Text Input Validator
 The `TextInputValidator` class is a specialized validator for text-based input fields. It extends `FormError` for error management and implements `TextInputValidatorInterface`, ensuring it adheres to a contract for text input validation. This class follows the **singleton pattern**, meaning only one instance of it exists throughout your application, providing a centralized and efficient way to handle text input validation.
 
 ### Key Features
@@ -134,1262 +678,1180 @@ The method returns the current instance of `TextInputValidator`, allowing for me
 
 ---
 
-## Abstract Class `AbstractFieldValidator` {#AbstractFieldValidator}
+## Textarea Validator
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+### Overview
 
-The `AbstractFieldValidator` class serves as the foundational base class for all field validators in the form validation system. It implements the `FieldValidatorInterface` and provides common validation utilities, error state management, and core validation rules that are inherited and extended by specialized validators.
+The `TextareaValidator` class is a specialized validator for textarea input fields. It extends `AbstractFieldValidator` and implements the Singleton pattern. It delegates validation logic to the `TextInputValidator` while providing a dedicated interface for textarea-specific validation.
 
-### Key Features
+### Features
 
-- **Central Error Store Integration:** Direct access to the global error management store for consistent error tracking.
-- **Validation State Management:** Methods to set and retrieve the validation state of any field.
-- **Built-in Validation Rules:** Pre-implemented validators for required fields and length constraints.
-- **Extensible Architecture:** Abstract `validate` method allows specialized validators to implement custom validation logic.
-- **Method Chaining:** All methods return `this` for fluent API usage.
+- **Singleton Pattern:** Ensures a single validator instance throughout the application
+- **Textarea-Specific:** Optimized for multi-line text input validation
+- **Flexible Options:** Inherits all options from `TextInputOptions`
+- **Method Chaining:** Returns `this` for fluent API usage
+- **Default Behavior:** Ignores default options merging by default (`ignoreMergeWithDefaultOptions` defaults to `true`)
 
-### Core Methods
-
-#### `setValidationState(isValid, errorMessage, fieldName): this`
-
-Sets the validation state (validity status and error messages) for a field.
-
-**Parameters:**
-- **`isValid`** (`boolean`): The validation status (`true` for valid, `false` for invalid).
-- **`errorMessage`** (`string | string[]`): The error message(s) to associate with the field if invalid.
-- **`fieldName`** (`string`): The name of the input field to update.
-
-**Returns:** The current instance for method chaining.
-
-#### `getState(fieldName): FieldStateValidating`
-
-Retrieves the current validation state of a field.
-
-**Parameters:**
-- **`fieldName`** (`string`): The name of the input field to check.
-
-**Returns:** An object containing:
-- `isValid` (`boolean`) - The validity status of the field.
-- `errors` (`string[]`) - An array of error messages associated with the field.
-
-#### `validate(value, fieldName, optionsValidate, ignoreMergeWithDefaultOptions?): Promise<this> | this`
-
-Abstract method that executes the specific validation logic for a field. This method supports both synchronous and asynchronous validation.
-
-**Parameters:**
-- **`value`** (`DataInput`): The value to be validated.
-- **`fieldName`** (`string`): The name of the field.
-- **`optionsValidate`** (`any`): Configuration object containing validation rules.
-- **`ignoreMergeWithDefaultOptions?`** (`boolean`): If `true`, default options will not be merged with provided options.
-
-**Returns:** The instance (`this`) for synchronous validation, or a Promise resolving to the instance for asynchronous validation.
-
-### Protected Helper Methods
-
-#### `requiredValidator(value, fieldName, required?): this`
-
-Built-in validation rule that checks if the field value is present when marked as required.
-
-**Parameters:**
-- **`value`** (`string | undefined`): The field value to validate.
-- **`fieldName`** (`string`): The name of the field.
-- **`required?`** (`boolean`): If `true`, the field cannot be empty.
-
-**Returns:** The current instance for method chaining.
-
-#### `lengthValidator(value, fieldName, minLength?, maxLength?): this`
-
-Built-in validation rule that checks if the field value respects minimum and maximum length constraints.
-
-**Parameters:**
-- **`value`** (`string`): The field value to validate.
-- **`fieldName`** (`string`): The name of the field.
-- **`minLength?`** (`number`): The minimum allowed length.
-- **`maxLength?`** (`number`): The maximum allowed length.
-
-**Returns:** The current instance for method chaining.
-
-#### `getRawStringValue(value?): string`
-
-Converts any input value to a raw string representation, handling `null` and `undefined` gracefully.
-
-**Parameters:**
-- **`value?`** (`string | any`): The value to convert.
-
-**Returns:** A string representation of the input, or an empty string if the input is `null` or `undefined`.
-
-### Properties
-
-- **`formErrorStore`** (read-only): Provides access to the central error management store (`FormErrorStoreInterface`).
-
-## Class `TextareaValidator` {#TextareaValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `TextareaValidator` class is a specialized validator for textarea input fields. It extends `AbstractFieldValidator` and follows the **singleton pattern** to provide a single, globally accessible instance for consistent textarea validation throughout your application.
-
-### Key Features
-
-- **Singleton Pattern:** Ensures only one instance exists globally for efficient resource management.
-- **Textarea-Specific Validation:** Delegates to `TextInputValidator` for robust text validation.
-- **Consistent Error Handling:** Inherits error state management from the base abstract class.
-- **Method Chaining:** Returns `this` for fluent API usage.
-
-### Getting an Instance
-
+### Getting the Validator Instance
 ```typescript
-import { textareaInputValidator } from '@wlindabla/form_validator'
-```
+import { textareaInputValidator } from '@wlindabla/form_validator';
 
-### Validating Textarea Input
+// or
 
-```typescript
-import { TextInputOptions } from '@wlindabla/form_validator';
-
-const textareaValue = "This is a longer text for textarea field";
-const fieldName = "message";
-const options = {
-    requiredInput: true,
-    minLength: 10,
-    maxLength: 500,
-    errorMessageInput: "Message must be between 10 and 500 characters."
-};
-
-textareaInputValidator.validate(textareaValue, fieldName, options);
-
-if (!textareaInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = textareaInputValidator.getState(fieldName);
-    console.log(`Validation errors for ${fieldName}:`, errors);
-} else {
-    console.log(`${fieldName} is valid.`);
-}
+import { TextareaValidator } from '@wlindabla/form_validator';
+const validator = TextareaValidator.getInstance();
 ```
 
 ### Methods
 
-#### `validate(value, targetInputname, optionsinputtext, ignoreMergeWithDefaultOptions?): this`
+#### `getInstance(): TextareaValidator` (Static)
 
-Executes validation logic for the textarea field using text input validation rules.
+Retrieves the single static instance of the TextareaValidator. Implements the Singleton pattern.
 
-**Parameters:**
-- **`value`** (`string | undefined`): The textarea value to be validated.
-- **`targetInputname`** (`string`): The name of the textarea field for error reporting.
-- **`optionsinputtext`** (`TextInputOptions`): An object containing validation rules (same as `TextInputValidator`):
-  - `requiredInput?: boolean` - If `true`, the field cannot be empty.
-  - `minLength?: number` - The minimum allowed length.
-  - `maxLength?: number` - The maximum allowed length.
-  - `regexValidator?: RegExp` - A custom regex pattern to validate against.
-  - `errorMessageInput?: string` - Custom error message for validation failures.
-  - `escapestripHtmlAndPhpTags?: boolean` - If `true`, HTML and PHP tags are escaped/stripped.
-  - `egAwait?: string` - Example of expected format.
-- **`ignoreMergeWithDefaultOptions?`** (`boolean`, optional): If `true`, default options will not be merged. Defaults to `false`.
+**Returns:**
+- `TextareaValidator` - The unique instance of the validator
 
-**Returns:** The current instance for method chaining.
-
-### Exported Instance
-
-- **`textareaInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-## Class `TelInputValidator` {#TelInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `TelInputValidator` class is a specialized validator for international phone numbers. It extends `AbstractFieldValidator` and uses the `libphonenumber-js` library to validate phone numbers in international format. This class follows the **singleton pattern** to ensure a single, globally accessible instance for consistent phone number validation.
-
-### Key Features
-
-- **International Format Validation:** Enforces phone numbers in international format (starting with '+').
-- **libphonenumber-js Integration:** Validates phone numbers against international phone number standards.
-- **Country-Specific Validation:** Supports default country code for more accurate validation.
-- **Auto-Formatting:** Automatically formats valid phone numbers to international format.
-- **jQuery Integration:** Updates the input field with formatted number (if jQuery is available).
-- **Flexible Error Messages:** Customizable error messages with format examples.
-- **Length Constraints:** Supports minimum and maximum length validation.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
+**Example:**
 ```typescript
-import { telInputValidator } from '@wlindabla/form_validator'
+const validator = TextareaValidator.getInstance();
 ```
 
-### Validating Phone Numbers
+---
 
+#### `validate(value: string | undefined, targetInputname: string, optionsinputtext: TextInputOptions, ignoreMergeWithDefaultOptions?: boolean): this`
+
+Validates a textarea input field using the underlying `TextInputValidator` logic.
+
+**Parameters:**
+
+- `value` (string | undefined): The textarea value to validate
+- `targetInputname` (string): The name or key representing the textarea field in the form
+- `optionsinputtext` (TextInputOptions): Validation options specific to the textarea
+  - `requiredInput` (boolean): Whether the field is mandatory
+  - `minLength` (number): Minimum number of characters required
+  - `maxLength` (number): Maximum number of characters allowed
+  - `escapestripHtmlAndPhpTags` (boolean): If `true`, removes HTML and PHP tags
+  - `errorMessageInput` (string): Custom error message on failure
+  - `typeInput` (FormInputType): Input type (typically `"textarea"`)
+  - `regexValidator` (RegExp): Custom regex pattern for validation
+  - `egAwait` (string): Example value for error messages
+- `ignoreMergeWithDefaultOptions` (boolean, optional): If `true`, skips merging with default validation options (default: `true`)
+
+**Returns:**
+- `this` - The current instance for method chaining
+
+**Note:** Unlike `TextInputValidator`, this validator defaults to `ignoreMergeWithDefaultOptions: true`, meaning custom options are used as-is without merging with defaults.
+
+**Example:**
 ```typescript
-const phone = "+229016725186";
-const fieldName = "phone";
-const options = {
-    defaultCountry: 'BJ',
-    egAwait: '+229 01 67 25 18 86',
-    requiredInput: true
-};
+import { textareaInputValidator } from '@wlindabla/form_validator';
 
-telInputValidator.validate(phone, fieldName, options);
+// Basic textarea validation
+textareaInputValidator.validate('User bio...', 'bio', {
+    requiredInput: false,
+    minLength: 10,
+    maxLength: 500,
+    typeInput: 'textarea'
+});
 
-if (!telInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = telInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Phone number is valid.`);
+// With HTML stripping
+textareaInputValidator.validate('<p>My story</p>', 'story', {
+    requiredInput: true,
+    escapestripHtmlAndPhpTags: true,
+    maxLength: 1000,
+    typeInput: 'textarea'
+});
+
+// With regex validation for code blocks
+textareaInputValidator.validate('function test() {}', 'codeBlock', {
+    requiredInput: true,
+    minLength: 5,
+    maxLength: 5000,
+    regexValidator: /^[\s\S]*$/,  // Accepts any characters including newlines
+    typeInput: 'textarea'
+});
+```
+
+### Complete Example
+```typescript
+import { textareaInputValidator } from './TextareaValidator';
+
+function validateComments(formData) {
+    // Validate user comment
+    textareaInputValidator.validate(formData.comment, 'comment', {
+        requiredInput: true,
+        minLength: 10,
+        maxLength: 1000,
+        escapestripHtmlAndPhpTags: true,
+        errorMessageInput: 'Comment must be between 10 and 1000 characters',
+        typeInput: 'textarea'
+    });
+
+    // Validate feedback
+    textareaInputValidator.validate(formData.feedback, 'feedback', {
+        requiredInput: false,
+        minLength: 0,
+        maxLength: 2000,
+        escapestripHtmlAndPhpTags: true,
+        typeInput: 'textarea'
+    });
+
+    // Check validation state
+    const state = textareaInputValidator.getState('comment');
+    if (!state.isValid) {
+        console.log('Comment errors:', state.errors);
+    }
 }
 ```
 
-### Additional Examples
+### Exported Instance
 
-#### French Phone Number
-
+A pre-instantiated singleton instance is exported as `textareaInputValidator`:
 ```typescript
-telInputValidator.validate('+33612345678', 'mobile', {
-    defaultCountry: 'FR',
-    errorMessageInput: 'Ce numéro de téléphone est invalide.',
-    minLength: 10,
-    maxLength: 20
-});
+export const textareaInputValidator = TextareaValidator.getInstance();
 ```
 
-#### With Custom Format Example
+Use this directly in your application for immediate access without needing to call `getInstance()` manually.
 
-```typescript
-telInputValidator.validate('+1234567890', 'contact_phone', {
-    defaultCountry: 'US',
-    egAwait: '+1 (234) 567-8900',
-    minLength: 7,
-    maxLength: 15
-});
-```
+---
 
-### Interface
+
+## Tel Input Validator
+
+### Overview
+
+The `TelInputValidator` class is a specialized validator for telephone number input fields. It extends `AbstractFieldValidator` and implements the Singleton pattern. It validates international phone numbers using the `libphonenumber-js` library, ensuring proper formatting and validity based on country-specific rules.
+
+### Features
+
+- **Singleton Pattern:** Ensures a single validator instance throughout the application
+- **International Phone Validation:** Uses `libphonenumber-js` for comprehensive phone number validation
+- **Country-Specific Validation:** Supports validation based on default country codes (ISO 2-letter format)
+- **Automatic Formatting:** Formats valid phone numbers to international format
+- **jQuery Integration:** Automatically updates input field values if jQuery is available
+- **Error Handling:** Comprehensive error messages with example formats
+- **Method Chaining:** Returns `this` for fluent API usage
+
+### Interfaces
 
 #### `TelInputOptions`
 
-Extends `TextInputOptions` with phone-specific configuration:
+Extended options specific to telephone input validation.
+```typescript
+interface TelInputOptions extends TextInputOptions {
+    defaultCountry: CountryCode;  // ISO 2-letter country code (e.g., 'BJ', 'FR', 'US')
+}
+```
 
-- **`defaultCountry`** (`CountryCode`): ISO 2-letter country code (e.g., `'FR'`, `'BJ'`, `'US'`). Used as fallback for parsing.
+### Getting the Validator Instance
+```typescript
+import { telInputValidator } from '@wlindabla/form_validator';
 
-Inherited from `TextInputOptions`:
-- `requiredInput?: boolean` - If `true`, the field cannot be empty.
-- `minLength?: number` - Minimum number of characters (default: 8).
-- `maxLength?: number` - Maximum number of characters (default: 80).
-- `errorMessageInput?: string` - Custom error message.
-- `egAwait?: string` - Example format to display on error.
+// or
+
+import { TelInputValidator } from '@wlindabla/form_validator';
+const validator = TelInputValidator.getInstance();
+```
 
 ### Methods
 
-#### `validate(value, targetInputname, optionsinputTel): this`
+#### `getInstance(): TelInputValidator` (Static)
 
-Validates a phone number in international format using `libphonenumber-js`.
+Retrieves the single static instance of the TelInputValidator. Implements the Singleton pattern.
+
+**Returns:**
+- `TelInputValidator` - The unique instance of the validator
+
+**Example:**
+```typescript
+const validator = TelInputValidator.getInstance();
+```
+
+---
+
+#### `validate(value: string | undefined, targetInputname: string, optionsinputTel: TelInputOptions): this`
+
+Validates a phone number in international format using `libphonenumber-js`. Ensures that the number starts with a '+' sign and is valid for the specified country.
 
 **Parameters:**
-- **`value`** (`string | undefined`): The phone number input string (should be trimmed and preferably start with '+').
-- **`targetInputname`** (`string`): The name of the form field to validate.
-- **`optionsinputTel`** (`TelInputOptions`): Configuration object for validation:
-  - `defaultCountry` - ISO 2-letter country code for fallback validation.
-  - `egAwait?: string` - Example format to show on validation failure.
-  - `errorMessageInput?: string` - Custom error message.
-  - `minLength?: number` - Minimum allowed characters.
-  - `maxLength?: number` - Maximum allowed characters.
-  - `requiredInput?: boolean` - Whether the field is mandatory.
 
-**Returns:** The current instance for method chaining.
+- `value` (string | undefined): The phone number input string (should be trimmed and preferably start with '+')
+- `targetInputname` (string): The name of the form field to validate
+- `optionsinputTel` (TelInputOptions): Configuration options for validation
+  - `defaultCountry` (CountryCode): ISO 2-letter country code (e.g., `'FR'`, `'BJ'`, `'US'`)
+  - `egAwait` (string): Example format to show in case of validation failure
+  - `errorMessageInput` (string): Custom error message for formatting validation
+  - `minLength` (number): Minimum number of characters allowed (default: 8)
+  - `maxLength` (number): Maximum number of characters allowed (default: 80)
+  - `requiredInput` (boolean): Whether the field is mandatory (default: true)
+
+**Returns:**
+- `this` - The current instance for method chaining
 
 **Validation Flow:**
-1. Checks if number starts with '+' (international format requirement).
-2. Validates using `libphonenumber-js` with optional country fallback.
-3. Auto-formats valid numbers to international format.
-4. Updates input field with formatted number (if jQuery available).
-5. Validates length constraints and required status.
+
+1. Checks if phone number starts with '+' (international format requirement)
+2. Parses and validates using `libphonenumber-js` with default country context
+3. Checks if parsed number is valid for the specified country
+4. Automatically formats valid number to international format
+5. Updates input field value via jQuery if available
+6. Validates additional constraints (min/max length, required status)
+
+**Example:**
+```typescript
+import { telInputValidator } from '@wlindabla/form_validator';
+
+// Basic phone validation
+telInputValidator.validate('+229016725186', 'phone', {
+    defaultCountry: 'BJ',
+    egAwait: '+229 01 67 25 18 86',
+    requiredInput: true
+});
+
+// French phone number validation
+telInputValidator.validate('+33612345678', 'mobile', {
+    defaultCountry: 'FR',
+    errorMessageInput: 'This French phone number is invalid',
+    minLength: 10,
+    maxLength: 20,
+    requiredInput: true
+});
+
+// Optional phone field
+telInputValidator.validate('+1234567890', 'alternatePhone', {
+    defaultCountry: 'US',
+    requiredInput: false,
+    egAwait: '+1 (234) 567-8900'
+});
+
+// With custom length constraints
+telInputValidator.validate('+447911123456', 'businessPhone', {
+    defaultCountry: 'GB',
+    minLength: 12,
+    maxLength: 15,
+    errorMessageInput: 'Business phone must be valid UK number',
+    egAwait: '+44 79 1112 3456'
+});
+```
+
+### Complete Example
+```typescript
+import { telInputValidator } from '@wlindabla/form_validator';
+
+function validateContactForm(formData) {
+    // Validate primary phone number (Benin)
+    telInputValidator.validate(formData.primaryPhone, 'primaryPhone', {
+        defaultCountry: 'BJ',
+        requiredInput: true,
+        egAwait: '+229 01 67 25 18 86',
+        minLength: 10,
+        maxLength: 20
+    });
+
+    // Validate secondary phone number (France)
+    telInputValidator.validate(formData.secondaryPhone, 'secondaryPhone', {
+        defaultCountry: 'FR',
+        requiredInput: false,
+        egAwait: '+33 6 12 34 56 78',
+        errorMessageInput: 'Secondary phone must be a valid French number',
+        maxLength: 20
+    });
+
+    // Validate business phone (optional, any country)
+    telInputValidator.validate(formData.businessPhone, 'businessPhone', {
+        defaultCountry: 'US',
+        requiredInput: false,
+        egAwait: '+1 (202) 555-0173',
+        maxLength: 25
+    });
+
+    // Check validation results
+    const primaryState = telInputValidator.getState('primaryPhone');
+    if (!primaryState.isValid) {
+        console.log('Primary phone errors:', primaryState.errors);
+    }
+}
+```
+
+### Features Detail
+
+**International Format Check:**
+- Phone number must start with '+' character
+- Returns error if format is incorrect
+
+**Phone Number Parsing:**
+- Uses `libphonenumber-js` for comprehensive validation
+- Validates number format based on country rules
+- Throws `ParseError` with descriptive messages for invalid formats
+
+**Automatic Formatting:**
+- Valid phone numbers are automatically formatted to international format
+- If jQuery is available, updates the input field value automatically
+
+**Error Handling:**
+- Catches and reports parsing errors with examples
+- Provides custom error messages based on validation options
+- Falls back to default country for more accurate validation
+
+**Additional Constraints:**
+- Applies min/max length validation after phone number validation
+- Checks required field status
+- Delegates secondary validation to `TextInputValidator`
 
 ### Exported Instance
 
-- **`telInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-### External Resources
-
-For more information about phone number formatting capabilities, see [libphonenumber-js documentation](https://gitlab.com/catamphetamine/libphonenumber-js).
-
-## Class `PasswordInputValidator` {#PasswordInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `PasswordInputValidator` class is a specialized validator for password fields with advanced security features. It extends `AbstractFieldValidator` and follows the **singleton pattern**. This validator checks character requirements (uppercase, lowercase, numbers, symbols, punctuation), validates length constraints, and can analyze and score password strength using custom analysis algorithms.
-
-### Key Features
-
-- **Comprehensive Character Requirements:** Validate uppercase, lowercase, numbers, symbols, and punctuation separately.
-- **Custom Regex Support:** Override default character validation patterns with custom regex expressions.
-- **Password Strength Scoring:** Analyzes password complexity and calculates a strength score.
-- **Custom Events:** Dispatches `SCOREANALYSISPASSWORD` event with detailed strength analysis.
-- **Flexible Configuration:** Highly customizable rules with intelligent default merging.
-- **Method Chaining:** Returns `this` for fluent API usage.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
+A pre-instantiated singleton instance is exported as `telInputValidator`:
 ```typescript
-import { passwordInputValidator } from '@wlindabla/form_validator'
+export const telInputValidator = TelInputValidator.getInstance();
 ```
 
-### Basic Password Validation
+Use this directly in your application for immediate access without needing to call `getInstance()` manually.
 
+### Dependencies
+
+- **libphonenumber-js:** For international phone number parsing and validation
+- **jQuery (optional):** For automatic input field value updates
+
+### Reference
+
+For more formatting capabilities and country codes, see: https://gitlab.com/catamphetamine/libphonenumber-js
+
+---
+
+
+## Password Input Validator
+
+### Overview
+
+The `PasswordInputValidator` class is a specialized validator for password input fields. It extends `AbstractFieldValidator` and implements the Singleton pattern. It provides comprehensive password validation with customizable character requirements, strength scoring, and support for complex password rules.
+
+### Features
+
+- **Singleton Pattern:** Ensures a single validator instance throughout the application
+- **Comprehensive Character Requirements:** Validates uppercase, lowercase, numbers, symbols, and punctuation
+- **Customizable Regex Rules:** Supports custom regex patterns for each character type
+- **Password Strength Scoring:** Optional analysis and scoring of password strength
+- **Custom Events:** Dispatches `CustomEvent` with password analysis results
+- **Flexible Configuration:** Extensive options for fine-tuned password policies
+- **Method Chaining:** Returns `this` for fluent API usage
+
+### Interfaces
+
+#### `PassworkRuleOptions`
+
+Extended options specific to password input validation.
 ```typescript
-const password = "MySecur3P@ss!";
-const fieldName = "newPassword";
+interface PassworkRuleOptions extends TextInputOptions {
+    upperCaseAllow?: boolean;              // Allow uppercase letters
+    lowerCaseAllow?: boolean;              // Allow lowercase letters
+    symbolAllow?: boolean;                 // Allow special characters/symbols
+    numberAllow?: boolean;                 // Allow numeric digits
+    punctuationAllow?: boolean;            // Allow punctuation marks
+    minLowercase?: number;                 // Minimum lowercase letters required
+    minUppercase?: number;                 // Minimum uppercase letters required
+    minNumbers?: number;                   // Minimum digits required
+    minSymbols?: number;                   // Minimum special characters required
+    customUpperRegex?: RegExp;             // Custom regex for uppercase validation
+    customLowerRegex?: RegExp;             // Custom regex for lowercase validation
+    customNumberRegex?: RegExp;            // Custom regex for number validation
+    customSymbolRegex?: RegExp;            // Custom regex for symbol validation
+    customPunctuationRegex?: RegExp;       // Custom regex for punctuation validation
+    enableScoring?: boolean;               // Enable password strength scoring
+    scoringPasswordOptions?: WordScoringOptions;  // Scoring configuration
+}
+```
 
-passwordInputValidator.validate(password, fieldName, {
+### Constants
+
+#### `SCOREANALYSISPASSWORD`
+
+Event name constant for password scoring analysis.
+```typescript
+export const SCOREANALYSISPASSWORD = "scoreAnalysisPassword";
+```
+
+### Getting the Validator Instance
+```typescript
+import { passwordInputValidator } from '@wlindabla/form_validator';
+
+// or
+
+import { PasswordInputValidator } from '@wlindabla/form_validator';
+const validator = PasswordInputValidator.getInstance();
+```
+
+### Methods
+
+#### `getInstance(): PasswordInputValidator` (Static)
+
+Retrieves the single static instance of the PasswordInputValidator. Implements the Singleton pattern.
+
+**Returns:**
+- `PasswordInputValidator` - The unique instance of the validator
+
+**Example:**
+```typescript
+const validator = PasswordInputValidator.getInstance();
+```
+
+---
+
+#### `validate(value: string | undefined, targetInputname: string, optionsValidate: PassworkRuleOptions, ignoreMergeWithDefaultOptions?: boolean): this`
+
+Validates a password field with customizable rules and optional strength scoring. Checks character requirements, length constraints, and custom regex patterns. Optionally analyzes password strength and dispatches a custom event with analysis results.
+
+**Parameters:**
+
+- `value` (string | undefined): The password input string to validate
+- `targetInputname` (string): The identifier of the field being validated (used as a key for errors)
+- `optionsValidate` (PassworkRuleOptions): Validation options including:
+  - `minLength` (number): Minimum password length (default: 8)
+  - `maxLength` (number): Maximum password length (default: 256)
+  - `upperCaseAllow` (boolean): Allow uppercase letters (default: true)
+  - `lowerCaseAllow` (boolean): Allow lowercase letters (default: true)
+  - `numberAllow` (boolean): Allow digits (default: true)
+  - `symbolAllow` (boolean): Allow special characters (default: true)
+  - `punctuationAllow` (boolean): Allow punctuation marks
+  - `customUpperRegex` (RegExp): Custom regex for uppercase validation
+  - `customLowerRegex` (RegExp): Custom regex for lowercase validation
+  - `customNumberRegex` (RegExp): Custom regex for number validation
+  - `customSymbolRegex` (RegExp): Custom regex for symbol validation
+  - `customPunctuationRegex` (RegExp): Custom regex for punctuation validation
+  - `regexValidator` (RegExp): Optional custom regex for overall validation
+  - `requiredInput` (boolean): Whether the field is mandatory (default: true)
+  - `errorMessageInput` (string): Custom error message
+  - `enableScoring` (boolean): Enable strength analysis (default: true)
+  - `scoringPasswordOptions` (WordScoringOptions): Scoring configuration
+- `ignoreMergeWithDefaultOptions` (boolean, optional): If `true`, skips merging with default options (default: false)
+
+**Returns:**
+- `this` - The current instance for method chaining
+
+**Validation Flow:**
+
+1. Merges provided options with defaults (unless ignored)
+2. Validates length and custom regex via `TextInputValidator`
+3. Checks character type requirements (uppercase, lowercase, numbers, symbols, punctuation)
+4. If scoring enabled, analyzes password and dispatches custom event
+5. Returns instance for chaining
+
+**Events Dispatched:**
+
+When `enableScoring` is `true`, dispatches a `CustomEvent` named `scoreAnalysisPassword`:
+```typescript
+{
+    score: number;              // Numeric password strength score
+    analysis: object;           // Detailed character analysis
+    input: string;              // Name of the validated input field
+}
+```
+
+**Example:**
+```typescript
+import { passwordInputValidator, SCOREANALYSISPASSWORD } from '@wlindabla/form_validator';
+
+// Basic password validation
+passwordInputValidator.validate('MySecur3P@ss!', 'password', {
     minLength: 12,
+    requiredInput: true,
     upperCaseAllow: true,
     lowerCaseAllow: true,
     numberAllow: true,
     symbolAllow: true,
-    requiredInput: true
+    enableScoring: true
 });
 
-if (!passwordInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = passwordInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Password is valid.`);
-}
-```
-
-### Password Validation with Scoring
-
-```typescript
-const password = "MySecurePassword123!@#";
-const fieldName = "password";
-
-passwordInputValidator.validate(password, fieldName, {
-    minLength: 10,
+// Strict password policy
+passwordInputValidator.validate('P@ssw0rd123!', 'newPassword', {
+    minLength: 14,
     maxLength: 128,
     upperCaseAllow: true,
     lowerCaseAllow: true,
     numberAllow: true,
     symbolAllow: true,
     punctuationAllow: true,
-    enableScoring: true
-});
-
-// Listen to password strength score event
-document.addEventListener(SCOREANALYSISPASSWORD, (event) => {
-    const { input, score, analysis } = event.detail;
-    console.log(`Field: ${input}`);
-    console.log(`Strength Score: ${score}`);
-    console.log(`Analysis:`, analysis);
-});
-```
-
-### Advanced Configuration with Custom Regex
-
-```typescript
-const customUpperRegex = /[A-Z]/;
-const customNumberRegex = /\d{2,}/; // Requires at least 2 digits
-
-passwordInputValidator.validate("Password123", "secureField", {
-    minLength: 8,
-    maxLength: 64,
-    upperCaseAllow: true,
-    lowerCaseAllow: true,
-    numberAllow: true,
-    symbolAllow: false,
-    customUpperRegex: customUpperRegex,
-    customNumberRegex: customNumberRegex,
+    minUppercase: 2,
+    minNumbers: 3,
+    minSymbols: 1,
     enableScoring: true,
     requiredInput: true
 });
+
+// Minimal requirements
+passwordInputValidator.validate('password123', 'confirmPassword', {
+    minLength: 8,
+    maxLength: 255,
+    requiredInput: false,
+    enableScoring: false
+});
+
+// Custom regex patterns
+passwordInputValidator.validate('CustomPass1!', 'securePassword', {
+    customUpperRegex: /[A-Z]/,
+    customLowerRegex: /[a-z]/,
+    customNumberRegex: /\d/,
+    customSymbolRegex: /[!@#$%^&*]/,
+    minLength: 10,
+    enableScoring: true
+});
 ```
 
-### Interface
-
-#### `PassworkRuleOptions`
-
-Extends `TextInputOptions` with password-specific configuration:
-
-**Character Type Allowances:**
-- `upperCaseAllow?: boolean` - Allow uppercase letters.
-- `lowerCaseAllow?: boolean` - Allow lowercase letters.
-- `numberAllow?: boolean` - Allow numeric digits.
-- `symbolAllow?: boolean` - Allow special symbols.
-- `punctuationAllow?: boolean` - Allow punctuation characters.
-
-**Custom Regex Patterns:**
-- `customUpperRegex?: RegExp` - Custom pattern for uppercase validation.
-- `customLowerRegex?: RegExp` - Custom pattern for lowercase validation.
-- `customNumberRegex?: RegExp` - Custom pattern for number validation.
-- `customSymbolRegex?: RegExp` - Custom pattern for symbol validation.
-- `customPunctuationRegex?: RegExp` - Custom pattern for punctuation validation.
-
-**Scoring Options:**
-- `enableScoring?: boolean` - Enable password strength analysis and scoring.
-- `scoringPasswordOptions?: WordScoringOptions` - Custom scoring configuration.
-
-**Inherited from `TextInputOptions`:**
-- `minLength?: number` - Minimum password length (default: 8).
-- `maxLength?: number` - Maximum password length (default: 256).
-- `regexValidator?: RegExp` - Custom regex for overall password format.
-- `requiredInput?: boolean` - Whether password is mandatory.
-- `errorMessageInput?: string` - Custom error message.
-
-### Methods
-
-#### `validate(value, targetInputname, optionsValidate, ignoreMergeWithDefaultOptions?): this`
-
-Validates a password field with customizable rules and optional strength scoring.
-
-**Parameters:**
-- **`value`** (`string | undefined`): The password input string to validate.
-- **`targetInputname`** (`string`): The name/identifier of the password field.
-- **`optionsValidate`** (`PassworkRuleOptions`): Configuration object for password validation.
-- **`ignoreMergeWithDefaultOptions?`** (`boolean`, optional): If `true`, skips merging with default options. Defaults to `false`.
-
-**Returns:** The current instance for method chaining.
-
-**Validation Flow:**
-1. Merges provided options with smart defaults.
-2. Validates length constraints using `TextInputValidator`.
-3. Checks each required character type (uppercase, lowercase, numbers, symbols, punctuation).
-4. If scoring is enabled, analyzes password complexity and dispatches `SCOREANALYSISPASSWORD` event.
-
-### Events
-
-#### `SCOREANALYSISPASSWORD`
-
-A custom event dispatched when password scoring is enabled. The event detail object contains:
-
+### Listening to Password Score Events
 ```typescript
-{
-    input: string,           // Name of the validated password field
-    score: number,          // Numeric strength score
-    analysis: {             // Detailed character analysis
-        uppercase: number,
-        lowercase: number,
-        numbers: number,
-        symbols: number,
-        punctuation: number
+import { SCOREANALYSISPASSWORD } from '@wlindabla/form_validator';
+
+document.addEventListener(SCOREANALYSISPASSWORD, (event: CustomEvent) => {
+    const { score, analysis, input } = event.detail;
+    
+    console.log(`Field: ${input}`);
+    console.log(`Strength Score: ${score}`);
+    console.log(`Analysis:`, analysis);
+    
+    // Update UI based on score
+    if (score < 30) {
+        console.log('Weak password');
+    } else if (score < 60) {
+        console.log('Fair password');
+    } else if (score < 80) {
+        console.log('Good password');
+    } else {
+        console.log('Strong password');
+    }
+});
+```
+
+### Complete Example
+```typescript
+import { passwordInputValidator, SCOREANALYSISPASSWORD } from './PasswordInputValidator';
+
+function validatePasswordForm(formData) {
+    // Validate new password
+    passwordInputValidator.validate(formData.newPassword, 'newPassword', {
+        minLength: 12,
+        maxLength: 128,
+        requiredInput: true,
+        upperCaseAllow: true,
+        lowerCaseAllow: true,
+        numberAllow: true,
+        symbolAllow: true,
+        punctuationAllow: true,
+        errorMessageInput: 'Password must be strong and contain mixed characters',
+        enableScoring: true
+    });
+
+    // Validate password confirmation (less strict)
+    passwordInputValidator.validate(formData.confirmPassword, 'confirmPassword', {
+        minLength: 12,
+        maxLength: 128,
+        requiredInput: true,
+        enableScoring: false
+    });
+
+    // Check if both validations passed
+    const newPasswordState = passwordInputValidator.getState('newPassword');
+    const confirmPasswordState = passwordInputValidator.getState('confirmPassword');
+
+    if (!newPasswordState.isValid) {
+        console.log('New password errors:', newPasswordState.errors);
+    }
+    
+    if (!confirmPasswordState.isValid) {
+        console.log('Password confirmation errors:', confirmPasswordState.errors);
     }
 }
-```
 
-**Listening to the Event:**
-
-```typescript
-document.addEventListener('scoreAnalysisPassword', (event) => {
-    const { input, score, analysis } = event.detail;
+// Listen for password strength analysis
+document.addEventListener(SCOREANALYSISPASSWORD, (event: CustomEvent) => {
+    const { score, analysis, input } = event.detail;
     
-    if (score > 80) {
-        console.log('Strong password');
-    } else if (score > 50) {
-        console.log('Medium password');
-    } else {
-        console.log('Weak password');
+    if (input === 'newPassword') {
+        // Update strength meter in UI
+        const strengthElement = document.getElementById('strengthMeter');
+        if (strengthElement) {
+            strengthElement.textContent = `Strength: ${score}%`;
+            
+            if (score >= 80) {
+                strengthElement.className = 'strong';
+            } else if (score >= 60) {
+                strengthElement.className = 'good';
+            } else if (score >= 30) {
+                strengthElement.className = 'fair';
+            } else {
+                strengthElement.className = 'weak';
+            }
+        }
     }
 });
 ```
 
 ### Default Options
 
-When options are merged with defaults:
-
-- `minLength`: 8
-- `maxLength`: 256
-- `upperCaseAllow`: true
-- `lowerCaseAllow`: true
-- `numberAllow`: true
-- `symbolAllow`: true
-- `punctuationAllow`: true
-- `requiredInput`: true
-- `enableScoring`: true
-
-### Exported Instance
-
-- **`passwordInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-## Class `NumberInputValidator` {#NumberInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `NumberInputValidator` class is a specialized validator for numeric input fields. It extends `AbstractFieldValidator` and follows the **singleton pattern**. This validator checks numeric constraints such as minimum/maximum values, step multiples, and can validate against custom regex patterns for format validation.
-
-### Key Features
-
-- **Type-Flexible Input:** Accepts both string and number types; automatically parses strings to floats.
-- **Min/Max Validation:** Enforces minimum and maximum numeric boundaries.
-- **Step Validation:** Ensures values are valid multiples of a specified step.
-- **Regex Pattern Support:** Optional custom regex validation for format checking.
-- **Precision Handling:** Uses epsilon comparison for accurate floating-point validation.
-- **Clear Error Messages:** Provides contextual error messages with validation constraints.
-- **Method Chaining:** Returns `this` for fluent API usage.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
+When default options are merged (when `ignoreMergeWithDefaultOptions` is `false`), the following defaults are applied:
 ```typescript
-import { numberInputValidator } from '@wlindabla/form_validator'
-```
-
-### Basic Number Validation
-
-```typescript
-const value = 25;
-const fieldName = "age";
-
-numberInputValidator.validate(value, fieldName, {
-    min: 18,
-    max: 100
-});
-
-if (!numberInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = numberInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Age is valid.`);
+{
+    minLength: 8,
+    maxLength: 256,
+    upperCaseAllow: true,
+    lowerCaseAllow: true,
+    numberAllow: true,
+    symbolAllow: true,
+    customUpperRegex: /[A-Z]/,
+    customLowerRegex: /[a-z]/,
+    customNumberRegex: /\d/,
+    customSymbolRegex: /[!@#$%^&*\-_=+]/,
+    customPunctuationRegex: /[.,;:!?]/,
+    regexValidator: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+    requiredInput: true,
+    enableScoring: true
 }
-```
-
-### Validation with Step Constraint
-
-```typescript
-// Only allows values: 0, 5, 10, 15, 20, etc.
-numberInputValidator.validate("15", "quantity", {
-    min: 0,
-    max: 100,
-    step: 5
-});
-```
-
-### Validation with Custom Regex
-
-```typescript
-// Validate a price format (e.g., "19.99")
-const priceRegex = /^\d+(\.\d{2})?$/;
-
-numberInputValidator.validate("29.99", "price", {
-    min: 0,
-    max: 999999,
-    regexValidator: priceRegex
-});
-```
-
-### String Input Parsing
-
-```typescript
-// String inputs are automatically parsed to float
-numberInputValidator.validate("42.5", "score", {
-    min: 0,
-    max: 100
-});
-
-// Invalid numbers are caught
-numberInputValidator.validate("abc", "value", {
-    min: 0,
-    max: 100
-});
-// Error: "Please enter a valid number."
-```
-
-### Interface
-
-#### `NumberOptions`
-
-Configuration object for numeric validation:
-
-- **`min?: number`** - Minimum allowable value (inclusive).
-- **`max?: number`** - Maximum allowable value (inclusive).
-- **`step?: number`** - Required step multiple. Values must be `min + (n * step)` where n ≥ 0.
-- **`regexValidator?: RegExp`** - Optional regex pattern to validate the input format.
-
-### Methods
-
-#### `validate(val, targetInputname, options_number?): this`
-
-Validates a numeric input value against configurable constraints.
-
-**Parameters:**
-- **`val`** (`string | number`): The value to validate. Strings are automatically parsed to floats.
-- **`targetInputname`** (`string`): The name/identifier of the numeric field.
-- **`options_number?`** (`NumberOptions`): Optional configuration object containing validation rules.
-
-**Returns:** The current instance for method chaining.
-
-**Validation Flow:**
-1. Converts string input to float via `parseFloat()`.
-2. Checks if the value is a valid number (`!isNaN`).
-3. Validates against minimum and maximum bounds (if specified).
-4. Validates step constraint with floating-point precision tolerance (epsilon: 1e-8).
-5. Validates against custom regex pattern (if provided).
-
-**Error Scenarios:**
-
-| Condition | Error Message |
-|-----------|---------------|
-| Input is not a number | "Please enter a valid number." |
-| Value below min or above max | "Value must be between [min] and [max]." |
-| Not a multiple of step | "The value [val] must be a multiple of [step]." |
-| Fails regex validation | "The input does not match the expected format." |
-
-### Examples
-
-#### Range Validation
-
-```typescript
-numberInputValidator.validate(50, "age", {
-    min: 0,
-    max: 150
-});
-```
-
-#### Step-Based Validation (Shopping Cart)
-
-```typescript
-// Only allow quantities in increments of 6 (eggs per carton)
-numberInputValidator.validate(12, "quantity", {
-    min: 6,
-    max: 120,
-    step: 6  // Valid: 6, 12, 18, 24...
-});
-```
-
-#### Temperature Validation
-
-```typescript
-numberInputValidator.validate(-5.5, "temperature", {
-    min: -50,
-    max: 50,
-    step: 0.5
-});
 ```
 
 ### Exported Instance
 
-- **`numberInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-
-## Class `DateInputValidator` {#DateInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `DateInputValidator` class is a specialized validator for date input fields. It extends `AbstractFieldValidator` and implements `DateInputValidatorInterface`. This validator follows the **singleton pattern** and provides comprehensive date validation including format checking, date range validation, and temporal constraints (past/future dates).
-
-### Key Features
-
-- **Flexible Format Support:** Validates dates against custom format patterns (e.g., "YYYY/MM/DD", "DD-MM-YYYY").
-- **Strict Mode:** Optional strict format matching that validates exact string length.
-- **Multi-Delimiter Support:** Handles various delimiters (/, -, etc.) automatically.
-- **Date Range Validation:** Enforces minimum and maximum date boundaries.
-- **Temporal Constraints:** Control whether past/future dates are allowed.
-- **Two-Digit Year Handling:** Intelligently converts 2-digit years (e.g., "24" → "2024").
-- **Invalid Day Detection:** Validates actual calendar dates (e.g., prevents February 30th).
-- **Comprehensive Error Messages:** Contextual feedback for each validation failure.
-- **Method Chaining:** Returns `this` for fluent API usage.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
+A pre-instantiated singleton instance is exported as `passwordInputValidator`:
 ```typescript
-import { dateInputValidator } from '@wlindabla/form_validator'
+export const passwordInputValidator = PasswordInputValidator.getInstance();
 ```
 
-### Basic Date Validation
+Use this directly in your application for immediate access without needing to call `getInstance()` manually.
 
-```typescript
-const dateString = "2024/06/30";
-const fieldName = "eventDate";
+---
 
-dateInputValidator.validate(dateString, fieldName, {
-    format: 'YYYY/MM/DD'
-});
+## FQDN Input Validator
 
-if (!dateInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = dateInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Date is valid.`);
-}
-```
+### Overview
 
-### Birthdate Validation (No Future Dates)
+The `FQDNInputValidator` class is a specialized validator for Fully Qualified Domain Name (FQDN) input fields. It extends `AbstractFieldValidator` and implements the Singleton pattern. It provides comprehensive domain name validation with strict DNS compliance rules and customizable validation behavior.
 
-```typescript
-dateInputValidator.validate("1990-06-15", "birthdate", {
-    format: 'YYYY-MM-DD',
-    allowFuture: false,
-    maxDate: new Date('2006-01-01') // Must be at least 18 years old
-});
-```
+### Features
 
-### Date Range Validation
+- **Singleton Pattern:** Ensures a single validator instance throughout the application
+- **DNS Compliance:** Validates domain structure according to DNS standards
+- **Top-Level Domain (TLD) Validation:** Ensures valid TLD format with optional numeric restrictions
+- **Flexible Rules:** Customizable support for wildcards, trailing dots, underscores, and hyphens
+- **Label Length Validation:** Checks DNS label length constraints (63 characters per label)
+- **International Domain Support:** Supports internationalized domain names (IDN) and Punycode
+- **Character Validation:** Detects invalid characters and full-width characters
+- **Asynchronous Support:** Validate method returns a Promise for async workflows
+- **Method Chaining:** Returns Promise<this> for fluent API usage
 
-```typescript
-const minDate = new Date('2024-01-01');
-const maxDate = new Date('2024-12-31');
-
-dateInputValidator.validate("2024/06/30", "projectDate", {
-    format: 'YYYY/MM/DD',
-    minDate: minDate,
-    maxDate: maxDate
-});
-```
-
-### Strict Mode Validation
-
-```typescript
-// Requires exact format length match
-dateInputValidator.validate("01/06/2024", "strictDate", {
-    format: 'DD/MM/YYYY',
-    strictMode: true,
-    delimiters: ['/']
-});
-```
-
-### Two-Digit Year Handling
-
-```typescript
-// "24" is converted to "2024", "95" to "1995"
-dateInputValidator.validate("30/06/24", "dateShort", {
-    format: 'DD/MM/YY',
-    delimiters: ['/']
-});
-```
-
-### Future-Only Dates
-
-```typescript
-dateInputValidator.validate("2025-12-25", "futureEvent", {
-    format: 'YYYY-MM-DD',
-    allowPast: false
-});
-```
-
-### Interface
-
-#### `DateInputOptions`
-
-Configuration object for date validation:
-
-- **`format?: string`** - Expected date format pattern (default: 'YYYY/MM/DD'). Examples: 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM-DD-YYYY'.
-- **`minDate?: Date`** - Minimum allowable date (inclusive).
-- **`maxDate?: Date`** - Maximum allowable date (inclusive).
-- **`allowFuture?: boolean`** - If `false`, rejects dates in the future.
-- **`allowPast?: boolean`** - If `false`, rejects dates in the past.
-- **`delimiters?: string[]`** - Array of allowed delimiters (default: ['/', '-']).
-- **`strictMode?: boolean`** - If `true`, the date string length must exactly match the format length.
-
-### Methods
-
-#### `validate(date_input, targetInputname, date_options?): this`
-
-Validates a date string or Date object based on provided formatting and business rules.
-
-**Parameters:**
-- **`date_input`** (`string | Date`): The date to validate. Strings are parsed according to the format option.
-- **`targetInputname`** (`string`): The name/identifier of the date field.
-- **`date_options?`** (`DateInputOptions`): Optional configuration object containing validation rules.
-
-**Returns:** The current instance for method chaining.
-
-**Validation Flow:**
-1. Detects delimiter in both format and input string.
-2. Compares date and format part counts.
-3. Validates each part length matches format (strict or loose mode).
-4. Handles two-digit year conversion using pivot logic (current year as reference).
-5. Creates ISO Date object with UTC timezone.
-6. Validates date exists on actual calendar (catches invalid dates like Feb 30).
-7. Checks minimum and maximum date boundaries.
-8. Validates temporal constraints (past/future allowance).
-
-**Error Scenarios:**
-
-| Condition | Error Message |
-|-----------|---------------|
-| Invalid format pattern | Throws `Error` during development |
-| Length mismatch (strict mode) | "Date does not match required length in strict mode." |
-| Delimiter not found | "Could not detect delimiter in date." |
-| Part count mismatch | "Mismatch between date and format parts." |
-| Part length mismatch | "Invalid part: '[value]' does not match '[format]'" |
-| Negative year | "Negative years are not supported." |
-| Invalid date creation | "Invalid date created from input." |
-| Invalid calendar day | "Day mismatch (invalid day in month)." |
-| Before min date | "The date must be after [minDate]." |
-| After max date | "The date must be before [maxDate]." |
-| Future not allowed | "The date '[date]' cannot be in the future." |
-| Past not allowed | "The date '[date]' cannot be in the past." |
-
-### Format Patterns
-
-Supported format tokens:
-
-- **`YYYY`** - 4-digit year
-- **`YY`** - 2-digit year (auto-converted)
-- **`MM`** - 2-digit month (01-12)
-- **`DD`** - 2-digit day (01-31)
-
-### Examples
-
-#### Event Registration Date
-
-```typescript
-const minEvent = new Date('2024-12-01');
-const maxEvent = new Date('2024-12-31');
-
-dateInputValidator.validate("15/12/2024", "eventDate", {
-    format: 'DD/MM/YYYY',
-    delimiters: ['/'],
-    minDate: minEvent,
-    maxDate: maxEvent,
-    allowFuture: true
-});
-```
-
-#### Conference Date (Today or Future Only)
-
-```typescript
-dateInputValidator.validate("2024-12-25", "conferenceDate", {
-    format: 'YYYY-MM-DD',
-    allowPast: false,
-    minDate: new Date() // Must be today or later
-});
-```
-
-#### Project Deadline (Strict Format)
-
-```typescript
-dateInputValidator.validate("31/12/2024", "deadline", {
-    format: 'DD/MM/YYYY',
-    strictMode: true,
-    delimiters: ['/'],
-    allowFuture: true
-});
-```
-
-### Exported Instance
-
-- **`dateInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-## Class `FQDNInputValidator` {#FQDNInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `FQDNInputValidator` class is a specialized validator for Fully Qualified Domain Names (FQDN). It extends `AbstractFieldValidator` and implements `FQDNInputValidatorInterface`. This class follows the **singleton pattern** and provides comprehensive domain name validation including DNS standards compliance, TLD validation, and internationalization support.
-
-### Key Features
-
-- **DNS Standards Compliance:** Validates domain names according to strict DNS rules.
-- **TLD Validation:** Ensures valid top-level domains with optional alphanumeric restrictions.
-- **Internationalization Support:** Supports internationalized domain names (IDN) and Punycode (xn--).
-- **Label Length Validation:** Enforces maximum 63-character limit per domain label.
-- **Character Validation:** Detects invalid characters and full-width character sequences.
-- **Flexible Hyphen Rules:** Configurable hyphen allowance with DNS standard compliance.
-- **Wildcard Support:** Optional wildcard domain support (e.g., *.example.com).
-- **Trailing Dot Handling:** Optional support for trailing dots in FQDN notation.
-- **HTML/PHP Tag Stripping:** Automatically escapes dangerous HTML and PHP tags.
-- **Asynchronous Validation:** Returns a Promise for consistency with async operations.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
-```typescript
-import { fqdnInputValidator } from '@wlindabla/form_validator'
-```
-
-### Basic Domain Validation
-
-```typescript
-const domain = "example.com";
-const fieldName = "website";
-
-await fqdnInputValidator.validate(domain, fieldName, {
-    requireTLD: true
-});
-
-if (!fqdnInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = fqdnInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Domain is valid.`);
-}
-```
-
-### Subdomain Validation
-
-```typescript
-await fqdnInputValidator.validate("api.example.com", "subdomain", {
-    requireTLD: true,
-    allowHyphens: true
-});
-```
-
-### Internationalized Domain Name
-
-```typescript
-// IDN support: münchen.de or Punycode: xn--mnchen-3ya.de
-await fqdnInputValidator.validate("münchen.de", "idn_domain", {
-    requireTLD: true,
-    allowNumericTld: false
-});
-```
-
-### Wildcard Domain
-
-```typescript
-await fqdnInputValidator.validate("*.example.com", "wildcard_domain", {
-    allowWildcard: true,
-    requireTLD: true
-});
-```
-
-### With Trailing Dot (FQDN Notation)
-
-```typescript
-await fqdnInputValidator.validate("example.com.", "fqdn_with_dot", {
-    requireTLD: true,
-    allowTrailingDot: true
-});
-```
-
-### Hyphen-Restricted Domain
-
-```typescript
-// Rejects domains containing hyphens
-await fqdnInputValidator.validate("my-domain.com", "hyphen_free", {
-    requireTLD: true,
-    allowHyphens: false
-});
-```
-
-### Interface
+### Interfaces
 
 #### `FQDNOptions`
 
-Configuration object for domain name validation:
+Options specific to FQDN validation.
+```typescript
+interface FQDNOptions {
+    allowWildcard?: boolean;        // Allow wildcard domains (*.example.com)
+    allowNumericTld?: boolean;      // Allow numeric-only TLDs (e.g., example.123)
+    allowedUnderscores?: boolean;   // Allow underscores in domain labels
+    requireTLD?: boolean;           // Require a valid TLD (default: true)
+    allowTrailingDot?: boolean;     // Allow domain to end with '.' (e.g., example.com.)
+    ignoreMaxLength?: boolean;      // Bypass 63 characters per label limit
+    allowHyphens?: boolean;         // Allow hyphens in domain labels (default: true)
+}
+```
 
-- **`requireTLD?: boolean`** - If `true`, domain must end with a valid TLD (default: `true`).
-- **`allowedUnderscores?: boolean`** - If `true`, underscores are allowed in domain labels (default: `false`).
-- **`allowTrailingDot?: boolean`** - If `true`, trailing dot notation (e.g., `example.com.`) is permitted (default: `false`).
-- **`allowNumericTld?: boolean`** - If `true`, allows numeric-only TLDs (default: `false`).
-- **`allowWildcard?: boolean`** - If `true`, wildcard domains (e.g., `*.example.com`) are allowed (default: `false`).
-- **`ignoreMaxLength?: boolean`** - If `true`, bypasses the 63-character-per-label limit (default: `false`).
-- **`allowHyphens?: boolean`** - If `true`, hyphens are allowed in domain labels (default: `true`). Note: DNS standard permits hyphens only in the middle of labels.
+#### `FQDNInputValidatorInterface`
+
+Contract for FQDN validator implementation.
+```typescript
+interface FQDNInputValidatorInterface {
+    validate: (input: string, targetInputname: string, fqdnOptions: FQDNOptions, ignoreMergeWithDefaultOptions: boolean) => Promise<this>;
+}
+```
+
+### Getting the Validator Instance
+```typescript
+import { fqdnInputValidator } from '@wlindabla/form_validator';
+
+// or
+
+import { FQDNInputValidator } from '@wlindabla/form_validator';
+const validator = FQDNInputValidator.getInstance();
+```
 
 ### Methods
 
-#### `validate(input, targetInputname, fqdnOptions?, ignoreMergeWithDefaultOptions?): Promise<this>`
+#### `getInstance(): FQDNInputValidator` (Static)
 
-Validates a Fully Qualified Domain Name (FQDN) input field.
+Retrieves the single static instance of the FQDNInputValidator. Implements the Singleton pattern.
+
+**Returns:**
+- `FQDNInputValidator` - The unique instance of the validator
+
+**Example:**
+```typescript
+const validator = FQDNInputValidator.getInstance();
+```
+
+---
+
+#### `validate(input: string, targetInputname: string, fqdnOptions: FQDNOptions, ignoreMergeWithDefaultOptions?: boolean): Promise<this>`
+
+Validates a Fully Qualified Domain Name with strict DNS compliance rules. Checks domain structure, TLD validity, character restrictions, and label length constraints.
 
 **Parameters:**
-- **`input`** (`string`): The input string representing the domain name (e.g., `example.com`).
-- **`targetInputname`** (`string`): The name/identifier of the domain field for error reporting.
-- **`fqdnOptions?`** (`FQDNOptions`): Optional configuration object containing validation rules.
-- **`ignoreMergeWithDefaultOptions?`** (`boolean`, optional): If `true`, default options are not merged. Defaults to `false`.
 
-**Returns:** A Promise resolving to the current instance for method chaining.
+- `input` (string): The domain name string to validate (e.g., `example.com`)
+- `targetInputname` (string): The name or identifier of the input field in the form
+- `fqdnOptions` (FQDNOptions): Configuration options for FQDN validation:
+  - `requireTLD` (boolean): Domain must end with valid TLD (default: true)
+  - `allowedUnderscores` (boolean): Allow underscores in labels (default: false)
+  - `allowTrailingDot` (boolean): Allow trailing dot (default: false)
+  - `allowNumericTld` (boolean): Allow numeric-only TLDs (default: false)
+  - `allowWildcard` (boolean): Allow wildcard domains (default: false)
+  - `ignoreMaxLength` (boolean): Bypass 63-character per label limit (default: false)
+  - `allowHyphens` (boolean): Allow hyphens in labels (default: true)
+- `ignoreMergeWithDefaultOptions` (boolean, optional): Skip merging with default options (default: false)
 
-**Validation Flow:**
-1. Clears previous field state.
-2. Merges provided options with defaults.
-3. Escapes HTML and PHP tags from input.
-4. Removes trailing dot (if enabled).
-5. Removes wildcard prefix (if enabled).
-6. Extracts and validates TLD format and content.
-7. For each domain label:
-   - Validates label length (≤ 63 characters).
-   - Checks for invalid characters and full-width sequences.
-   - Enforces DNS hyphen rules (no leading/trailing hyphens, except `xn--`).
-   - Validates hyphen allowance setting.
-   - Validates underscore restrictions.
+**Returns:**
+- `Promise<this>` - Promise resolving to current instance for method chaining
 
-**Error Scenarios:**
+**Validation Checks:**
 
-| Condition | Error Message |
-|-----------|---------------|
-| Missing or invalid TLD | "the hostname [domain] does not contain a valid top-level domain." |
-| Invalid TLD format | "[domain] has an invalid top-level domain (TLD). Only alphabetic or internationalized TLDs are allowed." |
-| TLD contains spaces | "[domain] must not use a TLD with spaces" |
-| Numeric TLD not allowed | "[domain] must not use a numeric TLD." |
-| Label exceeds 63 characters | "[domain] contains a label longer than 63 characters." |
-| Invalid characters | "[domain] contains invalid characters." |
-| Full-width characters | "[domain] contains full-width characters." |
-| Hyphen at start/end | "[domain] contains a label starting or ending with '-'." |
-| Hyphens not allowed | "[domain] must not contain hyphens ('-') as this is disallowed by settings." |
-| Underscores not allowed | "[domain] must not contain underscores." |
+1. Clears previous validation state
+2. Sanitizes input (escapes HTML/PHP tags)
+3. Handles trailing dot if allowed
+4. Handles wildcard prefix if allowed
+5. Validates TLD presence and format
+6. Checks for numeric-only TLDs
+7. Validates each label for:
+   - Maximum length (63 characters per label)
+   - Valid characters (alphanumeric, hyphens, underscores, international chars)
+   - No full-width characters
+   - No leading/trailing hyphens (except Punycode `xn--`)
+   - No underscores if not allowed
+   - No hyphens if not allowed
+
+**Example:**
+```typescript
+import { fqdnInputValidator } from '@wlindabla/form_validator';
+
+// Basic domain validation
+await fqdnInputValidator.validate('example.com', 'domain', {
+    requireTLD: true,
+    allowHyphens: true
+});
+
+// Allow wildcard domains
+await fqdnInputValidator.validate('*.example.com', 'wildcard', {
+    allowWildcard: true,
+    requireTLD: true
+});
+
+// Strict DNS compliance
+await fqdnInputValidator.validate('my-subdomain.example.org', 'fqdn', {
+    requireTLD: true,
+    allowedUnderscores: false,
+    allowHyphens: true,
+    ignoreMaxLength: false
+});
+
+// Allow trailing dot
+await fqdnInputValidator.validate('example.com.', 'domain', {
+    allowTrailingDot: true,
+    requireTLD: true
+});
+
+// International domain name
+await fqdnInputValidator.validate('xn--bcher-kva.example.com', 'idn', {
+    requireTLD: true,
+    allowHyphens: true
+});
+
+// Relaxed validation
+await fqdnInputValidator.validate('custom_domain.local', 'customDomain', {
+    allowedUnderscores: true,
+    allowNumericTld: true,
+    ignoreMaxLength: true
+});
+```
+
+### Complete Example
+```typescript
+import { fqdnInputValidator } from '@wlindabla/form_validator';
+
+async function validateDomainForm(formData) {
+    // Validate primary domain (strict)
+    await fqdnInputValidator.validate(formData.primaryDomain, 'primaryDomain', {
+        requireTLD: true,
+        allowedUnderscores: false,
+        allowHyphens: true,
+        allowWildcard: false,
+        ignoreMaxLength: false
+    });
+
+    // Validate wildcard subdomain
+    await fqdnInputValidator.validate(formData.wildcardDomain, 'wildcardDomain', {
+        allowWildcard: true,
+        requireTLD: true,
+        allowHyphens: true,
+        allowedUnderscores: false
+    });
+
+    // Validate with trailing dot allowed
+    await fqdnInputValidator.validate(formData.fqdnWithDot, 'fqdnWithDot', {
+        allowTrailingDot: true,
+        requireTLD: true
+    });
+
+    // Validate internal domain (more relaxed)
+    await fqdnInputValidator.validate(formData.internalDomain, 'internalDomain', {
+        requireTLD: false,
+        allowedUnderscores: true,
+        allowHyphens: true
+    });
+
+    // Check validation results
+    const primaryState = fqdnInputValidator.getState('primaryDomain');
+    if (!primaryState.isValid) {
+        console.log('Primary domain errors:', primaryState.errors);
+    }
+
+    const wildcardState = fqdnInputValidator.getState('wildcardDomain');
+    if (!wildcardState.isValid) {
+        console.log('Wildcard domain errors:', wildcardState.errors);
+    }
+}
+
+// Usage
+validateDomainForm({
+    primaryDomain: 'example.com',
+    wildcardDomain: '*.api.example.com',
+    fqdnWithDot: 'mail.example.org.',
+    internalDomain: 'internal_server.local'
+});
+```
 
 ### Default Options
 
-When options are merged with defaults:
-
+When default options are merged (when `ignoreMergeWithDefaultOptions` is `false`), the following defaults are applied:
 ```typescript
 {
-    requireTLD: true,           // Domain must have a TLD (.com, .org, etc.)
-    allowedUnderscores: false,  // Underscores forbidden (DNS standard)
-    allowTrailingDot: false,    // Trailing dot forbidden
-    allowNumericTld: false,     // Numeric-only TLDs forbidden
-    allowWildcard: false,       // Wildcard domains forbidden
-    ignoreMaxLength: false,     // Enforce 63-char-per-label limit
-    allowHyphens: true          // Hyphens allowed (DNS standard)
+    requireTLD: true,              // Domain must have a TLD (e.g., .com)
+    allowedUnderscores: false,     // Underscores not allowed (invalid in DNS)
+    allowTrailingDot: false,       // Trailing dot not allowed
+    allowNumericTld: false,        // Numeric-only TLDs not allowed
+    allowWildcard: false,          // Wildcard domains not allowed
+    ignoreMaxLength: false,        // Each label must be ≤ 63 characters
+    allowHyphens: true             // Hyphens are DNS standard (default: true)
 }
 ```
 
-### Examples
+### Validation Rules Detail
 
-#### Corporate Email Domain
+**TLD Requirements:**
+- Must have at least 2 parts separated by dot
+- TLD must be alphabetic (or internationalized/Punycode format)
+- No spaces in TLD
+- Optional numeric TLD restriction
 
-```typescript
-await fqdnInputValidator.validate("company.com", "email_domain", {
-    requireTLD: true,
-    allowHyphens: true,
-    allowWildcard: false
-});
-```
+**Label Validation:**
+- Each label must not exceed 63 characters (DNS standard)
+- Valid characters: alphanumeric, hyphens, underscores, international characters
+- No full-width characters allowed
+- Hyphens cannot appear at start or end (except `xn--` for Punycode)
+- Underscores allowed only if `allowedUnderscores: true`
 
-#### API Subdomain with Strict Rules
-
-```typescript
-await fqdnInputValidator.validate("api.production.example.com", "api_domain", {
-    requireTLD: true,
-    allowHyphens: false,
-    allowedUnderscores: false,
-    ignoreMaxLength: false
-});
-```
-
-#### Internationalized Domain Support
-
-```typescript
-// Supports both unicode and Punycode (xn--)
-await fqdnInputValidator.validate("日本.jp", "intl_domain", {
-    requireTLD: true,
-    allowNumericTld: false
-});
-```
-
-#### Production DNS Record
-
-```typescript
-await fqdnInputValidator.validate("example.com.", "dns_record", {
-    requireTLD: true,
-    allowTrailingDot: true,
-    allowHyphens: true
-});
-```
-
-### DNS Standards Reference
-
-- **Label**: Part of domain between dots (max 63 characters)
-- **TLD**: Top-level domain (e.g., .com, .org, .fr)
-- **IDN**: Internationalized Domain Names (Unicode support)
-- **Punycode**: ASCII-compatible encoding of IDN (xn-- prefix)
-- **FQDN**: Fully Qualified Domain Name with trailing dot
+**Special Handling:**
+- Wildcard prefix (`*.`) removed before validation if `allowWildcard: true`
+- Trailing dot (`.`) removed before validation if `allowTrailingDot: true`
+- HTML/PHP tags automatically escaped/stripped
 
 ### Exported Instance
 
-- **`fqdnInputValidator`**: The singleton instance ready for immediate use throughout your application.
-
-## Class `EmailInputValidator` {#EmailInputValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
-
-The `EmailInputValidator` class is a specialized validator for email addresses. It extends `AbstractFieldValidator` and implements `EmailInputValidatorInterface`. This class follows the **singleton pattern** and provides comprehensive email validation including RFC 2822 compliance, display name support, domain validation, IP address support, and host whitelist/blacklist functionality.
-
-### Key Features
-
-- **RFC 2822 Compliance:** Validates email format according to RFC 2822 standards.
-- **Display Name Support:** Optional validation for display names (e.g., "John Doe <john@example.com>").
-- **UTF-8 Local Part Support:** Supports internationalized email addresses.
-- **Quoted Local Part:** Validates quoted email local parts.
-- **IP Address Domains:** Optional support for email domains using IP addresses (e.g., user@[192.168.1.1]).
-- **Host Whitelist/Blacklist:** Control which domains are allowed or forbidden.
-- **Blacklisted Characters:** Define forbidden characters in email local parts.
-- **FQDN Validation:** Delegates domain validation to `FQDNInputValidator`.
-- **Length Constraints:** Validates RFC-compliant length limits (64 chars local, 254 chars total).
-- **Asynchronous Validation:** Returns a Promise for domain verification.
-- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
-
-### Getting an Instance
-
+A pre-instantiated singleton instance is exported as `fqdnInputValidator`:
 ```typescript
-import { emailInputValidator } from '@wlindabla/form_validator'
+export const fqdnInputValidator = FQDNInputValidator.getInstance();
 ```
 
-### Basic Email Validation
+Use this directly in your application for immediate access without needing to call `getInstance()` manually.
 
-```typescript
-const email = "john.doe@example.com";
-const fieldName = "email";
+### DNS Standards Reference
 
-await emailInputValidator.validate(email, fieldName, {
-    requiredInput: true
-});
+- **RFC 1035:** Domain Names - Implementation and Specification
+- **RFC 3492:** Punycode - Internationalized Domain Names (Punycode)
+- **RFC 5890:** Internationalized Domain Names for Applications (IDNA)
 
-if (!emailInputValidator.isFieldValid(fieldName)) {
-    const {isValid, errors} = emailInputValidator.getState(fieldName);
-    console.log(`Validation errors:`, errors);
-} else {
-    console.log(`Email is valid.`);
-}
-```
+---
 
-### Email with Display Name
+## Email Input Validator
 
-```typescript
-await emailInputValidator.validate(
-    "John Doe <john@example.com>",
-    "contact_email",
-    {
-        allowDisplayName: true,
-        requiredInput: true
-    }
-);
-```
+### Overview
 
-### Required Display Name
+The `EmailInputValidator` class is a specialized validator for email input fields. It extends `AbstractFieldValidator` and implements the Singleton pattern. It provides comprehensive email validation with support for complex email formats, display names, domain whitelisting/blacklisting, and RFC 2822 compliance.
 
-```typescript
-await emailInputValidator.validate(
-    "Jane Smith <jane.smith@company.com>",
-    "sender_email",
-    {
-        requireDisplayName: true
-    }
-);
-// Error if no display name present
-```
+### Features
 
-### Email with Host Whitelist
+- **Singleton Pattern:** Ensures a single validator instance throughout the application
+- **RFC 2822 Compliance:** Validates email format according to RFC 2822 standards
+- **Display Name Support:** Handles email addresses with display names (e.g., "John Doe <john@example.com>")
+- **Domain Validation:** Integrates FQDN validation for domain part
+- **IP Domain Support:** Optional support for IP addresses as domain (e.g., user@[192.168.1.1])
+- **Host Filtering:** Whitelist and blacklist specific email domains
+- **UTF-8 Support:** Optional UTF-8 character support in local part
+- **Quoted Local Part:** Support for quoted email local parts (e.g., "user name"@example.com)
+- **Character Blacklisting:** Reject emails containing specific forbidden characters
+- **Asynchronous Support:** Validate method returns a Promise for async workflows
+- **Method Chaining:** Returns Promise<this> for fluent API usage
 
-```typescript
-// Only allow corporate domain emails
-await emailInputValidator.validate("employee@company.com", "work_email", {
-    hostWhitelist: ["company.com", "subsidiary.com"],
-    requiredInput: true
-});
-```
-
-### Email with Host Blacklist
-
-```typescript
-// Reject disposable email services
-await emailInputValidator.validate("user@gmail.com", "registration_email", {
-    hostBlacklist: ["tempmail.com", "10minutemail.com", /^.*\.temporary\..*$/],
-    requiredInput: true
-});
-```
-
-### IP Address Domain Support
-
-```typescript
-await emailInputValidator.validate("user@[192.168.1.100]", "server_email", {
-    allowIpDomain: true,
-    requiredInput: true
-});
-```
-
-### UTF-8 Local Part (Internationalized)
-
-```typescript
-await emailInputValidator.validate("françois@example.fr", "intl_email", {
-    allowUtf8LocalPart: true
-});
-```
-
-### Quoted Local Part
-
-```typescript
-// Supports special characters when quoted
-await emailInputValidator.validate(
-    '"john..doe"@example.com',
-    "quoted_email",
-    {
-        allowQuotedLocal: true
-    }
-);
-```
-
-### Blacklisted Characters
-
-```typescript
-// Reject emails containing specific characters in local part
-await emailInputValidator.validate("user@example.com", "filtered_email", {
-    blacklistedChars: "*#!",
-    requiredInput: true
-});
-```
-
-### Interface
+### Interfaces
 
 #### `EmailInputOptions`
 
-Extends `FQDNOptions` and `TextInputOptions` with email-specific configuration:
+Extended options specific to email input validation.
+```typescript
+interface EmailInputOptions extends FQDNOptions, TextInputOptions {
+    allowUtf8LocalPart?: boolean;       // Allow UTF-8 characters in local part
+    allowIpDomain?: boolean;            // Allow IP addresses as domain
+    allowQuotedLocal?: boolean;         // Allow quoted local part
+    ignoreMaxLength?: boolean;          // Bypass length validation
+    hostBlacklist?: Array<string | RegExp>;  // Blacklisted email domains
+    hostWhitelist?: Array<string | RegExp>;  // Whitelisted email domains
+    blacklistedChars?: string;          // Forbidden characters in local part
+    requireDisplayName?: boolean;       // Require display name in email
+    allowDisplayName?: boolean;         // Allow optional display name
+}
+```
 
-**Email-Specific Options:**
-- **`allowUtf8LocalPart?: boolean`** - Allow non-ASCII characters in local part (default: `true`).
-- **`allowIpDomain?: boolean`** - Allow IP addresses as email domain (default: `false`).
-- **`allowQuotedLocal?: boolean`** - Allow quoted local part syntax (default: `true`).
-- **`ignoreMaxLength?: boolean`** - Bypass RFC length limits (default: `false`).
-- **`hostBlacklist?: Array<string | RegExp>`** - Array of forbidden domains or patterns.
-- **`hostWhitelist?: Array<string | RegExp>`** - Array of allowed domains or patterns (if set, only these are allowed).
-- **`blacklistedChars?: string`** - String of forbidden characters in local part.
-- **`requireDisplayName?: boolean`** - If `true`, display name is mandatory (default: `false`).
-- **`allowDisplayName?: boolean`** - If `true`, display name is optional but allowed (default: `false`).
+#### `EmailInputValidatorInterface`
 
-**Inherited from FQDNOptions:**
-- `requireTLD`, `allowedUnderscores`, `allowTrailingDot`, `allowNumericTld`, `allowWildcard`, `allowHyphens`
+Contract for email validator implementation.
+```typescript
+interface EmailInputValidatorInterface {
+    validate: (datainput: string, targetInputname: string, optionsinputemail: EmailInputOptions) => Promise<this>;
+}
+```
 
-**Inherited from TextInputOptions:**
-- `requiredInput`, `minLength`, `maxLength`, `errorMessageInput`, `egAwait`
+### Getting the Validator Instance
+```typescript
+import { emailInputValidator } from '@wlindabla/form_validator';
+
+// or
+
+import { EmailInputValidator } from '@wlindabla/form_validator';
+const validator = EmailInputValidator.getInstance();
+```
 
 ### Methods
 
-#### `validate(datainput, targetInputname, optionsinputemail): Promise<this>`
+#### `getInstance(): EmailInputValidator` (Static)
 
-Validates an email address with comprehensive RFC 2822 compliance and configurable rules.
+Retrieves the single static instance of the EmailInputValidator. Implements the Singleton pattern.
+
+**Returns:**
+- `EmailInputValidator` - The unique instance of the validator
+
+**Example:**
+```typescript
+const validator = EmailInputValidator.getInstance();
+```
+
+---
+
+#### `validate(datainput: string, targetInputname: string, optionsinputemail: EmailInputOptions): Promise<this>`
+
+Validates an email input field with comprehensive checks for format, display name, domain validity, and domain filtering. Supports both standard emails and IP-based domain emails.
 
 **Parameters:**
-- **`datainput`** (`string`): The email address to validate.
-- **`targetInputname`** (`string`): The name/identifier of the email field.
-- **`optionsinputemail`** (`EmailInputOptions`): Configuration object containing validation rules.
 
-**Returns:** A Promise resolving to the current instance for method chaining.
+- `datainput` (string): The email address string to validate (e.g., `john@example.com` or `"John Doe" <john@example.com>`)
+- `targetInputname` (string): The name or identifier of the input field in the form
+- `optionsinputemail` (EmailInputOptions): Configuration options for email validation:
+  - `requiredInput` (boolean): Email field is mandatory (default: true)
+  - `minLength` (number): Minimum email length (default: 6)
+  - `maxLength` (number): Maximum email length (default: 254)
+  - `allowUtf8LocalPart` (boolean): Allow UTF-8 in local part (default: true)
+  - `allowIpDomain` (boolean): Allow IP addresses as domain (default: false)
+  - `allowQuotedLocal` (boolean): Allow quoted local parts (default: true)
+  - `ignoreMaxLength` (boolean): Skip length validation (default: false)
+  - `hostBlacklist` (string | RegExp[]): Blacklisted domains
+  - `hostWhitelist` (string | RegExp[]): Whitelisted domains (only these allowed)
+  - `blacklistedChars` (string): Forbidden characters in local part
+  - `requireDisplayName` (boolean): Display name mandatory (default: false)
+  - `allowDisplayName` (boolean): Display name optional (default: false)
+  - `errorMessageInput` (string): Custom error message
+  - `egAwait` (string): Example email format
+
+**Returns:**
+- `Promise<this>` - Promise resolving to current instance for method chaining
 
 **Validation Flow:**
-1. Clears previous field state.
-2. Merges provided options with defaults.
-3. Extracts and validates display name (if enabled).
-4. Validates email format using regex.
-5. Validates length constraints (6-254 characters default).
-6. Splits email into local and domain parts.
-7. Checks host whitelist/blacklist.
-8. Validates part lengths (local ≤ 64, domain ≤ 254).
-9. Handles IP address domains (if enabled).
-10. Validates FQDN domain via `FQDNInputValidator`.
-11. Checks blacklisted characters.
-12. Validates local part format (quoted or standard).
 
-**Error Scenarios:**
+1. Clears previous validation state
+2. Merges options with defaults
+3. Extracts and validates display name if present
+4. Validates overall email format using regex
+5. Validates basic length constraints
+6. Splits email into local and domain parts
+7. Checks domain against whitelist/blacklist
+8. Validates byte lengths of local and domain parts
+9. Handles IP domain validation (if applicable)
+10. Validates FQDN domain structure (if not IP domain)
+11. Validates blacklisted characters in local part
+12. Validates local part format (quoted or standard)
 
-| Condition | Error Message |
-|-----------|---------------|
-| Missing display name (required) | "field must include a display name like \"John Doe <example@email.com>\"" |
-| Invalid display name format | "Display name contains illegal characters and must be enclosed in double quotes." |
-| Blacklisted domain | "field contains a blacklisted domain: \"[domain]\"." |
-| Domain not in whitelist | "[domain] must belong to one of the allowed domains." |
-| Part length exceeded | "[email] is too long. The local part must be ≤ 64 characters and the domain ≤ 254 characters." |
-| IP domain not allowed | "[domain] must not contain an IP domain." |
-| Invalid IP address | "[ip] contains an invalid IP address in domain." |
-| Invalid local part | "The segment \"[part]\" in the local part of the email is invalid." |
-| Blacklisted character | "[local] must not contain the forbidden character(s): [chars]" |
+**Example:**
+```typescript
+import { emailInputValidator } from '@wlindabla/form_validator';
+
+// Basic email validation
+await emailInputValidator.validate('john@example.com', 'email', {
+    requiredInput: true
+});
+
+// Email with display name (required)
+await emailInputValidator.validate('"John Doe" <john@example.com>', 'contactEmail', {
+    requireDisplayName: true,
+    allowDisplayName: true
+});
+
+// Email with display name (optional)
+await emailInputValidator.validate('John Doe <john@example.com>', 'senderEmail', {
+    allowDisplayName: true,
+    requireDisplayName: false
+});
+
+// Strict domain whitelist
+await emailInputValidator.validate('user@company.com', 'corporateEmail', {
+    hostWhitelist: ['company.com', 'subsidiary.com'],
+    requiredInput: true
+});
+
+// Block specific domains
+await emailInputValidator.validate('user@example.com', 'email', {
+    hostBlacklist: [/.*@gmail\.com/, /.*@yahoo\.com/],
+    requiredInput: true
+});
+
+// UTF-8 support with custom characters
+await emailInputValidator.validate('françois@example.com', 'internationalEmail', {
+    allowUtf8LocalPart: true,
+    requiredInput: true
+});
+
+// IP domain support
+await emailInputValidator.validate('user@[192.168.1.1]', 'ipEmail', {
+    allowIpDomain: true,
+    requiredInput: true
+});
+
+// Quoted local part
+await emailInputValidator.validate('"user name"@example.com', 'quotedEmail', {
+    allowQuotedLocal: true,
+    requiredInput: true
+});
+
+// Blacklisted characters
+await emailInputValidator.validate('user@example.com', 'email', {
+    blacklistedChars: '<>()\\',
+    requiredInput: true
+});
+```
+
+### Complete Example
+```typescript
+import { emailInputValidator } from '@wlindabla/form_validator';
+
+async function validateContactForm(formData) {
+    // Validate primary email (simple format)
+    await emailInputValidator.validate(formData.primaryEmail, 'primaryEmail', {
+        requiredInput: true,
+        allowDisplayName: false,
+        hostBlacklist: [/.*@tempmail\..*/, /.*@throwaway\..*/)
+    });
+
+    // Validate contact email (with optional display name)
+    await emailInputValidator.validate(formData.contactEmail, 'contactEmail', {
+        requiredInput: false,
+        allowDisplayName: true,
+        requireDisplayName: false
+    });
+
+    // Validate corporate email (whitelist only)
+    await emailInputValidator.validate(formData.corporateEmail, 'corporateEmail', {
+        requiredInput: true,
+        hostWhitelist: ['company.com', 'company.fr', 'subsidiary.com'],
+        allowUtf8LocalPart: true
+    });
+
+    // Validate sender email (with required display name)
+    await emailInputValidator.validate(formData.senderEmail, 'senderEmail', {
+        requireDisplayName: true,
+        allowDisplayName: true,
+        hostBlacklist: [/.*@example\.com/]
+    });
+
+    // Check validation results
+    const primaryState = emailInputValidator.getState('primaryEmail');
+    if (!primaryState.isValid) {
+        console.log('Primary email errors:', primaryState.errors);
+    }
+
+    const contactState = emailInputValidator.getState('contactEmail');
+    if (!contactState.isValid) {
+        console.log('Contact email errors:', contactState.errors);
+    }
+}
+
+// Usage
+validateContactForm({
+    primaryEmail: 'john.doe@example.com',
+    contactEmail: 'Jane Smith <jane.smith@example.com>',
+    corporateEmail: 'françois@company.com',
+    senderEmail: 'CEO Name <ceo@company.com>'
+});
+```
 
 ### Display Name Format
 
-Supported display name formats (RFC 2822):
+The validator supports email addresses with display names in the following formats:
+```typescript
+// Standard format
+"John Doe" <john@example.com>
 
+// Without quotes
+John Doe <john@example.com>
+
+// With special characters (must be quoted and escaped)
+"John \"The Boss\" Doe" <john@example.com>
+
+// Simple email (no display name)
+john@example.com
 ```
+
+**Display Name Rules (RFC 2822):**
+- Cannot be empty or whitespace-only
+- Special characters (`.`, `"`, `;`, `<`, `>`) require quotes
+- Quotes inside display name must be escaped with backslash (`\"`)
+- Leading and trailing whitespace is trimmed
+
+### Local Part Validation
+
+The validator supports three local part formats:
+
+**Standard Format:**
+```typescript
+simple.email@example.com
+user+tag@example.com
+```
+
+**Quoted Format:**
+```typescript
+"user name"@example.com
+"user.with.dots"@example.com
+```
+
+**UTF-8 Format (if enabled):**
+
+```typescript
+françois@example.com
+josé@example.com
+用户@example.com
+```
+
+```typescript
 John Doe <john@example.com>
 "John, Doe" <john@example.com>
 john@example.com  (no display name)
@@ -1402,28 +1864,41 @@ Special characters in display names require:
 ### Local Part Variants
 
 **Standard Format:**
-```
+
+```typescript
 user@example.com
 john.doe@example.com
 test+tag@example.com
 ```
 
 **Quoted Format:**
-```
+```typescript
 "user name"@example.com
 "user+special"@example.com
 ```
 
 **UTF-8 (International):**
-```
+```typescript
 françois@example.fr
 用户@example.cn
+```
+### Domain Validation
+
+**Standard Domain:**
+```typescript
+user@example.com
+user@subdomain.example.com
+```
+
+**IP Domain (if enabled):**
+```typescript
+user@[192.168.1.1]
+user@[IPv6:2001:db8::1]
 ```
 
 ### Default Options
 
 When options are merged with defaults:
-
 ```typescript
 {
     allowUtf8LocalPart: true,
@@ -1440,6 +1915,21 @@ When options are merged with defaults:
     maxLength: 254
 }
 ```
+
+### Exported Instance
+
+A pre-instantiated singleton instance is exported as `emailInputValidator`:
+```typescript
+export const emailInputValidator = EmailInputValidator.getInstance();
+```
+
+Use this directly in your application for immediate access without needing to call `getInstance()` manually.
+
+### RFC Standards Reference
+
+- **RFC 2822:** Internet Message Format - https://tools.ietf.org/html/rfc2822
+- **RFC 5321:** Simple Mail Transfer Protocol (SMTP)
+- **RFC 5322:** Internet Message Format
 
 ### Examples
 
@@ -1494,18 +1984,17 @@ await emailInputValidator.validate(
 );
 ```
 
-### RFC References
+### Dependencies
 
-- **RFC 2822:** Internet Message Format - [https://tools.ietf.org/html/rfc2822](https://tools.ietf.org/html/rfc2822)
-- **Display Name Syntax:** Appendix A.1.2
+- `FQDNInputValidator` - For domain validation
+- `TextInputValidator` - For basic text validation
+- Utility functions: `isIP()`, `checkHost()`, `isByteLength()`, `deepMergeAll()`
 
-### Exported Instance
+---
 
-- **`emailInputValidator`**: The singleton instance ready for immediate use throughout your application.
-  ## Class `URLInputValidator` {#URLInputValidator}
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## URL Input Validator 
 
 The `URLInputValidator` class is a specialized validator for URL input fields. It extends `AbstractFieldValidator` and implements `URLInputValidatorInterface`. This class follows the **singleton pattern** and provides comprehensive URL validation including protocol enforcement, host validation, IP/localhost support, query parameter control, and host whitelist/blacklist functionality.
 
@@ -1807,10 +2296,10 @@ await urlInputValidator.validate(
 
 - **`urlInputValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Class `SelectValidator` {#SelectValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Select Validator
 
 The `SelectValidator` class is a specialized validator for select/dropdown input fields. It extends `AbstractFieldValidator` and implements `SelectValidatorInterface`. This class follows the **singleton pattern** and provides validation to ensure that selected values belong to a predefined list of allowed options. Supports both single and multiple selections.
 
@@ -2048,10 +2537,11 @@ selectValidator.validate("credit_card", "paymentMethod", {
 
 - **`selectValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Class `CheckBoxValidator` {#CheckBoxValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+
+## CheckBox Validator
 
 The `CheckBoxValidator` class is a specialized validator for checkbox input groups. It extends `AbstractFieldValidator` and implements `CheckBoxValidatorInterface`. This class follows the **singleton pattern** and provides validation to ensure that checkbox groups meet specified selection criteria such as minimum/maximum selections and required selections. Delegates to `SelectValidator` for option validation.
 
@@ -2323,10 +2813,10 @@ checkboxValidator.validate(dietaryCount, "dietary_restrictions", {
 
 - **`checkboxValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Class `RadioValidator` {#RadioValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Radio Validator
 
 The `RadioValidator` class is a specialized validator for radio button input groups. It extends `AbstractFieldValidator` and follows the **singleton pattern**. This validator provides validation to ensure that a radio button selection is made when required. Since radio buttons enforce single selection by design, this validator focuses on the required selection constraint.
 
@@ -2538,15 +3028,376 @@ radioValidator.validate(themeValue, "theme", {
     required: false
 });
 ```
-
 ### Exported Instance
 
 - **`radioValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Abstract Class `AbstractMediaValidator` {#AbstractMediaValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Date Input Validator
+
+The `DateInputValidator` class is a specialized validator for date input fields. It extends `AbstractFieldValidator` and implements `DateInputValidatorInterface`. This validator follows the **singleton pattern** and provides comprehensive date validation including format checking, date range validation, and temporal constraints (past/future dates).
+
+### Key Features
+
+- **Flexible Format Support:** Validates dates against custom format patterns (e.g., "YYYY/MM/DD", "DD-MM-YYYY").
+- **Strict Mode:** Optional strict format matching that validates exact string length.
+- **Multi-Delimiter Support:** Handles various delimiters (/, -, etc.) automatically.
+- **Date Range Validation:** Enforces minimum and maximum date boundaries.
+- **Temporal Constraints:** Control whether past/future dates are allowed.
+- **Two-Digit Year Handling:** Intelligently converts 2-digit years (e.g., "24" → "2024").
+- **Invalid Day Detection:** Validates actual calendar dates (e.g., prevents February 30th).
+- **Comprehensive Error Messages:** Contextual feedback for each validation failure.
+- **Method Chaining:** Returns `this` for fluent API usage.
+- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
+
+### Getting an Instance
+
+```typescript
+import { dateInputValidator } from '@wlindabla/form_validator'
+```
+
+### Basic Date Validation
+
+```typescript
+const dateString = "2024/06/30";
+const fieldName = "eventDate";
+
+dateInputValidator.validate(dateString, fieldName, {
+    format: 'YYYY/MM/DD'
+});
+
+if (!dateInputValidator.isFieldValid(fieldName)) {
+    const {isValid, errors} = dateInputValidator.getState(fieldName);
+    console.log(`Validation errors:`, errors);
+} else {
+    console.log(`Date is valid.`);
+}
+```
+
+### Birthdate Validation (No Future Dates)
+
+```typescript
+dateInputValidator.validate("1990-06-15", "birthdate", {
+    format: 'YYYY-MM-DD',
+    allowFuture: false,
+    maxDate: new Date('2006-01-01') // Must be at least 18 years old
+});
+```
+
+### Date Range Validation
+
+```typescript
+const minDate = new Date('2024-01-01');
+const maxDate = new Date('2024-12-31');
+
+dateInputValidator.validate("2024/06/30", "projectDate", {
+    format: 'YYYY/MM/DD',
+    minDate: minDate,
+    maxDate: maxDate
+});
+```
+
+### Strict Mode Validation
+
+```typescript
+// Requires exact format length match
+dateInputValidator.validate("01/06/2024", "strictDate", {
+    format: 'DD/MM/YYYY',
+    strictMode: true,
+    delimiters: ['/']
+});
+```
+
+### Two-Digit Year Handling
+
+```typescript
+// "24" is converted to "2024", "95" to "1995"
+dateInputValidator.validate("30/06/24", "dateShort", {
+    format: 'DD/MM/YY',
+    delimiters: ['/']
+});
+```
+
+### Future-Only Dates
+
+```typescript
+dateInputValidator.validate("2025-12-25", "futureEvent", {
+    format: 'YYYY-MM-DD',
+    allowPast: false
+});
+```
+
+### Interface
+
+#### `DateInputOptions`
+
+Configuration object for date validation:
+
+- **`format?: string`** - Expected date format pattern (default: 'YYYY/MM/DD'). Examples: 'YYYY-MM-DD', 'DD/MM/YYYY', 'MM-DD-YYYY'.
+- **`minDate?: Date`** - Minimum allowable date (inclusive).
+- **`maxDate?: Date`** - Maximum allowable date (inclusive).
+- **`allowFuture?: boolean`** - If `false`, rejects dates in the future.
+- **`allowPast?: boolean`** - If `false`, rejects dates in the past.
+- **`delimiters?: string[]`** - Array of allowed delimiters (default: ['/', '-']).
+- **`strictMode?: boolean`** - If `true`, the date string length must exactly match the format length.
+
+### Methods
+
+#### `validate(date_input, targetInputname, date_options?): this`
+
+Validates a date string or Date object based on provided formatting and business rules.
+
+**Parameters:**
+- **`date_input`** (`string | Date`): The date to validate. Strings are parsed according to the format option.
+- **`targetInputname`** (`string`): The name/identifier of the date field.
+- **`date_options?`** (`DateInputOptions`): Optional configuration object containing validation rules.
+
+**Returns:** The current instance for method chaining.
+
+**Validation Flow:**
+1. Detects delimiter in both format and input string.
+2. Compares date and format part counts.
+3. Validates each part length matches format (strict or loose mode).
+4. Handles two-digit year conversion using pivot logic (current year as reference).
+5. Creates ISO Date object with UTC timezone.
+6. Validates date exists on actual calendar (catches invalid dates like Feb 30).
+7. Checks minimum and maximum date boundaries.
+8. Validates temporal constraints (past/future allowance).
+
+**Error Scenarios:**
+
+| Condition | Error Message |
+|-----------|---------------|
+| Invalid format pattern | Throws `Error` during development |
+| Length mismatch (strict mode) | "Date does not match required length in strict mode." |
+| Delimiter not found | "Could not detect delimiter in date." |
+| Part count mismatch | "Mismatch between date and format parts." |
+| Part length mismatch | "Invalid part: '[value]' does not match '[format]'" |
+| Negative year | "Negative years are not supported." |
+| Invalid date creation | "Invalid date created from input." |
+| Invalid calendar day | "Day mismatch (invalid day in month)." |
+| Before min date | "The date must be after [minDate]." |
+| After max date | "The date must be before [maxDate]." |
+| Future not allowed | "The date '[date]' cannot be in the future." |
+| Past not allowed | "The date '[date]' cannot be in the past." |
+
+### Format Patterns
+
+Supported format tokens:
+
+- **`YYYY`** - 4-digit year
+- **`YY`** - 2-digit year (auto-converted)
+- **`MM`** - 2-digit month (01-12)
+- **`DD`** - 2-digit day (01-31)
+
+### Examples
+
+#### Event Registration Date
+
+```typescript
+const minEvent = new Date('2024-12-01');
+const maxEvent = new Date('2024-12-31');
+
+dateInputValidator.validate("15/12/2024", "eventDate", {
+    format: 'DD/MM/YYYY',
+    delimiters: ['/'],
+    minDate: minEvent,
+    maxDate: maxEvent,
+    allowFuture: true
+});
+```
+
+#### Conference Date (Today or Future Only)
+
+```typescript
+dateInputValidator.validate("2024-12-25", "conferenceDate", {
+    format: 'YYYY-MM-DD',
+    allowPast: false,
+    minDate: new Date() // Must be today or later
+});
+```
+
+#### Project Deadline (Strict Format)
+
+```typescript
+dateInputValidator.validate("31/12/2024", "deadline", {
+    format: 'DD/MM/YYYY',
+    strictMode: true,
+    delimiters: ['/'],
+    allowFuture: true
+});
+```
+
+### Exported Instance
+
+- **`dateInputValidator`**: The singleton instance ready for immediate use throughout your application.
+
+---
+---
+
+## Number Input Validator
+
+The `NumberInputValidator` class is a specialized validator for numeric input fields. It extends `AbstractFieldValidator` and follows the **singleton pattern**. This validator checks numeric constraints such as minimum/maximum values, step multiples, and can validate against custom regex patterns for format validation.
+
+### Key Features
+
+- **Type-Flexible Input:** Accepts both string and number types; automatically parses strings to floats.
+- **Min/Max Validation:** Enforces minimum and maximum numeric boundaries.
+- **Step Validation:** Ensures values are valid multiples of a specified step.
+- **Regex Pattern Support:** Optional custom regex validation for format checking.
+- **Precision Handling:** Uses epsilon comparison for accurate floating-point validation.
+- **Clear Error Messages:** Provides contextual error messages with validation constraints.
+- **Method Chaining:** Returns `this` for fluent API usage.
+- **Singleton Pattern:** Single globally accessible instance for resource efficiency.
+
+### Getting an Instance
+
+```typescript
+import { numberInputValidator } from '@wlindabla/form_validator'
+```
+
+### Basic Number Validation
+
+```typescript
+const value = 25;
+const fieldName = "age";
+
+numberInputValidator.validate(value, fieldName, {
+    min: 18,
+    max: 100
+});
+
+if (!numberInputValidator.isFieldValid(fieldName)) {
+    const {isValid, errors} = numberInputValidator.getState(fieldName);
+    console.log(`Validation errors:`, errors);
+} else {
+    console.log(`Age is valid.`);
+}
+```
+
+### Validation with Step Constraint
+
+```typescript
+// Only allows values: 0, 5, 10, 15, 20, etc.
+numberInputValidator.validate("15", "quantity", {
+    min: 0,
+    max: 100,
+    step: 5
+});
+```
+
+### Validation with Custom Regex
+
+```typescript
+// Validate a price format (e.g., "19.99")
+const priceRegex = /^\d+(\.\d{2})?$/;
+
+numberInputValidator.validate("29.99", "price", {
+    min: 0,
+    max: 999999,
+    regexValidator: priceRegex
+});
+```
+
+### String Input Parsing
+
+```typescript
+// String inputs are automatically parsed to float
+numberInputValidator.validate("42.5", "score", {
+    min: 0,
+    max: 100
+});
+
+// Invalid numbers are caught
+numberInputValidator.validate("abc", "value", {
+    min: 0,
+    max: 100
+});
+// Error: "Please enter a valid number."
+```
+
+### Interface
+
+#### `NumberOptions`
+
+Configuration object for numeric validation:
+
+- **`min?: number`** - Minimum allowable value (inclusive).
+- **`max?: number`** - Maximum allowable value (inclusive).
+- **`step?: number`** - Required step multiple. Values must be `min + (n * step)` where n ≥ 0.
+- **`regexValidator?: RegExp`** - Optional regex pattern to validate the input format.
+
+### Methods
+
+#### `validate(val, targetInputname, options_number?): this`
+
+Validates a numeric input value against configurable constraints.
+
+**Parameters:**
+- **`val`** (`string | number`): The value to validate. Strings are automatically parsed to floats.
+- **`targetInputname`** (`string`): The name/identifier of the numeric field.
+- **`options_number?`** (`NumberOptions`): Optional configuration object containing validation rules.
+
+**Returns:** The current instance for method chaining.
+
+**Validation Flow:**
+1. Converts string input to float via `parseFloat()`.
+2. Checks if the value is a valid number (`!isNaN`).
+3. Validates against minimum and maximum bounds (if specified).
+4. Validates step constraint with floating-point precision tolerance (epsilon: 1e-8).
+5. Validates against custom regex pattern (if provided).
+
+**Error Scenarios:**
+
+| Condition | Error Message |
+|-----------|---------------|
+| Input is not a number | "Please enter a valid number." |
+| Value below min or above max | "Value must be between [min] and [max]." |
+| Not a multiple of step | "The value [val] must be a multiple of [step]." |
+| Fails regex validation | "The input does not match the expected format." |
+
+### Examples
+
+#### Range Validation
+
+```typescript
+numberInputValidator.validate(50, "age", {
+    min: 0,
+    max: 150
+});
+```
+
+#### Step-Based Validation (Shopping Cart)
+
+```typescript
+// Only allow quantities in increments of 6 (eggs per carton)
+numberInputValidator.validate(12, "quantity", {
+    min: 6,
+    max: 120,
+    step: 6  // Valid: 6, 12, 18, 24...
+});
+```
+
+#### Temperature Validation
+
+```typescript
+numberInputValidator.validate(-5.5, "temperature", {
+    min: -50,
+    max: 50,
+    step: 0.5
+});
+```
+
+### Exported Instance
+
+- **`numberInputValidator`**: The singleton instance ready for immediate use throughout your application.
+
+
+---
+---
+## Abstract Media Validator
 
 The `AbstractMediaValidator` class serves as the foundational base class for all media file validators (images, videos, documents). It extends `AbstractFieldValidator` and implements `MediaValidatorInterface`. This abstract class provides common utilities for validating media files including size validation, extension checking, MIME type validation, file signatures, and dimensional constraints (width/height).
 
@@ -2819,10 +3670,10 @@ AbstractMediaValidator
 - **Async Support:** Handles I/O operations for file analysis.
 - **Fluent API:** Method chaining with `return this`.
 
-## Class `ImageValidator` {#ImageValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Image Validator
 
 The `ImageValidator` class is a specialized validator for image file uploads. It extends `AbstractMediaValidator` and implements `MediaValidatorInterface`. This class follows the **singleton pattern** and provides comprehensive image validation including file signature verification, MIME type checking, dimension constraints, size limits, and extension filtering. Detects image file spoofing through hexadecimal signature analysis.
 
@@ -3137,11 +3988,10 @@ SVG:  3C 3F 78 6D 6C 76 or 3C 73 76 67
 ### Exported Instance
 
 - **`imageValidator`**: The singleton instance ready for immediate use throughout your application.
+---
 
-## Class `DocumentValidator` {#DocumentValidator}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Document Validator
 
 The `DocumentValidator` class is a specialized validator for document file uploads. It extends `AbstractMediaValidator` and follows the **singleton pattern**. This validator provides comprehensive document validation including file signature verification, MIME type checking, and format-specific parsing for PDF, Excel, Word, CSV, and plain text files. Uses industry-standard libraries: pdfjs-dist, xlsx, and papaparse.
 
@@ -3504,10 +4354,10 @@ Excel: 50 4B 03 04 (PK..) or D0 CF 11 E0 (Ñ...)
 
 - **`documentValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Class `VideoValidator` {#VideoValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Video Validator
 
 The `VideoValidator` class is a specialized validator for video file uploads. It extends `AbstractMediaValidator` and implements `VideoValidatorInterface`. This class follows the **singleton pattern** and provides comprehensive video validation including file extension checking, MIME type verification, file size limits, and metadata validation (dimensions and duration).
 
@@ -3849,10 +4699,11 @@ await videoValidator.validate(videoFile, "proProduction", {
 
 - **`videoValidator`**: The singleton instance ready for immediate use throughout your application.
 
-## Class `FormInputValidator` {#FormInputValidator}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+
+## Form Input Validator
 
 The `FormInputValidator` class is the central router and facade of the entire validation system. It implements `FormInputValidatorInterface` and `ContainerValidatorInterface`, following the **singleton pattern**. This class dispatches input data to the appropriate specialized validator based on field type and maintains a registry of validators for centralized error state management.
 
@@ -4320,509 +5171,11 @@ async function handleFormSubmit(e) {
 
 - **`formInputValidator`**: The singleton instance serving as the central validator router for the entire application.
 
-## Class `FieldInputController` {#FieldInputController}
+---
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
 
-The `FieldInputController` class is the DOM adapter/controller for individual form fields. It extends `AbstractFieldController` and implements `FormChildrenValidateInterface`. This class acts as the high-level interface between HTML form elements and the validation engine, managing field validation by routing to the central `FormInputValidator` and automatically inferring validation rules from HTML attributes.
-
-### Key Features
-
-- **DOM Attribute Parsing:** Automatically extracts validation rules from HTML data attributes.
-- **Type-Based Routing:** Routes validation to appropriate validators based on input type.
-- **Intelligent Defaults:** Provides sensible defaults for all field types.
-- **Group Management:** Handles checkbox and radio button groups with container validation.
-- **Field State Management:** Tracks and manages validation state through the error store.
-- **Event Handling:** Emits validation events and supports custom error clearing.
-- **HTML5 Integration:** Supports native HTML5 attributes (min, max, required, pattern, etc.).
-- **Flexible Configuration:** Supports both explicit options and HTML attribute-based configuration.
-- **Method Chaining:** Returns promises for async operations.
-
-### Getting an Instance
-
-```typescript
-// Single field validation
-const controller = new FieldInputController(
-    document.getElementById('emailField'),
-    { requiredInput: true }
-);
-
-// Or let it infer options from attributes
-const controller = new FieldInputController(
-    document.getElementById('passwordField')
-);
-```
-
-### Basic Field Validation
-
-```typescript
-const emailController = new FieldInputController(
-    document.getElementById('email')
-);
-
-await emailController.validate();
-
-if (!emailController.isValid()) {
-    emailController.clearErrorField();
-}
-```
-
-### HTML Attribute Configuration
-
-```html
-<!-- Text field with custom rules -->
-<input 
-    type="text" 
-    name="username" 
-    data-min-length="3"
-    data-max-length="50"
-    pattern="^[a-zA-Z0-9_]+$"
-    required
-/>
-
-<!-- Email field with display name support -->
-<input 
-    type="email" 
-    name="userEmail" 
-    data-allow-display-name="true"
-    data-require-display-name="false"
-/>
-
-<!-- Password with scoring -->
-<input 
-    type="password" 
-    name="password" 
-    data-enable-scoring="true"
-    data-upper-case-allow="true"
-    data-number-allow="true"
-    data-min-length="12"
-/>
-
-<!-- Date field -->
-<input 
-    type="date" 
-    name="eventDate" 
-    data-format-date="YYYY/MM/DD"
-    data-allow-future="true"
-    data-allow-past="false"
-/>
-
-<!-- URL field -->
-<input 
-    type="url" 
-    name="website" 
-    data-allowed-protocols="https,http"
-    data-allow-query-params="true"
-/>
-
-<!-- Phone number -->
-<input 
-    type="tel" 
-    name="phone" 
-    data-default-country="BJ"
-    data-min-length="7"
-    data-max-length="25"
-/>
-
-<!-- Number field -->
-<input 
-    type="number" 
-    name="quantity" 
-    min="1"
-    max="100"
-    step="5"
-/>
-
-<!-- Textarea -->
-<textarea 
-    name="message" 
-    data-min-length="10"
-    data-max-length="500"
-></textarea>
-
-<!-- Select dropdown -->
-<select name="choice">
-    <option value="">-- Select --</option>
-    <option value="option_a">Option A</option>
-    <option value="option_b">Option B</option>
-</select>
-
-<!-- Checkboxes grouped in container -->
-<div id="interests" data-min-allowed="1" data-max-allowed="5">
-    <label><input type="checkbox" name="interests" value="sports" /> Sports</label>
-    <label><input type="checkbox" name="interests" value="music" /> Music</label>
-    <label><input type="checkbox" name="interests" value="reading" /> Reading</label>
-</div>
-
-<!-- Radios grouped in container -->
-<div id="accountType">
-    <label><input type="radio" name="accountType" value="free" /> Free</label>
-    <label><input type="radio" name="accountType" value="premium" /> Premium</label>
-</div>
-
-<!-- Image field -->
-<input 
-    type="file" 
-    name="avatar" 
-    data-allowed-mime-type-accept="image/jpeg,image/png"
-    data-extentions="jpg,png"
-    data-maxsize-file="2"
-    data-min-width="512"
-    data-max-width="2048"
-    data-min-height="512"
-    data-max-height="2048"
-/>
-
-<!-- Video field -->
-<input 
-    type="file" 
-    name="video" 
-    data-allowed-mime-type-accept="video/mp4,video/webm"
-    data-extentions="mp4,webm"
-    data-maxsize-file="100"
-    data-min-width="1280"
-    data-min-height="720"
-/>
-
-<!-- Document field -->
-<input 
-    type="file" 
-    name="document" 
-    data-allowed-mime-type-accept="application/pdf,application/msword"
-    data-maxsize-file="10"
-/>
-```
-
-### Interface
-
-#### `FormChildrenValidateInterface`
-
-Main validation interface for form fields:
-
-- **`isValid(): boolean`** - Checks if field has no validation errors.
-- **`fieldOptionsValidate: OptionsValidate`** - Gets current validation options.
-- **`validate(): Promise<void>`** - Runs validation asynchronously.
-- **`eventValidate(): EventValidate`** - Returns validation trigger event.
-- **`eventClearError(): EventValidate`** - Returns error clearing event.
-- **`clearErrorField(): void`** - Clears visual error state and message.
-
-### Methods
-
-#### `constructor(childrenInput, optionsValidate?)`
-
-Creates a new field controller instance.
-
-**Parameters:**
-- **`childrenInput`** (`HTMLFormChildrenElement`): The DOM element to validate.
-- **`optionsValidate?`** (`OptionsValidate`): Optional explicit validation options.
-
-#### `validate(): Promise<void>`
-
-Runs validation on the field by routing to appropriate validator.
-
-**Behavior:**
-1. Skips validation if field is empty and not required.
-2. Collects validation options (from HTML attributes or defaults).
-3. Routes to `FormInputValidator.allTypesValidator()`.
-4. Emits validation event with result.
-
-#### `fieldOptionsValidate: OptionsValidate`
-
-Getter that provides validation options inferred from HTML attributes.
-
-**Type-Specific Option Generation:**
-- `text` - TextInputOptions
-- `email` - EmailInputOptions
-- `password` - PasswordRuleOptions with scoring
-- `tel` - TelInputOptions
-- `url` - URLOptions with protocol control
-- `date` - DateInputOptions with format
-- `number` - NumberOptions with min/max/step
-- `select` - SelectOptions from option elements
-- `checkbox` - OptionsCheckbox from container
-- `radio` - OptionsRadio from container
-- `textarea` - TextInputOptions
-- `image` - OptionsImage with dimensions
-- `video` - OptionsMediaVideo with dimensions
-- `document` - OptionsFile
-- `fqdn` - FQDNOptions
-
-#### `isValid(): boolean`
-
-Checks if field validation passed.
-
-**Returns:** `true` if no errors, `false` if validation failed.
-
-### HTML Data Attributes
-
-#### Common Attributes (All Fields)
-
-- **`data-min-length`** - Minimum string length
-- **`data-max-length`** - Maximum string length
-- **`data-error-message`** - Custom error message
-- **`data-escape-strip-html-php-tags`** - Whether to escape HTML/PHP (default: true)
-- **`pattern`** - Regex pattern validation
-- **`required`** - Field is mandatory
-- **`event-clear-error`** - Event to clear errors (default: "change")
-
-#### Email-Specific Attributes
-
-- **`data-allow-utf8-local-part`** - Allow UTF-8 in local part (default: true)
-- **`data-allow-ip-domain`** - Allow IP addresses (default: false)
-- **`data-allow-quoted-local`** - Allow quoted format (default: true)
-- **`data-allow-display-name`** - Allow display names (default: false)
-- **`data-require-display-name`** - Require display names (default: false)
-- **`data-host-whitelist`** - Comma-separated allowed domains
-- **`data-host-blacklist`** - Comma-separated forbidden domains
-- **`data-blacklisted-chars`** - Forbidden characters in local part
-
-#### URL-Specific Attributes
-
-- **`data-allowed-protocols`** - Comma-separated protocols (default: https)
-- **`data-allow-localhost`** - Allow localhost (default: false)
-- **`data-allow-ip`** - Allow IP addresses (default: false)
-- **`data-allow-query-params`** - Allow query strings (default: true)
-- **`data-allow-hash`** - Allow fragments (default: true)
-- **`data-allow-protocol-relative-urls`** - Allow //example.com (default: false)
-- **`data-require-protocol`** - Protocol required (default: false)
-- **`data-require-valid-protocol`** - Protocol must be in allowed list (default: true)
-- **`data-require-host`** - Host required (default: true)
-- **`data-require-port`** - Port required (default: false)
-- **`data-disallow-auth`** - Reject credentials (default: false)
-- **`data-max-allowed-length`** - Max URL length (default: 2084)
-- **`data-validate-length`** - Validate length (default: true)
-
-#### Password-Specific Attributes
-
-- **`data-upper-case-allow`** - Require uppercase (default: true)
-- **`data-lower-case-allow`** - Require lowercase (default: true)
-- **`data-number-allow`** - Require numbers (default: true)
-- **`data-symbol-allow`** - Require symbols (default: true)
-- **`data-puntuation-allow`** - Require punctuation (default: true)
-- **`data-enable-scoring`** - Enable strength scoring (default: true)
-- **`data-min-lowercase`** - Minimum lowercase count
-- **`data-min-uppercase`** - Minimum uppercase count
-- **`data-min-number`** - Minimum number count
-- **`data-min-symbol`** - Minimum symbol count
-- **`data-custom-upper-regex`** - Custom uppercase regex
-- **`data-custom-lower-regex`** - Custom lowercase regex
-- **`data-custom-number-regex`** - Custom number regex
-- **`data-custom-symbol-regex`** - Custom symbol regex
-- **`data-custom-punctuation-regex`** - Custom punctuation regex
-- **`data-points-per-length`** - Scoring points per character
-- **`data-points-per-unique-char`** - Points for unique chars
-- **`data-points-per-repeat-char`** - Points for repeated chars
-- **`data-bonus-containing-lower`** - Bonus for lowercase
-- **`data-bonus-containing-upper`** - Bonus for uppercase
-- **`data-bonus-containing-number`** - Bonus for numbers
-- **`data-bonus-containing-symbol`** - Bonus for symbols
-- **`data-bonus-containing-punctuation`** - Bonus for punctuation
-
-#### Date-Specific Attributes
-
-- **`data-format-date`** - Date format (e.g., YYYY/MM/DD)
-- **`data-allow-future`** - Allow future dates (default: false)
-- **`data-allow-past`** - Allow past dates (default: false)
-- **`data-strict-mode`** - Enforce exact format length (default: false)
-- **`min`** - Minimum date (ISO format)
-- **`max`** - Maximum date (ISO format)
-
-#### Phone-Specific Attributes
-
-- **`data-default-country`** - Country code (e.g., BJ, US, FR)
-
-#### FQDN-Specific Attributes
-
-- **`data-require-tld`** - TLD required (default: true)
-- **`data-allow-numeric-tld`** - Allow numeric TLDs (default: false)
-- **`data-allowed-underscores`** - Allow underscores (default: false)
-- **`data-allow-wildcard`** - Allow wildcards (default: false)
-- **`data-allow-trailing-dot`** - Allow trailing dot (default: false)
-- **`data-ignore-max-length`** - Ignore 63-char limit (default: false)
-
-#### Media-Specific Attributes
-
-- **`data-allowed-mime-type-accept`** - Comma-separated MIME types
-- **`data-extentions`** - Comma-separated extensions
-- **`data-maxsize-file`** - Max file size (default: 2)
-- **`data-unity-max-size-file`** - Size unit (B, KiB, MiB, GiB)
-- **`data-min-width`** - Minimum width in pixels
-- **`data-max-width`** - Maximum width in pixels
-- **`data-min-height`** - Minimum height in pixels
-- **`data-max-height`** - Maximum height in pixels
-- **`data-unity-dimensions`** - Dimension unit (default: px)
-
-#### Video-Specific Attributes
-
-- **`data-duration`** - Expected duration in seconds
-- **`data-unity-duration-media`** - Duration unit
-
-#### Checkbox Group Attributes
-
-Container must have `id` matching field `name`:
-
-```html
-<div id="interests" data-min-allowed="1" data-max-allowed="5">
-    <input type="checkbox" name="interests" value="..." />
-</div>
-```
-
-- **`data-min-allowed`** - Minimum selections required
-- **`data-max-allowed`** - Maximum selections allowed
-
-#### Radio Group Attributes
-
-Container must have `id` matching field `name`:
-
-```html
-<div id="accountType">
-    <input type="radio" name="accountType" value="..." />
-</div>
-```
-
-### Examples
-
-#### Form with Multiple Fields
-
-```html
-<form id="registrationForm">
-    <!-- Username -->
-    <input 
-        type="text" 
-        name="username" 
-        data-min-length="3"
-        data-max-length="50"
-        pattern="^[a-zA-Z0-9_]+$"
-        required
-    />
-
-    <!-- Email -->
-    <input 
-        type="email" 
-        name="email" 
-        data-allow-display-name="true"
-        required
-    />
-
-    <!-- Password with scoring -->
-    <input 
-        type="password" 
-        name="password" 
-        data-enable-scoring="true"
-        data-min-length="12"
-        required
-    />
-
-    <!-- Phone -->
-    <input 
-        type="tel" 
-        name="phone" 
-        data-default-country="BJ"
-        required
-    />
-
-    <!-- Website -->
-    <input 
-        type="url" 
-        name="website" 
-        data-allowed-protocols="https"
-    />
-
-    <!-- Profile image -->
-    <input 
-        type="file" 
-        name="avatar" 
-        data-allowed-mime-type-accept="image/jpeg,image/png"
-        data-maxsize-file="2"
-        data-min-width="512"
-        data-min-height="512"
-    />
-
-    <!-- Interests checkboxes -->
-    <div id="interests" data-min-allowed="1" data-max-allowed="5">
-        <label><input type="checkbox" name="interests" value="sports" /> Sports</label>
-        <label><input type="checkbox" name="interests" value="music" /> Music</label>
-        <label><input type="checkbox" name="interests" value="reading" /> Reading</label>
-    </div>
-
-    <!-- Account type radio -->
-    <div id="accountType">
-        <label><input type="radio" name="accountType" value="free" required /> Free</label>
-        <label><input type="radio" name="accountType" value="premium" required /> Premium</label>
-    </div>
-
-    <button type="submit">Register</button>
-</form>
-```
-
-#### JavaScript Integration
-
-```typescript
-import { FieldInputController } from '@wlindabla/form_validator';
-
-// Validate individual fields
-const usernameController = new FieldInputController(
-    document.getElementById('username')
-);
-
-const emailController = new FieldInputController(
-    document.getElementById('email')
-);
-
-// Listen to changes and validate
-document.getElementById('username').addEventListener('blur', async () => {
-    await usernameController.validate();
-});
-
-document.getElementById('email').addEventListener('blur', async () => {
-    await emailController.validate();
-});
-
-// Form submission
-document.getElementById('registrationForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    await usernameController.validate();
-    await emailController.validate();
-
-    if (usernameController.isValid() && emailController.isValid()) {
-        console.log('Form is valid!');
-        // Submit form
-    } else {
-        console.log('Form has errors');
-    }
-});
-```
-
-### Key Design Patterns
-
-- **Facade Pattern:** Simplifies interaction with complex validation engine.
-- **Adapter Pattern:** Adapts HTML form elements to validation interface.
-- **Singleton Access:** Uses singleton `FormInputValidator` internally.
-- **Attribute-Based Configuration:** Leverages HTML5 data attributes for flexibility.
-- **Lazy Option Resolution:** Options computed on-demand from attributes.
-
-### Best Practices
-
-1. **Container Grouping:** Always wrap checkbox/radio groups in containers with matching `id`.
-2. **Consistent Naming:** Use same `name` for input and `id` for container in groups.
-3. **Explicit Validation:** Call `validate()` on blur or form submission.
-4. **Error Handling:** Check `isValid()` before processing data.
-5. **Clear Errors:** Call `clearErrorField()` before new validation.
-6. **Use HTML5 Attributes:** Leverage native attributes (min, max, required, pattern).
-
-### Browser Compatibility
-
-- Works with modern browsers supporting HTML5 File API.
-- Requires jQuery for DOM manipulation.
-- Supports all HTML5 input types.
-
-
-## Abstract Class `AbstractFieldController` {#AbstractFieldController}
-
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+## Abstract Field Controller
 
 The `AbstractFieldController` class is the foundational base class for all form field controllers. It extends the validation system to the DOM layer, providing a bridge between HTML form elements and the validation engine. This abstract class handles DOM interaction, event management, attribute parsing, and validation state synchronization for any form field type.
 
@@ -5488,11 +5841,511 @@ form.addEventListener('field:validation:success', (e) => {
 5. **Default Values:** Provide sensible defaults in parsing methods
 6. **Type Safety:** Use TypeScript for compile-time safety
 
+---
 
-## Class `FormValidateController` {#FormValidateController}
 
-**Author:** AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>  
-**Package:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator){target="_blank"}
+---
+## Field Input Controller
+
+The `FieldInputController` class is the DOM adapter/controller for individual form fields. It extends `AbstractFieldController` and implements `FormChildrenValidateInterface`. This class acts as the high-level interface between HTML form elements and the validation engine, managing field validation by routing to the central `FormInputValidator` and automatically inferring validation rules from HTML attributes.
+
+### Key Features
+
+- **DOM Attribute Parsing:** Automatically extracts validation rules from HTML data attributes.
+- **Type-Based Routing:** Routes validation to appropriate validators based on input type.
+- **Intelligent Defaults:** Provides sensible defaults for all field types.
+- **Group Management:** Handles checkbox and radio button groups with container validation.
+- **Field State Management:** Tracks and manages validation state through the error store.
+- **Event Handling:** Emits validation events and supports custom error clearing.
+- **HTML5 Integration:** Supports native HTML5 attributes (min, max, required, pattern, etc.).
+- **Flexible Configuration:** Supports both explicit options and HTML attribute-based configuration.
+- **Method Chaining:** Returns promises for async operations.
+
+### Getting an Instance
+
+```typescript
+// Single field validation
+const controller = new FieldInputController(
+    document.getElementById('emailField'),
+    { requiredInput: true }
+);
+
+// Or let it infer options from attributes
+const controller = new FieldInputController(
+    document.getElementById('passwordField')
+);
+```
+
+### Basic Field Validation
+
+```typescript
+const emailController = new FieldInputController(
+    document.getElementById('email')
+);
+
+await emailController.validate();
+
+if (!emailController.isValid()) {
+    emailController.clearErrorField();
+}
+```
+
+### HTML Attribute Configuration
+
+```html
+<!-- Text field with custom rules -->
+<input 
+    type="text" 
+    name="username" 
+    data-min-length="3"
+    data-max-length="50"
+    pattern="^[a-zA-Z0-9_]+$"
+    required
+/>
+
+<!-- Email field with display name support -->
+<input 
+    type="email" 
+    name="userEmail" 
+    data-allow-display-name="true"
+    data-require-display-name="false"
+/>
+
+<!-- Password with scoring -->
+<input 
+    type="password" 
+    name="password" 
+    data-enable-scoring="true"
+    data-upper-case-allow="true"
+    data-number-allow="true"
+    data-min-length="12"
+/>
+
+<!-- Date field -->
+<input 
+    type="date" 
+    name="eventDate" 
+    data-format-date="YYYY/MM/DD"
+    data-allow-future="true"
+    data-allow-past="false"
+/>
+
+<!-- URL field -->
+<input 
+    type="url" 
+    name="website" 
+    data-allowed-protocols="https,http"
+    data-allow-query-params="true"
+/>
+
+<!-- Phone number -->
+<input 
+    type="tel" 
+    name="phone" 
+    data-default-country="BJ"
+    data-min-length="7"
+    data-max-length="25"
+/>
+
+<!-- Number field -->
+<input 
+    type="number" 
+    name="quantity" 
+    min="1"
+    max="100"
+    step="5"
+/>
+
+<!-- Textarea -->
+<textarea 
+    name="message" 
+    data-min-length="10"
+    data-max-length="500"
+></textarea>
+
+<!-- Select dropdown -->
+<select name="choice">
+    <option value="">-- Select --</option>
+    <option value="option_a">Option A</option>
+    <option value="option_b">Option B</option>
+</select>
+
+<!-- Checkboxes grouped in container -->
+<div id="interests" data-min-allowed="1" data-max-allowed="5">
+    <label><input type="checkbox" name="interests" value="sports" /> Sports</label>
+    <label><input type="checkbox" name="interests" value="music" /> Music</label>
+    <label><input type="checkbox" name="interests" value="reading" /> Reading</label>
+</div>
+
+<!-- Radios grouped in container -->
+<div id="accountType">
+    <label><input type="radio" name="accountType" value="free" /> Free</label>
+    <label><input type="radio" name="accountType" value="premium" /> Premium</label>
+</div>
+
+<!-- Image field -->
+<input 
+    type="file" 
+    name="avatar" 
+    data-allowed-mime-type-accept="image/jpeg,image/png"
+    data-extentions="jpg,png"
+    data-maxsize-file="2"
+    data-min-width="512"
+    data-max-width="2048"
+    data-min-height="512"
+    data-max-height="2048"
+/>
+
+<!-- Video field -->
+<input 
+    type="file" 
+    name="video" 
+    data-allowed-mime-type-accept="video/mp4,video/webm"
+    data-extentions="mp4,webm"
+    data-maxsize-file="100"
+    data-min-width="1280"
+    data-min-height="720"
+/>
+
+<!-- Document field -->
+<input 
+    type="file" 
+    name="document" 
+    data-allowed-mime-type-accept="application/pdf,application/msword"
+    data-maxsize-file="10"
+/>
+```
+
+### Interface
+
+#### `FormChildrenValidateInterface`
+
+Main validation interface for form fields:
+
+- **`isValid(): boolean`** - Checks if field has no validation errors.
+- **`fieldOptionsValidate: OptionsValidate`** - Gets current validation options.
+- **`validate(): Promise<void>`** - Runs validation asynchronously.
+- **`eventValidate(): EventValidate`** - Returns validation trigger event.
+- **`eventClearError(): EventValidate`** - Returns error clearing event.
+- **`clearErrorField(): void`** - Clears visual error state and message.
+
+### Methods
+
+#### `constructor(childrenInput, optionsValidate?)`
+
+Creates a new field controller instance.
+
+**Parameters:**
+- **`childrenInput`** (`HTMLFormChildrenElement`): The DOM element to validate.
+- **`optionsValidate?`** (`OptionsValidate`): Optional explicit validation options.
+
+#### `validate(): Promise<void>`
+
+Runs validation on the field by routing to appropriate validator.
+
+**Behavior:**
+1. Skips validation if field is empty and not required.
+2. Collects validation options (from HTML attributes or defaults).
+3. Routes to `FormInputValidator.allTypesValidator()`.
+4. Emits validation event with result.
+
+#### `fieldOptionsValidate: OptionsValidate`
+
+Getter that provides validation options inferred from HTML attributes.
+
+**Type-Specific Option Generation:**
+- `text` - TextInputOptions
+- `email` - EmailInputOptions
+- `password` - PasswordRuleOptions with scoring
+- `tel` - TelInputOptions
+- `url` - URLOptions with protocol control
+- `date` - DateInputOptions with format
+- `number` - NumberOptions with min/max/step
+- `select` - SelectOptions from option elements
+- `checkbox` - OptionsCheckbox from container
+- `radio` - OptionsRadio from container
+- `textarea` - TextInputOptions
+- `image` - OptionsImage with dimensions
+- `video` - OptionsMediaVideo with dimensions
+- `document` - OptionsFile
+- `fqdn` - FQDNOptions
+
+#### `isValid(): boolean`
+
+Checks if field validation passed.
+
+**Returns:** `true` if no errors, `false` if validation failed.
+
+### HTML Data Attributes
+
+#### Common Attributes (All Fields)
+
+- **`data-min-length`** - Minimum string length
+- **`data-max-length`** - Maximum string length
+- **`data-error-message`** - Custom error message
+- **`data-escape-strip-html-php-tags`** - Whether to escape HTML/PHP (default: true)
+- **`pattern`** - Regex pattern validation
+- **`required`** - Field is mandatory
+- **`event-clear-error`** - Event to clear errors (default: "change")
+
+#### Email-Specific Attributes
+
+- **`data-allow-utf8-local-part`** - Allow UTF-8 in local part (default: true)
+- **`data-allow-ip-domain`** - Allow IP addresses (default: false)
+- **`data-allow-quoted-local`** - Allow quoted format (default: true)
+- **`data-allow-display-name`** - Allow display names (default: false)
+- **`data-require-display-name`** - Require display names (default: false)
+- **`data-host-whitelist`** - Comma-separated allowed domains
+- **`data-host-blacklist`** - Comma-separated forbidden domains
+- **`data-blacklisted-chars`** - Forbidden characters in local part
+
+#### URL-Specific Attributes
+
+- **`data-allowed-protocols`** - Comma-separated protocols (default: https)
+- **`data-allow-localhost`** - Allow localhost (default: false)
+- **`data-allow-ip`** - Allow IP addresses (default: false)
+- **`data-allow-query-params`** - Allow query strings (default: true)
+- **`data-allow-hash`** - Allow fragments (default: true)
+- **`data-allow-protocol-relative-urls`** - Allow //example.com (default: false)
+- **`data-require-protocol`** - Protocol required (default: false)
+- **`data-require-valid-protocol`** - Protocol must be in allowed list (default: true)
+- **`data-require-host`** - Host required (default: true)
+- **`data-require-port`** - Port required (default: false)
+- **`data-disallow-auth`** - Reject credentials (default: false)
+- **`data-max-allowed-length`** - Max URL length (default: 2084)
+- **`data-validate-length`** - Validate length (default: true)
+
+#### Password-Specific Attributes
+
+- **`data-upper-case-allow`** - Require uppercase (default: true)
+- **`data-lower-case-allow`** - Require lowercase (default: true)
+- **`data-number-allow`** - Require numbers (default: true)
+- **`data-symbol-allow`** - Require symbols (default: true)
+- **`data-puntuation-allow`** - Require punctuation (default: true)
+- **`data-enable-scoring`** - Enable strength scoring (default: true)
+- **`data-min-lowercase`** - Minimum lowercase count
+- **`data-min-uppercase`** - Minimum uppercase count
+- **`data-min-number`** - Minimum number count
+- **`data-min-symbol`** - Minimum symbol count
+- **`data-custom-upper-regex`** - Custom uppercase regex
+- **`data-custom-lower-regex`** - Custom lowercase regex
+- **`data-custom-number-regex`** - Custom number regex
+- **`data-custom-symbol-regex`** - Custom symbol regex
+- **`data-custom-punctuation-regex`** - Custom punctuation regex
+- **`data-points-per-length`** - Scoring points per character
+- **`data-points-per-unique-char`** - Points for unique chars
+- **`data-points-per-repeat-char`** - Points for repeated chars
+- **`data-bonus-containing-lower`** - Bonus for lowercase
+- **`data-bonus-containing-upper`** - Bonus for uppercase
+- **`data-bonus-containing-number`** - Bonus for numbers
+- **`data-bonus-containing-symbol`** - Bonus for symbols
+- **`data-bonus-containing-punctuation`** - Bonus for punctuation
+
+#### Date-Specific Attributes
+
+- **`data-format-date`** - Date format (e.g., YYYY/MM/DD)
+- **`data-allow-future`** - Allow future dates (default: false)
+- **`data-allow-past`** - Allow past dates (default: false)
+- **`data-strict-mode`** - Enforce exact format length (default: false)
+- **`min`** - Minimum date (ISO format)
+- **`max`** - Maximum date (ISO format)
+
+#### Phone-Specific Attributes
+
+- **`data-default-country`** - Country code (e.g., BJ, US, FR)
+
+#### FQDN-Specific Attributes
+
+- **`data-require-tld`** - TLD required (default: true)
+- **`data-allow-numeric-tld`** - Allow numeric TLDs (default: false)
+- **`data-allowed-underscores`** - Allow underscores (default: false)
+- **`data-allow-wildcard`** - Allow wildcards (default: false)
+- **`data-allow-trailing-dot`** - Allow trailing dot (default: false)
+- **`data-ignore-max-length`** - Ignore 63-char limit (default: false)
+
+#### Media-Specific Attributes
+
+- **`data-allowed-mime-type-accept`** - Comma-separated MIME types
+- **`data-extentions`** - Comma-separated extensions
+- **`data-maxsize-file`** - Max file size (default: 2)
+- **`data-unity-max-size-file`** - Size unit (B, KiB, MiB, GiB)
+- **`data-min-width`** - Minimum width in pixels
+- **`data-max-width`** - Maximum width in pixels
+- **`data-min-height`** - Minimum height in pixels
+- **`data-max-height`** - Maximum height in pixels
+- **`data-unity-dimensions`** - Dimension unit (default: px)
+
+#### Video-Specific Attributes
+
+- **`data-duration`** - Expected duration in seconds
+- **`data-unity-duration-media`** - Duration unit
+
+#### Checkbox Group Attributes
+
+Container must have `id` matching field `name`:
+
+```html
+<div id="interests" data-min-allowed="1" data-max-allowed="5">
+    <input type="checkbox" name="interests" value="..." />
+</div>
+```
+
+- **`data-min-allowed`** - Minimum selections required
+- **`data-max-allowed`** - Maximum selections allowed
+
+#### Radio Group Attributes
+
+Container must have `id` matching field `name`:
+
+```html
+<div id="accountType">
+    <input type="radio" name="accountType" value="..." />
+</div>
+```
+
+### Examples
+
+#### Form with Multiple Fields
+
+```html
+<form id="registrationForm">
+    <!-- Username -->
+    <input 
+        type="text" 
+        name="username" 
+        data-min-length="3"
+        data-max-length="50"
+        pattern="^[a-zA-Z0-9_]+$"
+        required
+    />
+
+    <!-- Email -->
+    <input 
+        type="email" 
+        name="email" 
+        data-allow-display-name="true"
+        required
+    />
+
+    <!-- Password with scoring -->
+    <input 
+        type="password" 
+        name="password" 
+        data-enable-scoring="true"
+        data-min-length="12"
+        required
+    />
+
+    <!-- Phone -->
+    <input 
+        type="tel" 
+        name="phone" 
+        data-default-country="BJ"
+        required
+    />
+
+    <!-- Website -->
+    <input 
+        type="url" 
+        name="website" 
+        data-allowed-protocols="https"
+    />
+
+    <!-- Profile image -->
+    <input 
+        type="file" 
+        name="avatar" 
+        data-allowed-mime-type-accept="image/jpeg,image/png"
+        data-maxsize-file="2"
+        data-min-width="512"
+        data-min-height="512"
+    />
+
+    <!-- Interests checkboxes -->
+    <div id="interests" data-min-allowed="1" data-max-allowed="5">
+        <label><input type="checkbox" name="interests" value="sports" /> Sports</label>
+        <label><input type="checkbox" name="interests" value="music" /> Music</label>
+        <label><input type="checkbox" name="interests" value="reading" /> Reading</label>
+    </div>
+
+    <!-- Account type radio -->
+    <div id="accountType">
+        <label><input type="radio" name="accountType" value="free" required /> Free</label>
+        <label><input type="radio" name="accountType" value="premium" required /> Premium</label>
+    </div>
+
+    <button type="submit">Register</button>
+</form>
+```
+
+#### JavaScript Integration
+
+```typescript
+import { FieldInputController } from '@wlindabla/form_validator';
+
+// Validate individual fields
+const usernameController = new FieldInputController(
+    document.getElementById('username')
+);
+
+const emailController = new FieldInputController(
+    document.getElementById('email')
+);
+
+// Listen to changes and validate
+document.getElementById('username').addEventListener('blur', async () => {
+    await usernameController.validate();
+});
+
+document.getElementById('email').addEventListener('blur', async () => {
+    await emailController.validate();
+});
+
+// Form submission
+document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    await usernameController.validate();
+    await emailController.validate();
+
+    if (usernameController.isValid() && emailController.isValid()) {
+        console.log('Form is valid!');
+        // Submit form
+    } else {
+        console.log('Form has errors');
+    }
+});
+```
+
+### Key Design Patterns
+
+- **Facade Pattern:** Simplifies interaction with complex validation engine.
+- **Adapter Pattern:** Adapts HTML form elements to validation interface.
+- **Singleton Access:** Uses singleton `FormInputValidator` internally.
+- **Attribute-Based Configuration:** Leverages HTML5 data attributes for flexibility.
+- **Lazy Option Resolution:** Options computed on-demand from attributes.
+
+### Best Practices
+
+1. **Container Grouping:** Always wrap checkbox/radio groups in containers with matching `id`.
+2. **Consistent Naming:** Use same `name` for input and `id` for container in groups.
+3. **Explicit Validation:** Call `validate()` on blur or form submission.
+4. **Error Handling:** Check `isValid()` before processing data.
+5. **Clear Errors:** Call `clearErrorField()` before new validation.
+6. **Use HTML5 Attributes:** Leverage native attributes (min, max, required, pattern).
+
+### Browser Compatibility
+
+- Works with modern browsers supporting HTML5 File API.
+- Requires jQuery for DOM manipulation.
+- Supports all HTML5 input types.
+
+
+---
+
+---
+
+## Form Validate Controller 
 
 The `FormValidateController` class is the form orchestrator and main entry point for managing HTML form validation. It manages the entire lifecycle of form field validation, instantiates field controllers, organizes fields by validation events, and provides centralized error management for all form fields using jQuery.
 
@@ -5820,6 +6673,9 @@ Returns IDs of fields that trigger validation on change event.
 
 Returns IDs of fields that trigger validation on focus event.
 
+#### `idChildrenUsingEventDragenter: string[]`
+
+Returns IDs of fields that trigger validation on dragEnter event.
 #### `idChildrens: string[]`
 
 Returns cached array of IDs for all form fields.
@@ -5860,6 +6716,7 @@ Choose ONE or more:
 - **`data-event-validate-input="input"`** - Validate on input event
 - **`data-event-validate-change="change"`** - Validate on change event
 - **`data-event-validate-focus="focus"`** - Validate on focus event
+- - **`data-event-validate-focus="dragenter"`** - Validate on dragenter event
 
 #### Type-Specific Data Attributes
 
@@ -5899,7 +6756,7 @@ Fields are automatically organized by their validation trigger event:
 | input | `data-event-validate-input="input"` | Validate as user types |
 | change | `data-event-validate-change="change"` | Validate when value changes (selects, checkboxes) |
 | focus | `data-event-validate-focus="focus"` | Validate when field receives focus |
-
+|dragenter|`data-event-validate-focus="dragenter"`|Validate when field receives dragenter for file
 ### Complete Example: Registration Form
 
 ```typescript
@@ -6022,14 +6879,14 @@ import {
     FieldValidationFailed,
     FieldValidationSuccess,
     FieldValidationEventData
-} from "../Validation";
+} from "@wlindabla/form_validator";
 
 import {
     addErrorMessageFieldDom,
     addHashToIds,
     HTMLFormChildrenElement,
     clearErrorInput
-} from "../_Utils";
+} from "@wlindabla/form_validator";
 
 jQuery(function TestvalidateInput() {
     // Initialize form controller
@@ -6039,6 +6896,7 @@ jQuery(function TestvalidateInput() {
     const idsBlur = addHashToIds(formValidate.idChildrenUsingEventBlur).join(",");
     const idsInput = addHashToIds(formValidate.idChildrenUsingEventInput).join(",");
     const idsChange = addHashToIds(formValidate.idChildrenUsingEventChange).join(",");
+    const idsDragenter=addHashToIds(formValidate.idChildrenUsingEventDragenter).join(",");
     
     // Get form reference
     const __form = formValidate.form;
@@ -6049,8 +6907,11 @@ jQuery(function TestvalidateInput() {
     __form.on("blur", `${idsBlur}`, async (event: JQuery.BlurEvent) => {
         const target = event.target;
 
-        if ((target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
-            await formValidate.validateChildrenForm(event.target as HTMLFormChildrenElement);
+       if ((target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement)
+           && target.type !== "file") {
+
+            await form_validate.validateChildrenForm(target);
         }
     });
 
@@ -6061,7 +6922,7 @@ jQuery(function TestvalidateInput() {
         const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
         
         // Add error message to the DOM
-        addErrorMessageFieldDom(jQuery(data.targetChildrenForm), data.message);
+        addErrorMessageFieldDom(jQuery(data.targetChildrenForm), data.message,'container-div-error-message');
     });
 
     // ============================================
@@ -6089,15 +6950,18 @@ jQuery(function TestvalidateInput() {
     // ============================================
     // CHANGE EVENT (For Select, Checkbox, Radio, File)
     // ============================================
-    __form.on('change', `${idsChange}`, async (event: JQuery.ChangeEvent) => {
-        const target = event.target;
-        
-        // Clear previous errors
-        clearErrorInput(jQuery(target));
-
-        // Validate file inputs on change
+    __form.on('change', `${idsChange}`, async (event) => {
+         const target = event.target;
         if (target instanceof HTMLInputElement && target.type === "file") {
-            await formValidate.validateChildrenForm(event.target);
+
+            await form_validate.validateChildrenForm(target);
+        }
+    })
+    __form.on('dragenter',`${idsDragenter}`, (event) => {
+        const target = event.target;
+        if (target instanceof HTMLInputElement && target.type === "file") {
+
+            clearErrorInput(jQuery(target));
         }
     });
 });
@@ -6409,3 +7273,8 @@ function checkFormValidity(formValidate: FormValidateController): boolean {
 5. **Type Safety:** Ensure proper type checking for DOM elements
 6. **Error Messages:** Display clear, actionable error messages to users
 7. **Accessibility:** Add ARIA labels for screen readers on errors
+---
+## License
+
+This project is created by AGBOKOUDJO Franck. For more information or inquiries, please contact the author.
+

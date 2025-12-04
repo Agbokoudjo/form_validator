@@ -145,7 +145,7 @@ export class FQDNInputValidator extends AbstractFieldValidator implements FQDNIn
                 return this.setValidationState(false, `${input} contains full-width characters.`, targetInputname)
             }
 
-            // 🛑 1. VÉRIFICATION DNS STANDARD (Tiret de Début/Fin)
+            // VÉRIFICATION DNS STANDARD (Tiret de Début/Fin)
             // C'est une règle DNS stricte. Le tiret ne peut être qu'au milieu.
             // Exception : Nous permettons 'xn--' qui commence par un tiret (Punicode).
             if (part !== 'xn--' && /^-|-$/.test(part)) {
@@ -156,7 +156,7 @@ export class FQDNInputValidator extends AbstractFieldValidator implements FQDNIn
                 );
             }
 
-            // 🛑 2. VÉRIFICATION DE L'OPTION CUSTOM (Interdiction du Tiret Partout)
+            // VÉRIFICATION DE L'OPTION CUSTOM (Interdiction du Tiret Partout)
             // Si l'option est FALSE et que la partie contient un tiret (n'importe où).
             // La méthode 'includes' est plus lisible et plus rapide que la RegEx.
             if (!__fqdnqoptions.allowHyphens && part.includes('-')) {

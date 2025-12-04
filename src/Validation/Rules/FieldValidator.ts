@@ -83,7 +83,7 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 			// Note: Ceci peut nécessiter une vérification si vous voulez supprimer le champ uniquement.
 		}
 
-		return this;
+		return this; 
 	};
 
 	/**

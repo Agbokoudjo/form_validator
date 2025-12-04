@@ -17,7 +17,7 @@ import { FormErrorStoreInterface } from "./FormErrorStoreInterface";
 */
 export class FormErrorStore implements FormErrorStoreInterface {
 
-    private static instance: FormErrorStore;
+    private static __instance: FormErrorStore;
 
     private fieldValidity: Map<string, boolean>;
     private fieldErrors: Map<string, string[]>;
@@ -29,11 +29,10 @@ export class FormErrorStore implements FormErrorStoreInterface {
 
     public static getInstance(): FormErrorStore {
 
-        if (!FormErrorStore.instance) {
-            FormErrorStore.instance = new FormErrorStore();
+        if (!FormErrorStore.__instance) {
+            FormErrorStore.__instance = new FormErrorStore();
         }
-
-        return FormErrorStore.instance;
+        return FormErrorStore.__instance;
     }
 
     public setFieldValid(fieldName: string, isValid: boolean): this {
@@ -103,7 +102,7 @@ export class FormErrorStore implements FormErrorStoreInterface {
         }
         return true;
     }
-
+    
 }
 
 export const formErrorStore = FormErrorStore.getInstance();

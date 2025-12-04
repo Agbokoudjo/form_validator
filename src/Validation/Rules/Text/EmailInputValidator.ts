@@ -10,7 +10,7 @@
  * For more information, please feel free to contact the author.
  */
 
-import { isIP, checkHost, isByteLength, deepMerge, deepMergeAll } from "../../../_Utils";
+import { isIP, checkHost, isByteLength,deepMergeAll } from "../../../_Utils";
 import { AbstractFieldValidator } from "../FieldValidator";
 import { FQDNOptions, fqdnInputValidator } from "./FQDNInputValidator";
 import { TextInputOptions, textInputValidator } from "./TextInputValidator";
