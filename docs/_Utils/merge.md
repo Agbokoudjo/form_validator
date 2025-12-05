@@ -56,11 +56,11 @@ The **Deep Merge Utility Library** provides robust, type-safe solutions for merg
 ## Installation
 
 ```bash
-npm install deep-merge-utils
+npm install @wlindabla/form_validator
 # or
-yarn add deep-merge-utils
+yarn add @wlindabla/form_validator
 # or
-pnpm add deep-merge-utils
+pnpm add @wlindabla/form_validator
 ```
 
 ### Basic Import
@@ -851,7 +851,7 @@ This project is licensed under the MIT License. See LICENSE file for details.
 **Author**: AGBOKOUDJO Franck  
 **Email**: internationaleswebservices@gmail.com
 **Phone**: +229 0167 25 18 86  
-**LinkedIn**: [Internationales Web Services](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)  
+**LinkedIn**: [INTERNATIONALES WEB APPS & SERVICES](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)  
 **Company**: INTERNATIONALES WEB APPS & SERVICES
 
 For questions, suggestions, or issues, please reach out to the author or open an issue on the repository.
