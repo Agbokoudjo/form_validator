@@ -46,6 +46,7 @@
     - [Angular](#angular)
       - [Example 1: Service-based Approach](#example-1-service-based-approach)
       - [Example 2: Directive-based Approach](#example-2-directive-based-approach)
+  - [Support](#support)
 
 ---
 
@@ -1030,3 +1031,19 @@ export class CRUDActionDirective {
   title="Delete User"
   data-action-confirm="Delete this user?"
   data-href="/api/users/42"
+  data-http-method-request-action="DELETE"
+    data-additional='{"reason":"user-request"}'>
+    Remove my account
+</button>
+```
+## Support
+
+Pour toute question ou bug report:
+- 📧 Email: internationaleswebservices@gmail.com
+- 📱 Phone: +229 0167 25 18 86
+- 🔗 LinkedIn: [internationales-web-apps-services-120520193](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)
+- 💻 GitHub: [Agbokoudjo](https://github.com/Agbokoudjo/)
+
+---
+
+**MIT License © 2024 INTERNATIONALES WEB APPS & SERVICES**

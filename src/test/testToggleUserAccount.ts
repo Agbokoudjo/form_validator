@@ -1,8 +1,8 @@
 import {
     
-    handleToggleConfirmation,
-    ToggleEventDetail,
-    processToggleAction
+    CRUDActionConfirmationHandle,
+    CRUDActionEventDetail,
+    processCRUDAction
 } from '../User';
 import { fetchErrorTranslator } from '../Translation';
 
@@ -10,7 +10,7 @@ import { fetchErrorTranslator } from '../Translation';
 jQuery(document).on('click','.btn-toggle-account', async (event) => {
     event.preventDefault();
 
-    const confirmed = await handleToggleConfirmation({
+    const confirmed = await CRUDActionConfirmationHandle({
         element: event.currentTarget as HTMLElement,
         eventName: 'account:toggle:confirmed'
     });
@@ -25,8 +25,8 @@ document.addEventListener('account:toggle:confirmed', async (event:Event) => {
     try {
         console.log(event);
         const customEvent = event as CustomEvent;
-        const detail = customEvent.detail as ToggleEventDetail;
-        const response = await processToggleAction({
+        const detail = customEvent.detail as CRUDActionEventDetail;
+        const response = await processCRUDAction({
             eventDetail: detail ,
             httpMethod: 'PATCH',
             retryCount: 2,
@@ -37,10 +37,10 @@ document.addEventListener('account:toggle:confirmed', async (event:Event) => {
                 setTimeout(() => location.reload(), 2000);
             },
             translator: (key, error, lang) => {
-                if (error) {
-                    return fetchErrorTranslator.translate(error.name, error,'fr');
-                }
-                return translations[key] || key;
+                const error_name = error ? error.name : "NetWork";
+                    return fetchErrorTranslator.translate(error_name, error,'fr');
+               
+               ;
             },
             onError: (error) => {
                 console.error('Toggle failed:', error);

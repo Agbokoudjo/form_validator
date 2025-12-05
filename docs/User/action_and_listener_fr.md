@@ -625,7 +625,7 @@ export const DeleteUserButton = ({ userId, onDelete }) => {
                         onSuccess: () => {
                             if (onDelete) onDelete(userId);
                         }
-                    });
+                    }); 
                 } catch (error) {
                     console.error('Erreur:', error);
                 }
