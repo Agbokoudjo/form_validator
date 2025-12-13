@@ -1,0 +1,832 @@
+# 🎯 **EXPLICATION DE `notifyProgress` - CALCULS DE PROGRESSION**
+
+## 📊 **VUE D'ENSEMBLE**
+
+Cette fonction calcule **3 métriques importantes** pour l'utilisateur :
+1. ⏱️ **Vitesse d'upload** (bytes/seconde)
+2. ⏳ **Temps restant estimé** (secondes)
+3. 📈 **Progression** (pourcentage)
+
+---
+
+## 🔍 **LIGNE PAR LIGNE**
+
+### **1. Temps écoulé depuis le début**
+
+```typescript
+const elapsed = (Date.now() - this.startTime) / 1000;
+```
+
+#### **Explication :**
+
+- **`Date.now()`** → Timestamp actuel en **millisecondes**
+- **`this.startTime`** → Timestamp de départ (quand l'upload a commencé)
+- **`Date.now() - this.startTime`** → Durée écoulée en **millisecondes**
+- **`/ 1000`** → Convertit en **secondes**
+
+#### **Exemple :**
+
+```typescript
+this.startTime = 1670000000000; // 2 décembre 2022 à 13:33:20
+Date.now() = 1670000045000;     // 45 secondes plus tard
+
+elapsed = (1670000045000 - 1670000000000) / 1000
+        = 45000 / 1000
+        = 45 secondes
+```
+
+#### **Analogie :**
+Tu commences à courir à 14h00. Il est maintenant 14h05. Tu cours depuis **5 minutes**.
+
+---
+
+### **2. Vitesse d'upload**
+
+```typescript
+const speed = this.uploadedBytes / elapsed;
+```
+
+#### **Explication :**
+
+- **`this.uploadedBytes`** → Nombre total de bytes déjà envoyés
+- **`elapsed`** → Temps écoulé en secondes
+- **Formule** : `Vitesse = Distance / Temps`
+
+#### **Exemple :**
+
+```typescript
+this.uploadedBytes = 9000000; // 9 MB envoyés
+elapsed = 45;                  // en 45 secondes
+
+speed = 9000000 / 45
+      = 200000 bytes/seconde
+      = 200 KB/s
+      ≈ 0.2 MB/s
+```
+
+#### **Analogie :**
+Tu as parcouru **9 km** en **45 minutes**. Ta vitesse = `9 / 0.75h = 12 km/h`.
+
+---
+
+### **3. Bytes restants à envoyer**
+
+```typescript
+const remainingBytes = totalBytes - this.uploadedBytes;
+```
+
+#### **Explication :**
+
+- **`totalBytes`** → Taille totale du fichier
+- **`this.uploadedBytes`** → Bytes déjà envoyés
+- **Formule** : `Reste = Total - Déjà fait`
+
+#### **Exemple :**
+
+```typescript
+totalBytes = 15000000;         // Fichier de 15 MB
+this.uploadedBytes = 9000000;  // Déjà envoyé 9 MB
+
+remainingBytes = 15000000 - 9000000
+               = 6000000 bytes
+               = 6 MB restants
+```
+
+#### **Analogie :**
+Tu dois courir **10 km**. Tu as déjà fait **6 km**. Il reste **4 km**.
+
+---
+
+### **4. Temps restant estimé**
+
+```typescript
+const estimatedTimeRemaining = remainingBytes / speed;
+```
+
+#### **Explication :**
+
+- **`remainingBytes`** → Bytes restants à envoyer
+- **`speed`** → Vitesse actuelle (bytes/seconde)
+- **Formule** : `Temps restant = Distance restante / Vitesse`
+
+#### **Exemple :**
+
+```typescript
+remainingBytes = 6000000;  // 6 MB restants
+speed = 200000;            // 200 KB/s
+
+estimatedTimeRemaining = 6000000 / 200000
+                       = 30 secondes
+```
+
+#### **Analogie :**
+Il te reste **4 km** à courir. Ta vitesse = **12 km/h**. Temps restant = `4 / 12 = 0.33h = 20 minutes`.
+
+---
+
+## 🎨 **EXEMPLE COMPLET**
+
+### **Scénario : Upload d'une vidéo de 100 MB**
+
+```typescript
+// Au démarrage
+this.startTime = Date.now();        // 1670000000000
+this.uploadedBytes = 0;
+
+// Après 50 secondes, 3 chunks uploadés (30 MB)
+Date.now() = 1670000050000;
+this.uploadedBytes = 31457280;      // 30 MB
+totalBytes = 104857600;             // 100 MB
+uploadedChunks = 3;
+totalChunks = 10;
+
+// Calculs dans notifyProgress()
+const elapsed = (1670000050000 - 1670000000000) / 1000;
+// = 50 secondes
+
+const speed = 31457280 / 50;
+// = 629145 bytes/sec
+// ≈ 614 KB/s
+
+const remainingBytes = 104857600 - 31457280;
+// = 73400320 bytes
+// = 70 MB restants
+
+const estimatedTimeRemaining = 73400320 / 629145;
+// ≈ 116.7 secondes
+// ≈ 1 minute 57 secondes
+```
+
+---
+
+## 📊 **VISUALISATION**
+
+```
+Fichier total: 100 MB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+├─────────────────┤ 30 MB uploadés (30%)
+                  └─────────────────────────┘ 70 MB restants
+
+⏱️  Temps écoulé: 50 secondes
+🚀 Vitesse: 614 KB/s
+⏳ Temps restant: ~2 minutes
+
+Calcul:
+- Déjà envoyé: 30 MB en 50s
+- Vitesse: 30 MB / 50s = 0.6 MB/s
+- Reste: 70 MB
+- ETA: 70 MB / 0.6 MB/s ≈ 117s ≈ 2 min
+```
+
+---
+
+## 🧮 **LA MATHÉMATIQUE**
+
+### **Formules utilisées :**
+
+```
+1. Temps écoulé = Maintenant - Début
+2. Vitesse = Bytes envoyés / Temps écoulé
+3. Bytes restants = Total - Déjà envoyés
+4. Temps restant = Bytes restants / Vitesse
+```
+
+### **En notation mathématique :**
+
+```
+t_elapsed = t_now - t_start
+
+v = bytes_uploaded / t_elapsed
+
+bytes_remaining = bytes_total - bytes_uploaded
+
+t_remaining = bytes_remaining / v
+```
+
+---
+
+## ⚠️ **PROBLÈMES POTENTIELS**
+
+### **❌ Problème 1 : Division par zéro**
+
+```typescript
+const speed = this.uploadedBytes / elapsed;
+//                                  ^^^^^^^
+//                            Si elapsed = 0 ?
+```
+
+**Scénario :**
+Si la fonction est appelée **immédiatement** après le début, `elapsed = 0`.
+
+**Solution :**
+
+```typescript
+const elapsed = Math.max((Date.now() - this.startTime) / 1000, 0.1);
+//              ^^^^^^^^
+//              Minimum 0.1 seconde pour éviter division par zéro
+```
+
+---
+
+### **❌ Problème 2 : Vitesse instable**
+
+Si la connexion varie, la vitesse calculée peut **fluctuer** :
+
+```
+Chunk 1: 1 MB en 5s  → 200 KB/s
+Chunk 2: 1 MB en 10s → 100 KB/s (connexion ralentie)
+Chunk 3: 1 MB en 3s  → 333 KB/s (accélération)
+```
+
+**Solution : Moyenne mobile**
+
+```typescript
+// Calculer la vitesse sur les derniers N chunks
+const recentSpeed = this.getAverageSpeedLastNChunks(5);
+```
+
+---
+
+### **❌ Problème 3 : Estimation incorrecte au début**
+
+Au tout début (1 chunk uploadé), l'estimation est **très imprécise**.
+
+**Exemple :**
+```
+Premier chunk: 1 MB en 2s → Vitesse = 500 KB/s
+Estimation pour 100 MB: 100 / 0.5 = 200 secondes
+
+Réalité: Vitesse moyenne finale = 250 KB/s
+Vrai temps: 100 / 0.25 = 400 secondes (le double!)
+```
+
+**Solution : Afficher "Calcul en cours..." pour les premiers chunks**
+
+```typescript
+if (uploadedChunks < 3) {
+    estimatedTimeRemaining = null; // Pas assez de données
+}
+```
+
+---
+
+## 🎯 **VERSION AMÉLIORÉE**
+
+```typescript
+private notifyProgress(
+    uploadedChunks: number,
+    totalChunks: number,
+    totalBytes: number,
+    httpResponse: HttpResponse
+): void {
+    // Temps écoulé (minimum 0.1s pour éviter division par zéro)
+    const elapsed = Math.max((Date.now() - this.startTime) / 1000, 0.1);
+    
+    // Vitesse instantanée
+    const speed = this.uploadedBytes / elapsed;
+    
+    // Bytes restants
+    const remainingBytes = totalBytes - this.uploadedBytes;
+    
+    // Temps restant (null si pas assez de données)
+    const estimatedTimeRemaining = uploadedChunks < 2 
+        ? null 
+        : remainingBytes / speed;
+    
+    // Pourcentage
+    const percentage = Math.round((this.uploadedBytes / totalBytes) * 100);
+    
+    const progress: UploadProgress = {
+        uploadedChunks,
+        totalChunks,
+        uploadedBytes: this.uploadedBytes,
+        totalBytes,
+        percentage,
+        currentChunk: uploadedChunks,
+        speed, // bytes/seconde
+        estimatedTimeRemaining, // secondes (ou null)
+        elapsed // secondes écoulées
+    };
+
+    // Logger pour debugging
+    Logger.info(
+        `Progress: ${percentage}% | ` +
+        `Speed: ${FileUtils.formatBytes(speed)}/s | ` +
+        `ETA: ${estimatedTimeRemaining ? FileUtils.formatDuration(estimatedTimeRemaining) : 'Calculating...'}`
+    );
+
+    // Notifier l'utilisateur
+    this.options.onProgress?.(progress);
+}
+```
+
+---
+
+## 🏆 **RÉSUMÉ VISUEL**
+
+```
+┌─────────────────────────────────────────────┐
+│           CALCULS DE PROGRESSION            │
+└─────────────────────────────────────────────┘
+
+1️⃣ TEMPS ÉCOULÉ
+   ┌─────────────┐
+   │ Maintenant  │ - ┌────────┐ = 50 secondes
+   │ 14h00m50s   │   │ Début  │
+   └─────────────┘   │14h00m0s│
+                     └────────┘
+
+2️⃣ VITESSE
+   ┌──────────────┐
+   │ 30 MB envoyés│ ÷ 50s = 0.6 MB/s
+   └──────────────┘
+
+3️⃣ BYTES RESTANTS
+   ┌────────┐   ┌──────────────┐
+   │ 100 MB │ - │ 30 MB déjà   │ = 70 MB
+   │ total  │   │ envoyés      │
+   └────────┘   └──────────────┘
+
+4️⃣ TEMPS RESTANT
+   ┌─────────┐
+   │ 70 MB   │ ÷ 0.6 MB/s = ~117 secondes
+   │restants │              = ~2 minutes
+   └─────────┘
+```
+
+---
+
+## 💡 **ANALOGIE FINALE**
+
+Imagine que tu remplis une piscine avec un tuyau :
+
+- **`elapsed`** = Depuis combien de temps le tuyau coule
+- **`speed`** = Débit du tuyau (litres/seconde)
+- **`remainingBytes`** = Combien de litres il reste à remplir
+- **`estimatedTimeRemaining`** = Temps pour finir de remplir
+
+**Formule universelle :** `Temps = Distance / Vitesse` 🚀
+
+**Voilà, tu comprends maintenant comment calculer un temps restant pour n'importe quel processus ! 🎉**
+
+
+
+
+
+
+
+
+# 🎯 **EXPLICATION DU BLOC `catch` - EXPONENTIAL BACKOFF**
+
+## 📊 **VUE D'ENSEMBLE**
+
+Ce code implémente une stratégie de **retry intelligent** avec **délai croissant** entre chaque tentative. C'est une des meilleures pratiques en programmation réseau.
+
+---
+
+## 🔍 **ANALYSE LIGNE PAR LIGNE**
+
+### **1. Capture de l'erreur**
+
+```typescript
+catch (error) {
+    lastError = error as Error;
+    chunkInfo.status = 'error';
+```
+
+**Explication :**
+- L'upload du chunk a échoué
+- On sauvegarde l'erreur dans `lastError` pour pouvoir la relancer plus tard si toutes les tentatives échouent
+- On marque le statut du chunk comme `'error'`
+
+---
+
+### **2. Création de l'objet d'erreur détaillé**
+
+```typescript
+const chunkError: ChunkError = {
+    chunk: chunkInfo,              // Infos sur le chunk qui a échoué
+    error: lastError,              // L'erreur technique
+    attempt: attempt + 1,          // Numéro de la tentative (1, 2, 3...)
+    willRetry: attempt < maxRetries - 1  // Va-t-on réessayer ?
+};
+```
+
+**Explication du `willRetry` :**
+
+```typescript
+willRetry: attempt < maxRetries - 1
+```
+
+| Tentative | `attempt` | `maxRetries` | `attempt < maxRetries - 1` | `willRetry` |
+|-----------|-----------|--------------|----------------------------|-------------|
+| 1ère      | 0         | 3            | `0 < 2` = `true`           | ✅ Oui      |
+| 2ème      | 1         | 3            | `1 < 2` = `true`           | ✅ Oui      |
+| 3ème      | 2         | 3            | `2 < 2` = `false`          | ❌ Non      |
+
+**Pourquoi `maxRetries - 1` ?**
+- Si `maxRetries = 3`, on fait **3 tentatives** (indices 0, 1, 2)
+- À la **dernière tentative** (attempt = 2), on ne va **PAS** retry après
+- Donc `willRetry = false` quand on est à la dernière tentative
+
+---
+
+### **3. Notification de l'erreur**
+
+```typescript
+this.options.onChunkError?.(chunkError);
+```
+
+**Explication :**
+- Appelle le callback utilisateur pour l'informer qu'un chunk a échoué
+- L'utilisateur peut logger, afficher une notification, etc.
+
+---
+
+### **4. LA PARTIE MAGIQUE : Exponential Backoff**
+
+```typescript
+if (attempt < maxRetries - 1) {
+    await this.sleep(Math.pow(2, attempt) * 1000);
+}
+```
+
+---
+
+## 🔥 **EXPONENTIAL BACKOFF - EXPLICATION DÉTAILLÉE**
+
+### **Qu'est-ce que c'est ?**
+
+Un **délai croissant exponentiel** entre chaque tentative.
+
+**Formule :**
+```
+Délai = 2^attempt × 1000 ms
+```
+
+---
+
+### **🧮 CALCUL DES DÉLAIS**
+
+| Tentative | `attempt` | `Math.pow(2, attempt)` | `× 1000 ms` | Délai réel |
+|-----------|-----------|------------------------|-------------|------------|
+| 1ère      | 0         | 2^0 = **1**            | 1000        | **1 seconde** |
+| 2ème      | 1         | 2^1 = **2**            | 2000        | **2 secondes** |
+| 3ème      | 2         | 2^2 = **4**            | 4000        | **4 secondes** |
+| 4ème      | 3         | 2^3 = **8**            | 8000        | **8 secondes** |
+| 5ème      | 4         | 2^4 = **16**           | 16000       | **16 secondes** |
+
+---
+
+### **📈 VISUALISATION**
+
+```
+Tentative 1: Upload ❌ → Attends 1s
+              ↓
+Tentative 2: Upload ❌ → Attends 2s
+              ↓
+Tentative 3: Upload ❌ → Attends 4s
+              ↓
+Tentative 4: Upload ❌ → Attends 8s
+              ↓
+Tentative 5: Upload ❌ → ABANDON
+```
+
+---
+
+## 🎯 **POURQUOI CE PATTERN ?**
+
+### **❌ Mauvaise Approche : Retry Immédiat**
+
+```typescript
+// ❌ MAUVAIS
+for (let i = 0; i < 3; i++) {
+    try {
+        await upload();
+        break;
+    } catch {
+        // Retry immédiatement
+    }
+}
+```
+
+**Problèmes :**
+1. 🔥 **Surcharge le serveur** qui est peut-être déjà en difficulté
+2. 🔥 **Gaspille de la bande passante** en martelant le serveur
+3. 🔥 **Peut aggraver la situation** (effet "tempête de requêtes")
+
+---
+
+### **⚠️ Approche Moyenne : Délai Fixe**
+
+```typescript
+// ⚠️ MOYEN
+for (let i = 0; i < 3; i++) {
+    try {
+        await upload();
+        break;
+    } catch {
+        await sleep(2000); // Toujours 2 secondes
+    }
+}
+```
+
+**Problème :**
+- Si le serveur est **vraiment** en difficulté, 2 secondes ne suffisent peut-être pas
+- On perd du temps inutilement si l'erreur était temporaire
+
+---
+
+### **✅ Meilleure Approche : Exponential Backoff**
+
+```typescript
+// ✅ EXCELLENT
+for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+        await upload();
+        break;
+    } catch {
+        if (attempt < maxRetries - 1) {
+            await sleep(Math.pow(2, attempt) * 1000);
+        }
+    }
+}
+```
+
+**Avantages :**
+1. ✅ **Donne du temps au serveur** pour se rétablir
+2. ✅ **Réduit la charge** progressivement
+3. ✅ **Maximise les chances de succès** sans surcharger
+4. ✅ **Standard de l'industrie** (utilisé par AWS, Google Cloud, etc.)
+
+---
+
+## 🎬 **SCÉNARIO COMPLET**
+
+### **Exemple : Upload d'un chunk qui échoue 2 fois**
+
+```typescript
+maxRetries = 3;
+
+// ═══════════════════════════════════════
+// TENTATIVE 1 (attempt = 0)
+// ═══════════════════════════════════════
+try {
+    await this.uploadChunk(...);
+    // ❌ ÉCHEC : Timeout réseau
+} catch (error) {
+    lastError = error;
+    chunkInfo.status = 'error';
+    
+    const chunkError = {
+        chunk: chunkInfo,
+        error: lastError,
+        attempt: 1,           // Tentative #1
+        willRetry: 0 < 2      // true ✅
+    };
+    
+    onChunkError(chunkError); // Notifie l'utilisateur
+    
+    if (0 < 2) { // true
+        // Attends 2^0 * 1000 = 1 seconde
+        await sleep(1000);
+        console.log("Retry dans 1 seconde...");
+    }
+}
+
+// 😴 PAUSE DE 1 SECONDE
+
+// ═══════════════════════════════════════
+// TENTATIVE 2 (attempt = 1)
+// ═══════════════════════════════════════
+try {
+    await this.uploadChunk(...);
+    // ❌ ÉCHEC : Serveur 503 (Service Unavailable)
+} catch (error) {
+    lastError = error;
+    chunkInfo.status = 'error';
+    
+    const chunkError = {
+        chunk: chunkInfo,
+        error: lastError,
+        attempt: 2,           // Tentative #2
+        willRetry: 1 < 2      // true ✅
+    };
+    
+    onChunkError(chunkError);
+    
+    if (1 < 2) { // true
+        // Attends 2^1 * 1000 = 2 secondes
+        await sleep(2000);
+        console.log("Retry dans 2 secondes...");
+    }
+}
+
+// 😴 PAUSE DE 2 SECONDES
+
+// ═══════════════════════════════════════
+// TENTATIVE 3 (attempt = 2)
+// ═══════════════════════════════════════
+try {
+    await this.uploadChunk(...);
+    // ✅ SUCCÈS !
+    success = true;
+    chunkInfo.status = 'success';
+    uploadedChunks++;
+    onChunkSuccess(chunkInfo);
+} catch (error) {
+    // Si ça échoue ici aussi, on abandonne
+    // (pas de sleep car c'est la dernière tentative)
+}
+```
+
+---
+
+## 🎨 **TIMELINE VISUELLE**
+
+```
+t=0s    : 🚀 Tentative 1 → ❌ Échec
+t=0s    : ⏳ Attends 1 seconde (2^0)
+t=1s    : 🚀 Tentative 2 → ❌ Échec
+t=1s    : ⏳ Attends 2 secondes (2^1)
+t=3s    : 🚀 Tentative 3 → ✅ Succès !
+
+Total: 3 secondes de pause (1s + 2s)
+```
+
+---
+
+## 🔍 **POURQUOI `if (attempt < maxRetries - 1)` ?**
+
+```typescript
+if (attempt < maxRetries - 1) {
+    await this.sleep(...);
+}
+```
+
+**Réponse : Pour ne PAS attendre après la dernière tentative !**
+
+### **Sans cette condition :**
+
+```typescript
+// ❌ MAUVAIS
+for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+        await upload();
+        break;
+    } catch {
+        await sleep(Math.pow(2, attempt) * 1000); // Toujours attendre
+    }
+}
+
+// Problème : Si les 3 tentatives échouent, on attend 4 secondes
+// APRÈS la 3ème tentative pour rien !
+```
+
+### **Avec la condition :**
+
+```typescript
+// ✅ BON
+for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+        await upload();
+        break;
+    } catch {
+        if (attempt < 2) { // Seulement si ce n'est pas la dernière
+            await sleep(Math.pow(2, attempt) * 1000);
+        }
+    }
+}
+
+// Si toutes les tentatives échouent, on lance l'erreur immédiatement
+// après la 3ème tentative (pas d'attente inutile)
+```
+
+---
+
+## 📊 **COMPARAISON DES STRATÉGIES**
+
+| Stratégie | Délais | Temps total si 3 échecs | Charge serveur |
+|-----------|--------|------------------------|----------------|
+| **Retry immédiat** | 0s, 0s, 0s | 0s | 🔥🔥🔥 Très élevée |
+| **Délai fixe (2s)** | 2s, 2s, 2s | 6s | 🔥🔥 Élevée |
+| **Linear backoff** | 1s, 2s, 3s | 6s | 🔥 Moyenne |
+| **Exponential backoff** | 1s, 2s, 4s | 7s | ✅ Faible |
+
+---
+
+## 💡 **VARIANTES D'EXPONENTIAL BACKOFF**
+
+### **1. Avec Jitter (aléatoire)**
+
+```typescript
+// Ajoute du hasard pour éviter que tous les clients retry en même temps
+const delay = Math.pow(2, attempt) * 1000;
+const jitter = Math.random() * 1000; // 0-1000ms aléatoires
+await this.sleep(delay + jitter);
+```
+
+### **2. Avec Maximum**
+
+```typescript
+// Limite le délai à 30 secondes max
+const delay = Math.min(Math.pow(2, attempt) * 1000, 30000);
+await this.sleep(delay);
+```
+
+### **3. Avec Base Configurable**
+
+```typescript
+// Base = 1.5 au lieu de 2 (croissance plus lente)
+const delay = Math.pow(1.5, attempt) * 1000;
+await this.sleep(delay);
+```
+
+---
+
+## 🏆 **CODE COMPLET AVEC COMMENTAIRES**
+
+```typescript
+for (let attempt = 0; attempt < maxRetries && !success; attempt++) {
+    chunkInfo.attempt = attempt + 1;
+    chunkInfo.status = 'uploading';
+    
+    try {
+        // Essaye d'uploader le chunk
+        await this.uploadChunk(chunk, chunkInfo, sessionId, fileHash, totalChunks);
+        
+        // ✅ SUCCÈS !
+        success = true;
+        chunkInfo.status = 'success';
+        uploadedChunks++;
+        this.uploadedBytes += chunk.size;
+        this.options.onChunkSuccess?.(chunkInfo);
+        this.notifyProgress(uploadedChunks, totalChunks, file.size);
+        
+    } catch (error) {
+        // ❌ ÉCHEC
+        lastError = error as Error;
+        chunkInfo.status = 'error';
+        
+        // Créer l'objet d'erreur avec infos
+        const chunkError: ChunkError = {
+            chunk: chunkInfo,
+            error: lastError,
+            attempt: attempt + 1,
+            willRetry: attempt < maxRetries - 1  // Va-t-on réessayer ?
+        };
+        
+        // Notifier l'utilisateur
+        this.options.onChunkError?.(chunkError);
+        
+        // Si ce n'est pas la dernière tentative
+        if (attempt < maxRetries - 1) {
+            // Calculer le délai : 1s, 2s, 4s, 8s...
+            const delay = Math.pow(2, attempt) * 1000;
+            
+            Logger.info(`Retry #${attempt + 2} dans ${delay / 1000}s...`);
+            
+            // Attendre avant de réessayer
+            await this.sleep(delay);
+        } else {
+            // Dernière tentative échouée
+            Logger.error(`Toutes les tentatives ont échoué pour le chunk ${chunkInfo.index}`);
+        }
+    }
+}
+
+// Si après toutes les tentatives, ça a toujours échoué
+if (!success) {
+    throw new FileUploadChunkError(
+        `Failed to upload chunk ${chunkInfo.index} after ${maxRetries} attempts`,
+        {
+            chunk: chunkInfo,
+            error: lastError!,
+            attempt: maxRetries,
+            willRetry: false
+        }
+    );
+}
+```
+
+---
+
+## 🎯 **RÉSUMÉ**
+
+### **Exponential Backoff = Délai Intelligent**
+
+1. **Tentative 1 échoue** → Attends **1 seconde**
+2. **Tentative 2 échoue** → Attends **2 secondes**
+3. **Tentative 3 échoue** → Attends **4 secondes**
+4. **Tentative 4 échoue** → **Abandon** (pas d'attente)
+
+### **Pourquoi `Math.pow(2, attempt)` ?**
+- Croissance **exponentielle** : 1, 2, 4, 8, 16...
+- Donne au serveur de plus en plus de temps pour se rétablir
+- Standard de l'industrie (AWS, Google, Microsoft)
+
+### **Pourquoi `if (attempt < maxRetries - 1)` ?**
+- Pour ne **PAS** attendre après la **dernière** tentative
+- Échec immédiat si toutes les tentatives sont épuisées
+
+**C'est une des meilleures pratiques en programmation réseau ! 🚀**

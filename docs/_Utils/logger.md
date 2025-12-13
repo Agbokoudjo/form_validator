@@ -18,7 +18,7 @@ The **Logger** class is a singleton-based logging utility designed for TypeScrip
 ## Installation & Import
 
 ```typescript
-import { Logger, Env } from './logger';
+import { Logger, Env } from '@wlindabla/form_validator';
 ```
 
 ---
@@ -153,7 +153,7 @@ at processRequest (app.ts:45:12)
 
 ---
 
-#### `Logger.getInstance(): Logger`
+#### `Logger.config("dev",true): void`
 
 **Purpose**: Retrieves the singleton Logger instance.
 
@@ -161,9 +161,9 @@ at processRequest (app.ts:45:12)
 
 **Usage**:
 ```typescript
-const logger = Logger.getInstance();
-console.log(logger.APP_ENV); // 'dev'
-console.log(logger.DEBUG); // true
+Logger.config("dev",true);
+console.log(Logger.env); // 'dev'
+console.log(Logger.debug); // true
 ```
 
 ---
@@ -290,11 +290,10 @@ Ensures only one Logger instance exists application-wide, promoting memory effic
 ```typescript
 private static instance: Logger;
 
-public static getInstance(): Logger {
+public static getInstance(): void {
   if (!Logger.instance) {
     Logger.instance = new Logger();
   }
-  return Logger.instance;
 }
 ```
 
@@ -336,7 +335,7 @@ Adapts logging behavior based on deployment environment, reducing noise in produ
 
 ## Version Information
 
-- **Version**: 1.0.0
+- **Version**: 2.4.0
 - **Author**: AGBOKOUDJO Franck
 - **License**: MIT
 - **Company**: INTERNATIONALES WEB APPS & SERVICES
@@ -346,7 +345,7 @@ Adapts logging behavior based on deployment environment, reducing noise in produ
 
 ## Changelog
 
-### v1.0.0 (Initial Release)
+### v2.4.0 (Initial Release)
 - Singleton Logger implementation
 - Support for dev, prod, test environments
 - Color-coded console output with timestamps

@@ -398,7 +398,7 @@ export async function processCRUDAction(
         timerInterval = timer.timerInterval;
 
         // 3. Execute HTTP request
-        const response = await httpFetchHandler<HttpResponse>({
+        const response = await httpFetchHandler({
             url: eventDetail.urlActionRequest,
             data: eventDetail.data,
             methodSend: httpMethod,

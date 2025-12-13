@@ -14,4 +14,5 @@ export default defineConfig({
             'pdfjs-dist/build/pdf.worker.min.mjs': '/node_modules/pdfjs-dist/build/pdf.worker.min.mjs'
         },
     },
+    
 })

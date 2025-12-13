@@ -149,7 +149,7 @@ yarn add @wlindabla/form_validator
   ⚡ **Production-ready** - Used in enterprise applications handling thousands of transactions daily
   - [CRUDAction](./docs/User/action_and_listener.md)
   
-  ## Validators
+  ## Form Validators 
   The **Form Validator Library** is a centralized form error state management solution designed to provide a Single Source of Truth for form validation across your application. This library implements the Singleton pattern to ensure consistent form state management throughout your project.
   Built with TypeScript, it offers type-safe error tracking, field validity management, and intuitive chainable methods for seamless integration into modern web applications.
   - [index](./docs/Validators/index.md)

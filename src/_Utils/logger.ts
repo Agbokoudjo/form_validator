@@ -2,7 +2,7 @@
  * Logger Utility Module
  * 
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
- * @version 1.0.0
+ * @version 2.4.0
  * @license MIT
  * 
  * Company: INTERNATIONALES WEB APPS & SERVICES
@@ -56,24 +56,29 @@ interface PrefixConfig {
  * @package @wlindabla/form_validator
  */
 export class Logger {
-    private static instance: Logger;
-    public readonly APP_ENV: Env = 'dev';
-    public readonly DEBUG: boolean = true;
+    private static loggerInstance: Logger;
+    private static  APP_ENV: Env;
+    private static  DEBUG: boolean;
 
     /**
      * Private constructor - prevents direct instantiation
      */
-    private constructor() { }
+    private constructor() {}
 
     /**
      * Gets or creates the singleton Logger instance
-     * @returns {Logger} The singleton Logger instance
+     * @returns {void} 
      */
-    public static getInstance(): Logger {
-        if (!Logger.instance) {
-            Logger.instance = new Logger();
+    private static getInstance():void{
+        if (!this.loggerInstance) {
+            this.loggerInstance = new Logger();
         }
-        return Logger.instance;
+    }
+
+    public static config(env: Env, debug: boolean): void{
+        this.getInstance();
+        this.APP_ENV = env;
+        this.DEBUG = debug;
     }
 
     /**
@@ -135,11 +140,10 @@ export class Logger {
      * @param {...any[]} args - Arguments to log
      */
     public static log(...args: any[]): void {
-        const logger = Logger.getInstance();
 
-        if (logger.DEBUG && logger.APP_ENV !== 'prod') {
-            const { prefixString, styles } = logger.getPrefix(LogLevel.LOG);
-            console.log(prefixString, ...styles, ...logger.formatArgs(args));
+        if (this.DEBUG && this.APP_ENV !== 'prod') {
+            const { prefixString, styles } = this.loggerInstance.getPrefix(LogLevel.LOG);
+            console.log(prefixString, ...styles, ...this.loggerInstance.formatArgs(args));
         }
     }
 
@@ -150,11 +154,10 @@ export class Logger {
      * @param {...any[]} args - Arguments to log
      */
     public static info(...args: any[]): void {
-        const logger = Logger.getInstance();
 
-        if (logger.DEBUG && logger.APP_ENV === 'dev') {
-            const { prefixString, styles } = logger.getPrefix(LogLevel.INFO);
-            console.info(prefixString, ...styles, ...logger.formatArgs(args));
+        if (this.DEBUG && this.APP_ENV === 'dev') {
+            const { prefixString, styles } = this.loggerInstance.getPrefix(LogLevel.INFO);
+            console.info(prefixString, ...styles, ...this.loggerInstance.formatArgs(args));
         }
     }
 
@@ -165,11 +168,10 @@ export class Logger {
      * @param {...any[]} args - Arguments to log
      */
     public static warn(...args: any[]): void {
-        const logger = Logger.getInstance();
 
-        if (logger.DEBUG || logger.APP_ENV !== 'prod') {
-            const { prefixString, styles } = logger.getPrefix(LogLevel.WARN);
-            console.warn(prefixString, ...styles, ...logger.formatArgs(args));
+        if (this.DEBUG || this.APP_ENV !== 'prod') {
+            const { prefixString, styles } = this.loggerInstance.getPrefix(LogLevel.WARN);
+            console.warn(prefixString, ...styles, ...this.loggerInstance.formatArgs(args));
         }
     }
 
@@ -181,8 +183,11 @@ export class Logger {
      * @param {...any[]} args - Arguments to log
      */
     public static error(...args: any[]): void {
-        const logger = Logger.getInstance();
-        const { prefixString, styles } = logger.getPrefix(LogLevel.ERROR);
-        console.error(prefixString, ...styles, ...logger.formatArgs(args));
+        const { prefixString, styles } = this.loggerInstance.getPrefix(LogLevel.ERROR);
+        console.error(prefixString, ...styles, ...this.loggerInstance.formatArgs(args));
     }
+
+    public static get env(): Env { return this.APP_ENV; }
+    
+    public static get debug(): boolean { return this.DEBUG; }
 }

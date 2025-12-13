@@ -7,5 +7,5 @@ export * from "./Translation";
 export * from "./User";
 export * from './Validation';
 export * from './Collection';
-export * from './MediaUpload';
+export * from './FileUploader';
 export * from "./version";

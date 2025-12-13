@@ -224,7 +224,7 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
             allowProtocolRelativeUrls: false,
             requireValidProtocol: true,
             requireProtocol: false,
-            allowedProtocols: ["ftp", "https", "http"],
+            allowedProtocols: ['http', 'https', 'file', 'blob', 'url', 'data'],
             disallowAuth: false,
             hostBlacklist: [],
             hostWhitelist: []

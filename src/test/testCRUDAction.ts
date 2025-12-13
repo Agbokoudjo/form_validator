@@ -1,5 +1,4 @@
 import {
-    
     CRUDActionConfirmationHandle,
     CRUDActionEventDetail,
     processCRUDAction

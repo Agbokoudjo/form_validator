@@ -11,10 +11,6 @@
  */
 import { Logger } from "./logger";
 
-export interface addParamToUrlConfig {
-  [key: string]: any;
-}
-
 interface HttpResponseData<T = unknown> {
   readonly status: number;
   readonly headers: Headers;
@@ -22,95 +18,224 @@ interface HttpResponseData<T = unknown> {
 }
 
 export class HttpResponse<T = unknown> {
+
   constructor(private readonly response_data: HttpResponseData<T>) { }
+  
   get status(): number { return this.response_data.status; }
+
   get headers(): Headers { return this.response_data.headers; }
+
   get data(): T { return this.response_data.data; }
 }
-export async function responseTypeHandle<T = unknown>(
-  responseType: string,
+
+/**
+ * Mapping between response type strings and their corresponding TypeScript types
+ */
+export type ResponseTypeMap = {
+  json: unknown;
+  text: string;
+  blob: Blob;
+  arrayBuffer: ArrayBuffer;
+  formData: FormData;
+  stream: ReadableStream<Uint8Array> | null;
+};
+
+/**
+ * Valid response type keys
+ */
+export type HttpResponseType = keyof ResponseTypeMap;
+
+/**
+ * Handles different response types and returns properly typed HttpResponse
+ * 
+ * @template K - The response type key (json, text, blob, etc.)
+ * @param responseType - The expected response format
+ * @param response - The fetch Response object
+ * @returns Promise resolving to typed HttpResponse
+ * 
+ * @example
+ * ```typescript
+ * // Blob response
+ * const blobResult = await responseTypeHandle("blob", response);
+ * blobResult.data // Type: Blob
+ * 
+ * // JSON response
+ * const jsonResult = await responseTypeHandle("json", response);
+ * jsonResult.data // Type: unknown (cast as needed)
+ * ```
+ */
+export async function responseTypeHandle<K extends HttpResponseType>(
+  responseType: K,
   response: Response
-): Promise<HttpResponse> {
+): Promise<HttpResponse<ResponseTypeMap[K]>> {
   const status = response.status;
   const headers = response.headers;
 
   switch (responseType) {
     case "json":
-      return new HttpResponse<T>({ status, headers, data: await response.json() });
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.json()
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     case "text":
-      return new HttpResponse({ status, headers, data: await response.text() });
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.text()
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     case "blob":
-      return new HttpResponse({ status, headers, data: await response.blob() });
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.blob()
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     case "arrayBuffer":
-      return new HttpResponse({ status, headers, data: await response.arrayBuffer() });
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.arrayBuffer()
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     case "formData":
-      return new HttpResponse({ status, headers, data: await response.formData() });
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.formData()
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     case "stream":
-      return new HttpResponse({ status, headers, data: response.body }); // ReadableStream directement
+      return new HttpResponse({
+        status,
+        headers,
+        data: response.body
+      }) as HttpResponse<ResponseTypeMap[K]>;
 
     default:
-      return new HttpResponse({ status, headers, data: await response.text() }); // Par défaut, du texte
+      // Fallback to text
+      return new HttpResponse({
+        status,
+        headers,
+        data: await response.text()
+      }) as HttpResponse<ResponseTypeMap[K]>;
   }
 }
-export async function detectedResponseTypeNoOk<T = unknown>(
+
+/**
+ * this remove function in 2.4.1 future version
+ * @deprecated use  parseHttpErrorResponse<T> instead
+ */
+export async function detectedResponseTypeNoOk<K extends HttpResponseType = "text">(
   response: Response
-): Promise<HttpResponse> {
+): Promise<HttpResponse<ResponseTypeMap[K]>>{
+  return await parseHttpErrorResponse(response);
+}
+
+/**
+ * Detects and parses error responses based on Content-Type header
+ * 
+ * @template K - The detected response type
+ * @param response - The fetch Response object with error status
+ * @returns Promise resolving to typed HttpResponse
+ */
+export async function parseHttpErrorResponse<K extends HttpResponseType = "text">(
+  response: Response
+): Promise<HttpResponse<ResponseTypeMap[K]>> {
+
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return new HttpResponse<K>({
+      status: response.status,
+      headers: response.headers,
+      data: '' as K
+    }) as HttpResponse<ResponseTypeMap[K]>;
+  }
+
   const contentType = (response.headers.get("content-type") ?? "").trim().toLowerCase();
-  if (["application/json", "application/ld+json"].some((type) => contentType.startsWith(type)) ||
+
+  if (["application/json", 
+    "application/ld+json",
+    "application/problem+json",
+    "application/vnd.api+json"].some((type) => contentType.startsWith(type)) ||
     contentType.includes("json") || contentType.endsWith("+json")) {
-    return await responseTypeHandle<T>("json", response);
+    
+    return await responseTypeHandle("json" as K, response);
   }
-  if (contentType.startsWith("text/html") || contentType.startsWith("text/plain")) {
-    return await responseTypeHandle<T>("text", response);
+
+  if (
+    contentType.startsWith("text/html") ||
+    contentType.startsWith("text/plain") ||
+    contentType.startsWith("text/") 
+  ) {
+    return await responseTypeHandle("text" as K, response);
   }
-  if (["application/xml", "text/xml"].some((type) => contentType.startsWith(type))
-    ||
+
+  if (
+    contentType.startsWith("application/xml") || 
+    contentType.startsWith("text/xml") ||
     contentType.includes("xml")
   ) {
-    return await responseTypeHandle<T>("text", response); // XML est souvent traité comme texte
+    return await responseTypeHandle("text" as K, response);
   }
-  // ✅ Retour par défaut si aucun type détecté
-  return new HttpResponse({ status: response.status, headers: response.headers, data: response.statusText });
+
+  try {
+    const clonedResponse = response.clone();
+    return await responseTypeHandle("json" as K, clonedResponse);
+  } catch {
+    return new HttpResponse({
+      status: response.status,
+      headers: response.headers,
+      data: response.statusText 
+    }) as HttpResponse<ResponseTypeMap[K]>;
+  }
 }
+
 type MappedHttpStatus = 'success' | 'info' | 'warning' | 'error';
-export function mapStatusToResponseType(statusCodeHttpResponse: number): MappedHttpStatus {
+
+export function mapStatusToResponseType(statusCodeHttpResponse: number|string): MappedHttpStatus {
+
+  if(typeof statusCodeHttpResponse ==="string"){
+    statusCodeHttpResponse = parseInt(statusCodeHttpResponse, 10);
+  }
+
   if (statusCodeHttpResponse < 200) { return 'info'; }
   else if (statusCodeHttpResponse >= 200 && statusCodeHttpResponse < 300) { return 'success'; }
   else if (statusCodeHttpResponse >= 300 && statusCodeHttpResponse < 400) { return 'warning'; }
   else if (statusCodeHttpResponse >= 400) { return 'error'; }
   else { return 'error'; }
 }
+
 interface HttpFetchErrorOptions {
   attempt?: number;
   responseStatus?: number;
   responseBody?: any;
   cause?: any;
 }
+
 export class HttpFetchError extends Error {
-  url: string | URL | Request;
+  private __url: string | URL | Request;
   attempt?: number;
   responseStatus?: number;
-  responseBody?: any; // Vous pouvez typer cela plus précisément si nécessaire
+  responseBody?: any; 
   cause?: any;
 
   constructor(message: string, url: string | URL | Request, options?: HttpFetchErrorOptions) {
     super(message);
-    this.name = 'HttpFetchError'; // Important pour identifier le type d'erreur
-    this.url = url;
+    this.name = 'HttpFetchError'; 
+    this.__url = url;
     this.attempt = options?.attempt;
     this.responseStatus = options?.responseStatus;
     this.responseBody = options?.responseBody;
     this.cause = options?.cause;
     Object.setPrototypeOf(this, HttpFetchError.prototype);
   }
+
+  public get url():string | URL | Request {return this.__url ;}
 }
 
-// 🔒 Allowed HTTP methods
+//Allowed HTTP methods
 export type HttpMethod =
   | 'GET'
   | 'POST'
@@ -124,11 +249,12 @@ export type HttpMethod =
   | 'CONNECT'
   | 'QUERY'
   ;
-// 🎯 Supported response types for parsing
-type HttpResponseType = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'stream' | 'formData';
+  
+//Supported response types for parsing
+type HttpResponseTypeCase = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'stream' | 'formData';
 
-// 🧾 Main type definition for httpFetchHandler options
-interface FetchOptions<T = unknown> {
+//Main type definition for httpFetchHandler options
+export interface FetchOptions<T = unknown> {
   // The target URL for the request
   url: string | URL | Request;
 
@@ -218,7 +344,7 @@ console.log(response); // Parsed JSON response
 
 ---
  */
-export async function httpFetchHandler<T = unknown>({
+export async function httpFetchHandler<K extends HttpResponseType = "json">({
   url,
   methodSend = "GET",
   data = null,
@@ -232,7 +358,8 @@ export async function httpFetchHandler<T = unknown>({
   responseType = 'json',
   retryOnStatusCode = false,
   keepalive = false
-}: FetchOptions): Promise<HttpResponse> {
+}: FetchOptions): Promise<HttpResponse<ResponseTypeMap[typeof responseType]>> {
+  
   const isFormData = data instanceof FormData;
   const headers_requete: HeadersInit = { ...optionsheaders };
 
@@ -256,7 +383,7 @@ export async function httpFetchHandler<T = unknown>({
   }
 
   if (retryCount === 1) {
-    retryCount += 2; // Safety for invalid config (will try 3 times total)
+    retryCount += 2;
   }
 
   for (let attempt = 0; attempt < retryCount; ++attempt) {
@@ -279,17 +406,17 @@ export async function httpFetchHandler<T = unknown>({
         Logger.warn(`Response status=${response.status} (attempt ${attempt + 1}/${retryCount})`);
 
         if (!retryOnStatusCode || attempt === retryCount - 1) {
-          return await detectedResponseTypeNoOk<T>(response); // ne retry pas sauf si explicitement demandé
+          return await parseHttpErrorResponse(response);
         }
 
         await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
 
-        continue; // retry
+        continue; 
       }
 
-      Logger.info(`✅ Successful response (status ${response.status}) on attempt ${attempt + 1}`);
+      Logger.info(`Successful response (status ${response.status}) on attempt ${attempt + 1}`);
 
-      return await responseTypeHandle<T>(responseType, response);
+      return await responseTypeHandle(responseType, response);
 
     } catch (error: any) {
 
@@ -298,7 +425,7 @@ export async function httpFetchHandler<T = unknown>({
       const isLastAttempt = attempt === retryCount - 1;
 
       if (error.name === "AbortError") {
-        Logger.warn(`⏱️ Timeout (attempt ${attempt + 1}/${retryCount})`);
+        Logger.warn(`Timeout (attempt ${attempt + 1}/${retryCount})`);
 
         if (isLastAttempt) { //si c'est la dernier tentative
 
@@ -307,7 +434,7 @@ export async function httpFetchHandler<T = unknown>({
 
       } else if (error.message.includes("NetworkError") || error.message.includes("Failed to fetch")) {
 
-        Logger.warn(`🌐 Network error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
+        Logger.warn(`Network error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
 
         if (isLastAttempt) {
           throw new HttpFetchError(`Network error after ${retryCount} attempts: ${error.message}`, url, { cause: error });
@@ -319,7 +446,7 @@ export async function httpFetchHandler<T = unknown>({
       }
 
       else {
-        Logger.error(`❌ Unexpected error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
+        Logger.error(`Unexpected error: ${error.message} (attempt ${attempt + 1}/${retryCount})`);
 
         if (isLastAttempt) {
           throw new HttpFetchError(`Unexpected error after ${retryCount} attempts: ${error.message}`, url, { cause: error });
