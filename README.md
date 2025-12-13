@@ -155,5 +155,5 @@ yarn add @wlindabla/form_validator
   - [Documentation](./docs/Validators/index.md)
 
   ## Chunked File Uploader
-    **The most powerful, flexible, and developer-friendly chunked upload library for modern web applications.**
+    **The most powerful**, flexible, and developer-friendly chunked upload library for modern web applications.
   - [Chunked File Uploader](./docs/Media/index.md)
