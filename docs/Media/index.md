@@ -1,24 +1,24 @@
 # 📤 ChunkedFileUploader v2.4.0
 
-> Une bibliothèque TypeScript robuste, framework-agnostique pour télécharger des fichiers volumineux par chunks avec reprise, retry automatique et gestion d'événements complète.
+> A robust, framework-agnostic TypeScript library for uploading large files in chunks with resume capability, automatic retry, and comprehensive event handling.
 
-**Auteur:** AGBOKOUDJO Franck  
+**Author:** AGBOKOUDJO Franck  
 **License:** MIT  
 **npm:** `@wlindabla/form_validator`
 
 ---
 
-## 🚀 Fonctionnalités Principales
+## 🚀 Key Features
 
-- ✅ **Upload par Chunks** - Divisez les fichiers volumineux en chunks optimisés
-- ✅ **Vérification d'Intégrité** - Hash SHA-256 pour garantir la sécurité des données
-- ✅ **Retry Automatique** - Backoff exponentiel configurable
-- ✅ **Pause/Reprise** - Interruption et reprise intelligentes
-- ✅ **Suivi Temps Réel** - Vitesse, ETA, pourcentage d'avancement
-- ✅ **Événements Riches** - Plus de 15 événements personnalisés
-- ✅ **Framework-Agnostique** - Works with React, Angular, Vue, Vanilla JS
-- ✅ **Gestion Robuste des Erreurs** - Exceptions personnalisées
-- ✅ **Cache Flexible** - Support localStorage, IndexedDB, sessionStorage
+- ✅ **Chunked Upload** - Automatically split large files into optimized chunks
+- ✅ **Integrity Verification** - SHA-256 hash to guarantee data safety
+- ✅ **Automatic Retry** - Configurable exponential backoff
+- ✅ **Pause/Resume** - Intelligent interruption and resumption
+- ✅ **Real-time Tracking** - Speed, ETA, progress percentage
+- ✅ **Rich Events** - 15+ custom events for complete control
+- ✅ **Framework-Agnostic** - Works with React, Angular, Vue, Vanilla JS
+- ✅ **Robust Error Handling** - Custom exceptions for each scenario
+- ✅ **Flexible Caching** - localStorage, IndexedDB, sessionStorage support
 
 ---
 
@@ -41,20 +41,23 @@ pnpm add @wlindabla/form_validator
 
 ---
 
-## 🎯 Démarrage Rapide
+## 🎯 Quick Start
 
 ```typescript
 import { 
-  ChunkedFileUploader,
-  DefaultUploadResumeCacheAdapter,
-  EventEmitter 
+  import { 
+  ChunkedFileUploader
+,DefaultUploadResumeCacheAdapter,
+UniversalEventEmitter as EventEmitter
+ } from '@wlindabla/form_validator';
+
 } from '@wlindabla/form_validator';
 
-// Initialiser les dépendances
+// Initialize dependencies
 const cache = new DefaultUploadResumeCacheAdapter();
 const eventEmitter = new EventEmitter();
 
-// Créer l'uploader
+// Create uploader instance
 const uploader = new ChunkedFileUploader(
   {
     file: inputFile,
@@ -62,39 +65,39 @@ const uploader = new ChunkedFileUploader(
     endpointInit: 'https://api.example.com/init',
     endpointFinalize: 'https://api.example.com/finalize',
     onProgress: (progress) => console.log(`${progress.percentage}%`),
-    onComplete: (result) => console.log('Succès!', result)
+    onComplete: (result) => console.log('Success!', result)
   },
   cache,
   eventEmitter
 );
 
-// Démarrer l'upload
+// Start upload
 await uploader.upload();
 ```
 
 ---
 
-## ⚙️ Configuration Complète
+## ⚙️ Configuration Reference
 
-### UploadOptions
+### UploadOptions Interface
 
 ```typescript
 interface UploadOptions {
-  // Obligatoires
-  file: File;                          // Le fichier à télécharger
-  endpoint: string | URL;              // URL pour les chunks
-  endpointInit: string | URL;          // URL d'initialisation
-  endpointFinalize: string | URL;      // URL de finalisation
+  // Required
+  file: File;                          // The file to upload
+  endpoint: string | URL;              // Endpoint for chunk uploads
+  endpointInit: string | URL;          // Initialization endpoint
+  endpointFinalize: string | URL;      // Finalization endpoint
   
-  // Optionnels
-  chunkSize?: number;                  // Taille en bytes (par défaut: auto)
-  speedMbps?: number;                  // Vitesse connexion pour optimisation
-  config?: ChunkSizeConfig;            // Configuration avancée chunks
-  headers?: HeadersInit;               // Headers HTTP personnalisés
-  metadata?: Record<string, any>;      // Données supplémentaires
-  maxRetries?: number;                 // Tentatives avant abandon (défaut: 3)
-  timeout?: number;                    // Timeout requêtes en ms (défaut: 60000)
-  autoSave?: boolean;                  // Sauvegarde auto la progression
+  // Optional
+  chunkSize?: number;                  // Chunk size in bytes (default: auto)
+  speedMbps?: number;                  // Connection speed for optimization
+  config?: ChunkSizeConfig;            // Advanced chunk configuration
+  headers?: HeadersInit;               // Custom HTTP headers
+  metadata?: Record<string, any>;      // Additional metadata
+  maxRetries?: number;                 // Retry attempts (default: 3)
+  timeout?: number;                    // Request timeout in ms (default: 60000)
+  autoSave?: boolean;                  // Auto-save progress
   
   // Callbacks
   onProgress?: (progress: UploadProgress) => void;
@@ -105,13 +108,13 @@ interface UploadOptions {
 }
 ```
 
-### Configuration Avancée (ChunkSizeConfig)
+### Advanced Configuration (ChunkSizeConfig)
 
 ```typescript
 const config = {
-  defaultChunkSizeMB: 50,           // Taille par défaut en MB
-  slowSpeedThresholdMbps: 5,        // Seuil pour connexion lente
-  slowSpeedChunkSizeMB: 2,          // Taille chunk pour connexion lente
+  defaultChunkSizeMB: 50,              // Default chunk size in MB
+  slowSpeedThresholdMbps: 5,           // Threshold for slow connection
+  slowSpeedChunkSizeMB: 2,             // Chunk size for slow connection
   fileSizeThresholds: [
     { maxSizeMB: 200, chunkSizeMB: 50 },
     { maxSizeMB: 1000, chunkSizeMB: 500 },
@@ -124,7 +127,7 @@ const config = {
 
 ## 🍦 Vanilla JavaScript
 
-### Exemple Complet
+### Complete Example
 
 ```html
 <!DOCTYPE html>
@@ -143,14 +146,27 @@ const config = {
       background: #4CAF50;
       transition: width 0.3s ease;
     }
+    .controls {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <h1>File Upload Manager</h1>
+  
   <input type="file" id="fileInput" />
-  <button id="uploadBtn">Démarrer</button>
-  <button id="pauseBtn" disabled>Pause</button>
-  <button id="resumeBtn" disabled>Reprendre</button>
-  <button id="cancelBtn" disabled>Annuler</button>
+  
+  <div class="controls">
+    <button id="uploadBtn">Start Upload</button>
+    <button id="pauseBtn" disabled>Pause</button>
+    <button id="resumeBtn" disabled>Resume</button>
+    <button id="cancelBtn" disabled>Cancel</button>
+  </div>
 
   <div class="progress-bar">
     <div class="progress-fill" id="progressFill" style="width: 0%"></div>
@@ -172,7 +188,7 @@ const config = {
       const file = document.getElementById('fileInput').files[0];
       
       if (!file) {
-        alert('Sélectionnez un fichier');
+        alert('Please select a file');
         return;
       }
 
@@ -194,19 +210,19 @@ const config = {
             const speed = (progress.speed / 1000000).toFixed(2);
             const eta = progress.estimatedTimeRemaining 
               ? formatTime(progress.estimatedTimeRemaining)
-              : 'Calcul...';
+              : 'Calculating...';
             
             document.getElementById('progressText').textContent = 
               `${progress.percentage}% | ${speed} MB/s | ETA: ${eta}`;
           },
           onComplete: (result) => {
-            console.log('Upload réussi!', result);
-            alert('Fichier uploadé avec succès!');
+            console.log('Upload successful!', result);
+            alert('File uploaded successfully!');
             document.getElementById('uploadBtn').disabled = false;
           },
           onError: (error) => {
-            console.error('Erreur:', error);
-            alert('Erreur lors de l\'upload');
+            console.error('Error:', error);
+            alert('Upload error occurred');
           }
         },
         cache,
@@ -216,7 +232,7 @@ const config = {
       try {
         await uploader.upload();
       } catch (error) {
-        console.error('Upload échoué:', error);
+        console.error('Upload failed:', error);
       }
     });
 
@@ -252,11 +268,15 @@ const config = {
 
 ## ⚛️ React
 
-### Hook Personnalisé
+### Custom Hook
 
 ```typescript
 import { useState, useRef, useCallback } from 'react';
-import { ChunkedFileUploader } from '@wlindabla/form_validator';
+import { 
+  ChunkedFileUploader
+,DefaultUploadResumeCacheAdapter,
+UniversalEventEmitter
+ } from '@wlindabla/form_validator';
 
 export const useChunkedUploader = () => {
   const [progress, setProgress] = useState(0);
@@ -304,7 +324,7 @@ export const useChunkedUploader = () => {
 };
 ```
 
-### Composant React
+### React Component
 
 ```jsx
 import { useChunkedUploader } from './useChunkedUploader';
@@ -340,16 +360,16 @@ function FileUploadComponent() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p>Progression: {progress}%</p>
+          <p>Progress: {progress}%</p>
           
           <button onClick={pause}>Pause</button>
-          <button onClick={resume}>Reprendre</button>
-          <button onClick={cancel}>Annuler</button>
+          <button onClick={resume}>Resume</button>
+          <button onClick={cancel}>Cancel</button>
         </>
       )}
       
       {error && <p className="error">{error}</p>}
-      {state === 'completed' && <p className="success">✓ Upload réussi!</p>}
+      {state === 'completed' && <p className="success">✓ Upload successful!</p>}
     </div>
   );
 }
@@ -361,12 +381,12 @@ export default FileUploadComponent;
 
 ## 🅰️ Angular
 
-### Service Angular
+### Upload Service
 
 ```typescript
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChunkedFileUploader } from '@wlindabla/form_validator';
+import { ChunkedFileUploader,DefaultUploadResumeCacheAdapter } from '@wlindabla/form_validator';
 
 @Injectable({
   providedIn: 'root'
@@ -424,7 +444,7 @@ export class UploadService {
 }
 ```
 
-### Composant Angular
+### Angular Component
 
 ```typescript
 import { Component } from '@angular/core';
@@ -464,10 +484,22 @@ export class UploadComponent {
       console.error('Upload failed:', error);
     }
   }
+
+  pause(): void {
+    this.uploadService.pause();
+  }
+
+  resume(): void {
+    this.uploadService.resume();
+  }
+
+  cancel(): void {
+    this.uploadService.cancel();
+  }
 }
 ```
 
-### Template Angular
+### Angular Template
 
 ```html
 <div class="upload-container">
@@ -476,7 +508,7 @@ export class UploadComponent {
     (change)="onFileSelected($event)"
   />
   
-  <button (click)="startUpload()">Démarrer</button>
+  <button (click)="startUpload()">Start Upload</button>
 
   <div class="progress" *ngIf="(state$ | async) as state">
     <div 
@@ -486,20 +518,28 @@ export class UploadComponent {
   </div>
   
   <p>{{ progress$ | async }}%</p>
+
+  <button (click)="pause()" *ngIf="(state$ | async) === 'uploading'">
+    Pause
+  </button>
+  <button (click)="resume()" *ngIf="(state$ | async) === 'paused'">
+    Resume
+  </button>
+  <button (click)="cancel()">Cancel</button>
 </div>
 ```
 
 ---
 
-## 🟢 Backend Node.js / Express
+## 🟢 Node.js / Express Backend
 
-### Installation
+### Install Dependencies
 
 ```bash
-npm install express multer
+npm install express multer uuid
 ```
 
-### Initialisation d'Upload
+### Initialize Upload
 
 ```typescript
 import express, { Router, Request, Response } from 'express';
@@ -510,26 +550,22 @@ import fs from 'fs/promises';
 const router = Router();
 const uploads: Record<string, any> = {};
 
-router.post('/init', async (req: Request, res: Response) => {
+router.post('/api/upload/init', async (req: Request, res: Response) => {
   const { fileName, fileSize, fileHash, metadata } = req.body;
 
-  // Validation
   if (!fileName || !fileSize || !fileHash) {
     return res.status(400).json({ 
-      error: 'Données manquantes',
-      message: 'fileName, fileSize, et fileHash sont requis'
+      error: 'Missing required fields',
+      message: 'fileName, fileSize, and fileHash are required'
     });
   }
 
   try {
-    // Générer un ID unique
     const mediaId = crypto.randomUUID();
     const uploadDir = path.join(process.cwd(), 'uploads', mediaId);
 
-    // Créer le répertoire
     await fs.mkdir(uploadDir, { recursive: true });
 
-    // Sauvegarder les métadonnées
     uploads[mediaId] = {
       mediaId,
       fileName,
@@ -544,17 +580,17 @@ router.post('/init', async (req: Request, res: Response) => {
       totalChunks: 0
     };
 
-    console.log(`[UPLOAD] Session ${mediaId} initialisée: ${fileName}`);
+    console.log(`[UPLOAD] Session ${mediaId} initialized: ${fileName}`);
 
     res.status(201).json({
       success: true,
       mediaId,
-      message: 'Session d\'upload initialisée avec succès'
+      message: 'Upload session initialized successfully'
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Erreur initialisation',
+      error: 'Initialization failed',
       message: error instanceof Error ? error.message : String(error)
     });
   }
@@ -563,43 +599,40 @@ router.post('/init', async (req: Request, res: Response) => {
 export default router;
 ```
 
-### Réception des Chunks
+### Upload Chunk
 
 ```typescript
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/upload', upload.single('chunk'), async (req: Request, res: Response) => {
+router.post('/api/upload/chunk', upload.single('chunk'), async (req: Request, res: Response) => {
   try {
     const { mediaId, chunkIndex, totalChunks } = req.body;
     const chunkFile = req.file;
 
-    // Validation
     if (!mediaId || chunkIndex === undefined) {
       return res.status(400).json({ 
-        error: 'Paramètres manquants'
+        error: 'Missing required parameters'
       });
     }
 
     const session = uploads[mediaId];
     if (!session) {
       return res.status(404).json({ 
-        error: 'Session non trouvée' 
+        error: 'Session not found' 
       });
     }
 
     if (!chunkFile) {
       return res.status(400).json({ 
-        error: 'Aucun chunk uploadé'
+        error: 'No chunk uploaded'
       });
     }
 
-    // Sauvegarder le chunk
     const chunkPath = path.join(session.uploadDir, `chunk_${chunkIndex}.part`);
     await fs.writeFile(chunkPath, chunkFile.buffer);
 
-    // Mettre à jour les métadonnées
     session.chunks[chunkIndex] = {
       index: chunkIndex,
       size: chunkFile.size,
@@ -619,12 +652,12 @@ router.post('/upload', upload.single('chunk'), async (req: Request, res: Respons
       uploadedChunks: session.uploadedChunks,
       totalChunks,
       percentage,
-      message: `Chunk ${chunkIndex}/${totalChunks - 1} uploadé`
+      message: `Chunk ${chunkIndex}/${totalChunks - 1} uploaded successfully`
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Erreur upload chunk',
+      error: 'Chunk upload failed',
       message: error instanceof Error ? error.message : String(error)
     });
   }
@@ -633,29 +666,28 @@ router.post('/upload', upload.single('chunk'), async (req: Request, res: Respons
 export default router;
 ```
 
-### Finalisation d'Upload
+### Finalize Upload
 
 ```typescript
 import { createWriteStream } from 'fs';
 
-router.post('/finalize', async (req: Request, res: Response) => {
+router.post('/api/upload/finalize', async (req: Request, res: Response) => {
   try {
     const { mediaId, mediaHash } = req.body;
 
     if (!mediaId) {
       return res.status(400).json({ 
-        error: 'mediaId requis'
+        error: 'mediaId is required'
       });
     }
 
     const session = uploads[mediaId];
     if (!session) {
       return res.status(404).json({ 
-        error: 'Session non trouvée'
+        error: 'Session not found'
       });
     }
 
-    // Assembler les chunks
     const outputPath = path.join(
       process.cwd(), 
       'public/uploads',
@@ -684,21 +716,18 @@ router.post('/finalize', async (req: Request, res: Response) => {
       });
     });
 
-    // Vérifier le hash
     const fileContent = await fs.readFile(outputPath);
     const actualHash = crypto
       .createHash('sha256')
       .update(fileContent)
       .digest('hex');
 
-    console.log(`[FINALIZE] ${mediaId}: Upload finalisé`);
-    console.log(`  Fichier: ${session.fileName}`);
-    console.log(`  Taille: ${fileContent.length} bytes`);
+    console.log(`[FINALIZE] ${mediaId}: Upload finalized`);
+    console.log(`  File: ${session.fileName}`);
+    console.log(`  Size: ${fileContent.length} bytes`);
 
-    // Nettoyer les chunks
     await fs.rm(session.uploadDir, { recursive: true, force: true });
 
-    // Mettre à jour le statut
     session.status = 'completed';
     session.completedAt = new Date();
     session.filePath = outputPath;
@@ -709,12 +738,12 @@ router.post('/finalize', async (req: Request, res: Response) => {
       fileName: session.fileName,
       filePath: `/uploads/${mediaId}_${session.fileName}`,
       fileSize: fileContent.length,
-      message: 'Upload finalisé avec succès'
+      message: 'Upload finalized successfully'
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      error: 'Erreur finalisation',
+      error: 'Finalization failed',
       message: error instanceof Error ? error.message : String(error)
     });
   }
@@ -725,290 +754,341 @@ export default router;
 
 ---
 
-## 🐘 Backend PHP / Symfony
+## 🐘 PHP / Symfony Backend
 
-Voici l'exemple complet du contrôleur Symfony fourni:
+### Installation
 
-### Initialisation
-
-```php
-#[Route('/api/upload/init', methods: ['POST'])]
-public function initializeUpload(Request $request): JsonResponse
-{
-    try {
-        $data = json_decode($request->getContent(), true);
-
-        if (!isset($data['fileName'], $data['fileSize'], $data['fileHash'])) {
-            return $this->json([
-                'error' => 'Données manquantes',
-                'message' => 'fileName, fileSize, et fileHash sont requis'
-            ], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Générer un mediaId unique
-        $mediaId = uniqid('media_', true);
-        $mediaChunkDir = $this->chunksDir . '/' . $mediaId;
-
-        if (!is_dir($mediaChunkDir)) {
-            mkdir($mediaChunkDir, 0777, true);
-        }
-
-        // Sauvegarder les métadonnées
-        $metadata = [
-            'mediaId' => $mediaId,
-            'fileName' => $data['fileName'],
-            'fileSize' => $data['fileSize'],
-            'fileType' => $data['fileType'] ?? 'application/octet-stream',
-            'fileHash' => $data['fileHash'],
-            'uploadedChunks' => 0,
-            'totalChunks' => 0,
-            'status' => 'initialized',
-            'createdAt' => date('Y-m-d H:i:s'),
-            'chunkDir' => $mediaChunkDir
-        ];
-
-        $this->saveMetadata($mediaId, $metadata);
-
-        return $this->json([
-            'success' => true,
-            'mediaId' => $mediaId,
-            'message' => 'Session d\'upload initialisée'
-        ], Response::HTTP_CREATED);
-    } catch (\Exception $e) {
-        return $this->json([
-            'success' => false,
-            'error' => 'Erreur serveur',
-            'message' => $e->getMessage()
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
-    }
-}
+```bash
+composer require symfony/http-foundation symfony/routing
 ```
 
-### Upload Chunk
+### Upload Controller
 
 ```php
-#[Route('/api/upload/chunk', methods: ['POST'])]
-public function uploadChunk(Request $request): JsonResponse
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controller;
+
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+
+#[Route('/api/upload')]
+final class UploadController extends AbstractController
 {
-    try {
-        $chunk = $request->files->get('chunk');
-        $chunkIndex = (int) $request->request->get('chunkIndex');
-        $totalChunks = (int) $request->request->get('totalChunks');
-        $mediaId = $request->request->get('mediaId');
+    private string $uploadDir;
+    private string $chunksDir;
+    private string $metadataFile;
 
-        if (!$chunk) {
-            return $this->json([
-                'error' => 'Aucun chunk uploadé'
-            ], Response::HTTP_BAD_REQUEST);
+    public function __construct(string $projectDir)
+    {
+        $this->uploadDir = $projectDir . '/public/uploads/complete';
+        $this->chunksDir = $projectDir . '/public/uploads/chunks';
+        $this->metadataFile = $projectDir . '/var/upload_metadata.json';
+
+        if (!is_dir($this->uploadDir)) {
+            mkdir($this->uploadDir, 0777, true);
         }
-
-        $metadata = $this->loadMetadata($mediaId);
-        if (!$metadata) {
-            return $this->json([
-                'error' => 'Session non trouvée'
-            ], Response::HTTP_NOT_FOUND);
+        if (!is_dir($this->chunksDir)) {
+            mkdir($this->chunksDir, 0777, true);
         }
-
-        // Chemin du chunk
-        $chunkDir = $metadata['chunkDir'];
-        $chunkFileName = sprintf('chunk_%04d.part', $chunkIndex);
-        $chunkPath = $chunkDir . '/' . $chunkFileName;
-
-        // Sauvegarder
-        if (!$chunk->move($chunkDir, $chunkFileName)) {
-            throw new \RuntimeException('Impossible de sauvegarder le chunk');
-        }
-
-        // Mettre à jour les métadonnées
-        $metadata['uploadedChunks'] = $chunkIndex + 1;
-        $metadata['totalChunks'] = $totalChunks;
-        $metadata['status'] = 'uploading';
-        $this->saveMetadata($mediaId, $metadata);
-
-        $percentage = round(($metadata['uploadedChunks'] / $totalChunks) * 100);
-
-        return $this->json([
-            'success' => true,
-            'chunkIndex' => $chunkIndex,
-            'uploadedChunks' => $metadata['uploadedChunks'],
-            'totalChunks' => $totalChunks,
-            'percentage' => $percentage
-        ]);
-    } catch (\Exception $e) {
-        return $this->json([
-            'success' => false,
-            'error' => 'Erreur upload',
-            'message' => $e->getMessage()
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
-}
-```
 
-### Finalisation
+    #[Route('/init', methods: ['POST'])]
+    public function initializeUpload(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
 
-```php
-#[Route('/api/upload/finalize', methods: ['POST'])]
-public function finalizeUpload(Request $request): JsonResponse
-{
-    try {
-        $data = json_decode($request->getContent(), true);
-        $mediaId = $data['mediaId'] ?? null;
-
-        $metadata = $this->loadMetadata($mediaId);
-        if (!$metadata) {
-            return $this->json([
-                'error' => 'Session non trouvée'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        $chunkDir = $metadata['chunkDir'];
-        $totalChunks = $metadata['totalChunks'];
-        $finalFileName = $metadata['fileName'];
-        $finalFilePath = $this->uploadDir . '/' . $mediaId . '_' . $finalFileName;
-
-        // Assembler les chunks
-        $finalFile = fopen($finalFilePath, 'wb');
-        if (!$finalFile) {
-            throw new \RuntimeException('Impossible de créer le fichier final');
-        }
-
-        for ($i = 0; $i < $totalChunks; $i++) {
-            $chunkFileName = sprintf('chunk_%04d.part', $i);
-            $chunkPath = $chunkDir . '/' . $chunkFileName;
-
-            if (!file_exists($chunkPath)) {
-                throw new \RuntimeException("Chunk manquant: $i");
+            if (!isset($data['fileName'], $data['fileSize'], $data['fileHash'])) {
+                return $this->json([
+                    'error' => 'Missing required fields',
+                    'message' => 'fileName, fileSize, and fileHash are required'
+                ], Response::HTTP_BAD_REQUEST);
             }
 
-            $chunkData = file_get_contents($chunkPath);
-            fwrite($finalFile, $chunkData);
+            $mediaId = uniqid('media_', true);
+            $mediaChunkDir = $this->chunksDir . '/' . $mediaId;
+
+            if (!is_dir($mediaChunkDir)) {
+                mkdir($mediaChunkDir, 0777, true);
+            }
+
+            $metadata = [
+                'mediaId' => $mediaId,
+                'fileName' => $data['fileName'],
+                'fileSize' => $data['fileSize'],
+                'fileType' => $data['fileType'] ?? 'application/octet-stream',
+                'fileHash' => $data['fileHash'],
+                'uploadedChunks' => 0,
+                'totalChunks' => 0,
+                'status' => 'initialized',
+                'createdAt' => date('Y-m-d H:i:s'),
+                'chunkDir' => $mediaChunkDir
+            ];
+
+            $this->saveMetadata($mediaId, $metadata);
+
+            return $this->json([
+                'success' => true,
+                'mediaId' => $mediaId,
+                'message' => 'Upload session initialized successfully'
+            ], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Initialization failed',
+                'message' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/chunk', methods: ['POST'])]
+    public function uploadChunk(Request $request): JsonResponse
+    {
+        try {
+            $chunk = $request->files->get('chunk');
+            $chunkIndex = (int) $request->request->get('chunkIndex');
+            $totalChunks = (int) $request->request->get('totalChunks');
+            $mediaId = $request->request->get('mediaId');
+
+            if (!$chunk) {
+                return $this->json([
+                    'error' => 'No chunk file uploaded'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            if (!$mediaId) {
+                return $this->json([
+                    'error' => 'Missing mediaId'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $metadata = $this->loadMetadata($mediaId);
+            if (!$metadata) {
+                return $this->json([
+                    'error' => 'Session not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            $chunkDir = $metadata['chunkDir'];
+            $chunkFileName = sprintf('chunk_%04d.part', $chunkIndex);
+
+            if (!$chunk->move($chunkDir, $chunkFileName)) {
+                throw new \RuntimeException('Failed to save chunk file');
+            }
+
+            $metadata['uploadedChunks'] = $chunkIndex + 1;
+            $metadata['totalChunks'] = $totalChunks;
+            $metadata['status'] = 'uploading';
+            $metadata['lastChunkAt'] = date('Y-m-d H:i:s');
+
+            $this->saveMetadata($mediaId, $metadata);
+
+            $percentage = round(($metadata['uploadedChunks'] / $totalChunks) * 100);
+
+            return $this->json([
+                'success' => true,
+                'chunkIndex' => $chunkIndex,
+                'uploadedChunks' => $metadata['uploadedChunks'],
+                'totalChunks' => $totalChunks,
+                'percentage' => $percentage,
+                'message' => sprintf('Chunk %d/%d uploaded successfully', $chunkIndex + 1, $totalChunks)
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Chunk upload failed',
+                'message' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    #[Route('/finalize', methods: ['POST'])]
+    public function finalizeUpload(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $mediaId = $data['mediaId'] ?? null;
+
+            if (!$mediaId) {
+                return $this->json([
+                    'error' => 'Missing mediaId'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $metadata = $this->loadMetadata($mediaId);
+            if (!$metadata) {
+                return $this->json([
+                    'error' => 'Session not found'
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            $chunkDir = $metadata['chunkDir'];
+            $totalChunks = $metadata['totalChunks'];
+            $finalFileName = $metadata['fileName'];
+            $finalFilePath = $this->uploadDir . '/' . $mediaId . '_' . $finalFileName;
+
+            $finalFile = fopen($finalFilePath, 'wb');
+            if (!$finalFile) {
+                throw new \RuntimeException('Failed to create final file');
+            }
+
+            for ($i = 0; $i < $totalChunks; $i++) {
+                $chunkFileName = sprintf('chunk_%04d.part', $i);
+                $chunkPath = $chunkDir . '/' . $chunkFileName;
+
+                if (!file_exists($chunkPath)) {
+                    fclose($finalFile);
+                    throw new \RuntimeException(sprintf('Missing chunk %d', $i));
+                }
+
+                $chunkData = file_get_contents($chunkPath);
+                fwrite($finalFile, $chunkData);
+            }
+
+            fclose($finalFile);
+
+            $this->cleanupChunks($chunkDir);
+
+            $metadata['status'] = 'completed';
+            $metadata['filePath'] = $finalFilePath;
+            $metadata['completedAt'] = date('Y-m-d H:i:s');
+            $this->saveMetadata($mediaId, $metadata);
+
+            $fileSize = filesize($finalFilePath);
+
+            return $this->json([
+                'success' => true,
+                'mediaId' => $mediaId,
+                'fileName' => $finalFileName,
+                'filePath' => '/uploads/complete/' . $mediaId . '_' . $finalFileName,
+                'fileSize' => $fileSize,
+                'message' => 'Upload finalized successfully'
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Finalization failed',
+                'message' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private function saveMetadata(string $mediaId, array $metadata): void
+    {
+        $allMetadata = $this->loadAllMetadata();
+        $allMetadata[$mediaId] = $metadata;
+        file_put_contents($this->metadataFile, json_encode($allMetadata, JSON_PRETTY_PRINT));
+    }
+
+    private function loadMetadata(string $mediaId): ?array
+    {
+        $allMetadata = $this->loadAllMetadata();
+        return $allMetadata[$mediaId] ?? null;
+    }
+
+    private function loadAllMetadata(): array
+    {
+        if (!file_exists($this->metadataFile)) {
+            return [];
         }
 
-        fclose($finalFile);
-
-        // Nettoyer les chunks
-        $this->cleanupChunks($chunkDir);
-
-        // Mettre à jour le statut
-        $metadata['status'] = 'completed';
-        $metadata['filePath'] = $finalFilePath;
-        $metadata['completedAt'] = date('Y-m-d H:i:s');
-        $this->saveMetadata($mediaId, $metadata);
-
-        $fileSize = filesize($finalFilePath);
-
-        return $this->json([
-            'success' => true,
-            'mediaId' => $mediaId,
-            'fileName' => $finalFileName,
-            'filePath' => '/uploads/complete/' . $mediaId . '_' . $finalFileName,
-            'fileSize' => $fileSize,
-            'message' => 'Upload finalisé'
-        ]);
-    } catch (\Exception $e) {
-        return $this->json([
-            'success' => false,
-            'error' => 'Erreur finalisation',
-            'message' => $e->getMessage()
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        $content = file_get_contents($this->metadataFile);
+        return json_decode($content, true) ?? [];
     }
-}
 
-private function saveMetadata(string $mediaId, array $metadata): void
-{
-    $allMetadata = $this->loadAllMetadata();
-    $allMetadata[$mediaId] = $metadata;
-    file_put_contents($this->metadataFile, json_encode($allMetadata, JSON_PRETTY_PRINT));
-}
+    private function cleanupChunks(string $chunkDir): void
+    {
+        if (!is_dir($chunkDir)) {
+            return;
+        }
 
-private function loadMetadata(string $mediaId): ?array
-{
-    $allMetadata = $this->loadAllMetadata();
-    return $allMetadata[$mediaId] ?? null;
-}
+        $files = glob($chunkDir . '/*');
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                unlink($file);
+            }
+        }
 
-private function cleanupChunks(string $chunkDir): void
-{
-    if (!is_dir($chunkDir)) return;
-    
-    $files = glob($chunkDir . '/*');
-    foreach ($files as $file) {
-        if (is_file($file)) unlink($file);
+        rmdir($chunkDir);
     }
-    rmdir($chunkDir);
 }
 ```
 
 ---
 
-## 📚 Événements Disponibles
+## 📊 Available Events
 
-La bibliothèque émet plus de 15 événements pour un contrôle total:
+The library emits 15+ events for complete control:
 
-| Événement | Description |
-|-----------|-------------|
-| `INITIALIZE_UPLOAD_STARTED` | Initialisation démarrée |
-| `INITIALIZE_UPLOAD_SUCCESS` | Initialisation réussie |
-| `INITIALIZE_UPLOAD_FAILURE` | Initialisation échouée |
-| `MEDIA_CHUNK_UPLOAD_STARTED` | Chunk commencé |
-| `MEDIA_CHUNK_UPLOAD_SUCCESS` | Chunk réussi |
-| `MEDIA_CHUNK_UPLOAD_FAILED` | Chunk échoué |
-| `MEDIA_CHUNK_UPLOAD_HTTP_ERROR_RESPONSE` | Erreur HTTP chunk |
-| `MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE` | Max retries atteint |
-| `DOWNLOAD_MEDIA_COMPLETE` | Upload complété |
-| `DOWNLOAD_MEDIA_FAILURE` | Upload échoué |
-| `UPLOAD_CANCELLED` | Upload annulé |
-| `UPLOAD_PAUSED` | Upload mis en pause |
-| `UPLOAD_RESUMED` | Upload repris |
-| `UPLOAD_STATE_CHANGED` | État changé |
-| `MEDIA_CHUNK_UPLOAD_RESUME` | Reprise chunk détectée |
+| Event | Description |
+|-------|-------------|
+| `INITIALIZE_UPLOAD_STARTED` | Initialization started |
+| `INITIALIZE_UPLOAD_SUCCESS` | Initialization successful |
+| `INITIALIZE_UPLOAD_FAILURE` | Initialization failed |
+| `MEDIA_CHUNK_UPLOAD_STARTED` | Chunk upload started |
+| `MEDIA_CHUNK_UPLOAD_SUCCESS` | Chunk upload successful |
+| `MEDIA_CHUNK_UPLOAD_FAILED` | Chunk upload failed |
+| `MEDIA_CHUNK_UPLOAD_HTTP_ERROR_RESPONSE` | HTTP error response |
+| `MEDIA_CHUNK_UPLOAD_MAXRETRY_EXPIRE` | Max retries reached |
+| `DOWNLOAD_MEDIA_COMPLETE` | Upload completed |
+| `DOWNLOAD_MEDIA_FAILURE` | Upload failed |
+| `UPLOAD_CANCELLED` | Upload cancelled |
+| `UPLOAD_PAUSED` | Upload paused |
+| `UPLOAD_RESUMED` | Upload resumed |
+| `UPLOAD_STATE_CHANGED` | Upload state changed |
+| `MEDIA_CHUNK_UPLOAD_RESUME` | Resume detected |
 
 ---
 
-## 🎯 Gestion des États (UploadState)
+## 🎯 Upload States (UploadState)
 
 ```typescript
 enum UploadState {
-  IDLE = 'idle',              // Prêt
-  INITIALIZING = 'initializing',  // En cours d'initialisation
-  UPLOADING = 'uploading',    // Uploading en cours
-  PAUSED = 'paused',          // En pause
-  CANCELLED = 'cancelled',    // Annulé
-  FINALIZING = 'finalizing',  // Finalisation en cours
-  COMPLETED = 'completed',    // Complété
-  FAILED = 'failed'           // Échoué
+  IDLE = 'idle',                  // Ready
+  INITIALIZING = 'initializing',  // Initializing
+  UPLOADING = 'uploading',        // Uploading in progress
+  PAUSED = 'paused',              // Paused
+  CANCELLED = 'cancelled',        // Cancelled
+  FINALIZING = 'finalizing',      // Finalizing
+  COMPLETED = 'completed',        // Completed
+  FAILED = 'failed'               // Failed
 }
 ```
 
 ---
 
-## 🔄 Pause et Reprise
+## 🔄 Pause and Resume
 
-### Mettre en Pause
+### Pause Upload
 
 ```typescript
-uploader.pause();  // Met l'upload en pause
+uploader.pause();  // Pause the upload
 ```
 
-### Reprendre un Upload
+### Resume Upload
 
 ```typescript
-// Reprendre depuis la dernière position sauvegardée
 const resumeData = await cache.getItem(`upload_${fileName}`);
 await uploader.resumeUpload(resumeData);
 ```
 
-### Annuler un Upload
+### Cancel Upload
 
 ```typescript
-uploader.cancel();  // Annule complètement l'upload
+uploader.cancel();  // Cancel completely
 ```
 
 ---
 
-## 🛡️ Gestion des Erreurs
+## 🛡️ Error Handling
 
-### Exception Personnalisées
+### Custom Exceptions
 
 ```typescript
 import {
@@ -1024,36 +1104,35 @@ try {
   if (error instanceof FileUploadChunkError) {
     console.log(`Chunk ${error.chunkIndex} failed`);
     console.log(`Attempted ${error.attemptNumber} times`);
-    console.log(`Will retry: ${error.willRetry}`);
   } else if (error instanceof InitializeUploadFailureException) {
-    console.error('Upload initialization failed:', error.message);
+    console.error('Initialization failed:', error.message);
   } else if (error instanceof UploadCancelledException) {
-    console.log('Upload was cancelled by user');
+    console.log('Upload was cancelled');
   }
 }
 ```
 
 ---
 
-## 📊 Interface UploadProgress
+## 📈 UploadProgress Interface
 
-Reçue dans le callback `onProgress`:
+Received in `onProgress` callback:
 
 ```typescript
 interface UploadProgress {
-  uploadedChunks: number;        // Chunks uploadés
-  totalChunks: number;           // Total chunks
-  uploadedBytes: number;         // Bytes uploadés
-  totalBytes: number;            // Total bytes
-  percentage: number;            // 0-100
-  currentChunk: number;          // Chunk actuel
-  speed?: number;                // Bytes par seconde
-  estimatedTimeRemaining?: number | null;  // Secondes
-  elapsed: number;               // Secondes écoulées
+  uploadedChunks: number;          // Chunks uploaded
+  totalChunks: number;             // Total chunks
+  uploadedBytes: number;           // Bytes uploaded
+  totalBytes: number;              // Total bytes
+  percentage: number;              // 0-100
+  currentChunk: number;            // Current chunk
+  speed?: number;                  // Bytes per second
+  estimatedTimeRemaining?: number | null;  // Seconds
+  elapsed: number;                 // Elapsed seconds
 }
 ```
 
-### Exemple d'Utilisation
+### Usage Example
 
 ```typescript
 onProgress: (progress) => {
@@ -1066,9 +1145,9 @@ onProgress: (progress) => {
 
 ---
 
-## 🔐 Sécurité et Bonnes Pratiques
+## 🔐 Security Best Practices
 
-### 1. Authentification
+### 1. Authentication
 
 ```typescript
 const uploader = new ChunkedFileUploader({
@@ -1081,7 +1160,7 @@ const uploader = new ChunkedFileUploader({
 }, cache, eventEmitter);
 ```
 
-### 2. Validation Côté Client
+### 2. File Validation
 
 ```typescript
 const validateFile = (file: File) => {
@@ -1089,11 +1168,11 @@ const validateFile = (file: File) => {
   const ALLOWED_TYPES = ['video/mp4', 'image/jpeg', 'application/pdf'];
 
   if (file.size > MAX_SIZE) {
-    throw new Error('Fichier trop volumineux');
+    throw new Error('File too large');
   }
 
   if (!ALLOWED_TYPES.includes(file.type)) {
-    throw new Error('Type de fichier non autorisé');
+    throw new Error('File type not allowed');
   }
 };
 
@@ -1101,55 +1180,22 @@ validateFile(selectedFile);
 await uploader.upload();
 ```
 
-### 3. Timeout et Retry
+### 3. Timeout and Retry Configuration
 
 ```typescript
 const uploader = new ChunkedFileUploader({
   file,
-  timeout: 30000,        // 30 secondes par chunk
-  maxRetries: 5,         // Maximum 5 tentatives
-  initTimeout: 45000     // 45 secondes pour initialisation
+  timeout: 30000,        // 30 seconds per chunk
+  maxRetries: 5,         // Maximum 5 retry attempts
+  initTimeout: 45000     // 45 seconds for initialization
 }, cache, eventEmitter);
 ```
 
 ---
 
-## 📞 Support et Contribution
+## 💡 Real-World Examples
 
-**Auteur:** AGBOKOUDJO Franck  
-**Email:** internationaleswebservices@gmail.com  
-**Phone:** +229 0167 25 18 86  
-**LinkedIn:** https://www.linkedin.com/in/internationales-web-apps-services-120520193/  
-**Company:** INTERNATIONALES WEB APPS & SERVICES
-
-### Signaler un Bug
-
-Créez une issue sur le repository GitHub avec:
-- Description du problème
-- Étapes pour reproduire
-- Votre environnement (navigateur, OS, version)
-- Console logs
-
-### Contribuer
-
-Les contributions sont les bienvenues! Veuillez:
-1. Fork le repository
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit vos changements (`git commit -m 'Add AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
-
----
-
-## 📄 License
-
-MIT License - Voir le fichier [LICENSE](LICENSE) pour plus de détails.
-
----
-
-## 🎉 Exemples de Projets Réels
-
-### Plateforme de Streaming Vidéo
+### Video Streaming Platform
 
 ```typescript
 const videoUploader = new ChunkedFileUploader({
@@ -1168,7 +1214,7 @@ const videoUploader = new ChunkedFileUploader({
 }, cache, eventEmitter);
 ```
 
-### Application Médicale
+### Medical Application
 
 ```typescript
 const medicalUploader = new ChunkedFileUploader({
@@ -1186,7 +1232,7 @@ const medicalUploader = new ChunkedFileUploader({
 }, cache, eventEmitter);
 ```
 
-### SaaS - Backup Fichiers
+### SaaS - File Backup
 
 ```typescript
 const backupUploader = new ChunkedFileUploader({
@@ -1212,21 +1258,45 @@ const backupUploader = new ChunkedFileUploader({
 
 ---
 
-## 📚 Ressources Additionnelles
+## 📞 Support & Contributing
 
-- [Documentation Complète](https://docs.example.com)
-- [API Reference](https://api.example.com/docs)
-- [Exemples de Code](https://github.com/wlindabla/chunked-file-uploader/examples)
-- [Chat Community Discord](https://discord.gg/example)
+**Author:** AGBOKOUDJO Franck  
+**Email:** internationaleswebservices@gmail.com  
+**Phone:** +229 0167 25 18 86  
+**LinkedIn:** https://www.linkedin.com/in/internationales-web-apps-services-120520193/  
+**Company:** INTERNATIONALES WEB APPS & SERVICES
+
+### Bug Reports
+
+Create an issue with:
+- Problem description
+- Steps to reproduce
+- Your environment (browser, OS, version)
+- Console logs
+
+### Contributing
+
+We welcome contributions!
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## ⭐ Montrez votre Support
+## 📄 License
 
-Si vous trouvez cette bibliothèque utile, n'hésitez pas à:
-- ⭐ Star le repository
-- 🐛 Signaler des bugs
-- 💡 Suggérer des améliorations
-- 🎉 Partager votre retour
+MIT License - See [LICENSE](LICENSE) file for details.
 
-Merci! 🙏
+---
+
+## ⭐ Show Your Support
+
+If you find this library useful:
+- ⭐ Star the repository
+- 🐛 Report bugs
+- 💡 Suggest improvements
+- 🎉 Share feedback
+
+Thank you! 🙏
