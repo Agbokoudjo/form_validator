@@ -9,12 +9,6 @@
  * For more information, please feel free to contact the author.
  */
 
-export interface CustomEventOptions {
-    bubbles?: boolean;
-    cancelable?: boolean;
-    composed?: boolean;
-}
-
 export interface UploadOptions {
     autoSave?:boolean,
     file: File;
