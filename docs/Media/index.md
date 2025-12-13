@@ -177,7 +177,7 @@ const config = {
     import { 
       ChunkedFileUploader,
       DefaultUploadResumeCacheAdapter,
-      EventEmitter 
+      UniversalEventEmitter as EventEmitter 
     } from '@wlindabla/form_validator';
 
     let uploader = null;
@@ -273,9 +273,9 @@ const config = {
 ```typescript
 import { useState, useRef, useCallback } from 'react';
 import { 
-  ChunkedFileUploader
-,DefaultUploadResumeCacheAdapter,
-UniversalEventEmitter
+  ChunkedFileUploader,
+  DefaultUploadResumeCacheAdapter,
+  UniversalEventEmitter as EventEmitter 
  } from '@wlindabla/form_validator';
 
 export const useChunkedUploader = () => {
@@ -386,7 +386,11 @@ export default FileUploadComponent;
 ```typescript
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ChunkedFileUploader,DefaultUploadResumeCacheAdapter } from '@wlindabla/form_validator';
+import {  
+  ChunkedFileUploader,
+  DefaultUploadResumeCacheAdapter,
+  UniversalEventEmitter as EventEmitter 
+    } from '@wlindabla/form_validator';
 
 @Injectable({
   providedIn: 'root'
