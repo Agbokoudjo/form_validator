@@ -6911,7 +6911,7 @@ jQuery(function TestvalidateInput() {
             target instanceof HTMLTextAreaElement)
            && target.type !== "file") {
 
-            await form_validate.validateChildrenForm(target);
+            await formValidate.validateChildrenForm(target);
         }
     });
 
@@ -6922,7 +6922,8 @@ jQuery(function TestvalidateInput() {
         const data = (event.originalEvent as CustomEvent<FieldValidationEventData>).detail;
         
         // Add error message to the DOM
-        addErrorMessageFieldDom(jQuery(data.targetChildrenForm), data.message,'container-div-error-message');
+        formValidate.addErrorMessageChildrenForm(
+            jQuery(data.targetChildrenForm), data.message,'container-div-error-message');
     });
 
     // ============================================
@@ -6943,7 +6944,7 @@ jQuery(function TestvalidateInput() {
         
         if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
             // Clear error messages as user types
-            clearErrorInput(jQuery(target));
+            formValidate.clearErrorDataChildren(target);
         }
     });
 
@@ -6954,14 +6955,14 @@ jQuery(function TestvalidateInput() {
          const target = event.target;
         if (target instanceof HTMLInputElement && target.type === "file") {
 
-            await form_validate.validateChildrenForm(target);
+            await formValidate.validateChildrenForm(target);
         }
     })
     __form.on('dragenter',`${idsDragenter}`, (event) => {
         const target = event.target;
         if (target instanceof HTMLInputElement && target.type === "file") {
 
-            clearErrorInput(jQuery(target));
+            formValidate.clearErrorDataChildren(target);
         }
     });
 });

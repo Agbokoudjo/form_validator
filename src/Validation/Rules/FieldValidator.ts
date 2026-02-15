@@ -53,7 +53,7 @@ export interface FieldValidatorInterface {
 	* @returns {Promise<this> | this} Returns the instance (`this`) for synchronous validation, or a 
 	* Promise resolving to the instance for asynchronous validation.
 	*/
-	validate(value: DataInput, fieldName: string, optionsValidate: any,...otherAgrs:any): Promise<this> | this;
+	validate(value: DataInput, fieldName: string, optionsValidate: any,...otherArgs:any): Promise<this> | this;
 }
 
 /**
@@ -72,15 +72,14 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 
 	public setValidationState = (isValid: boolean, errorMessage: string | string[], fieldName: string): this => {
 
-		// 1. Définir le statut de validité
+		// Définir le statut de validité
 		formErrorStore.setFieldValid(fieldName, isValid);
 
-		// 2. Ajouter le message d'erreur (la logique d'ajout est dans le Store)
+		// Ajouter le message d'erreur (la logique d'ajout est dans le Store)
 		if (!isValid) {
 			formErrorStore.addFieldError(fieldName, errorMessage);
 		} else {
 			// Si le champ est marqué valide, on s'assure qu'il n'y a pas d'erreurs résiduelles.
-			// Note: Ceci peut nécessiter une vérification si vous voulez supprimer le champ uniquement.
 		}
 
 		return this; 
@@ -96,7 +95,7 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 		};
 	};
 
-	public abstract validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherAgrs: any): Promise<this> | this;
+	public abstract validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherArgs: any): Promise<this> | this;
 
 	protected getRawStringValue(value?: string): string {
 

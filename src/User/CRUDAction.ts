@@ -21,7 +21,10 @@ import {
     validateJQueryAvailability,
     HttpMethod
 } from "../_Utils";
-import { CRUDActionEventDetail, CRUD_ACTION_CONFIRMED_EVENT } from "./event";
+import {
+    CRUDActionEventDetail,
+    CRUD_ACTION_CONFIRMED_EVENT
+} from "./Event";
 
 /**
  * Extracted toggle data from DOM element
@@ -96,7 +99,7 @@ export async function CRUDActionConfirmationHandle(
 ): Promise<boolean> {
     const {
         element,
-        eventName= CRUD_ACTION_CONFIRMED_EVENT,
+        eventName = CRUD_ACTION_CONFIRMED_EVENT,
         confirmDialogConfig = {},
         cancelDialogConfig = {},
         onConfirm = null,
@@ -141,7 +144,7 @@ export async function CRUDActionConfirmationHandle(
         // 4. Handle confirmation
         if (result.isConfirmed) {
             // Create and dispatch custom event
-            const customEvent = createCRUDActionEvent(eventName,crudActionData, element);
+            const customEvent = createCRUDActionEvent(eventName, crudActionData, element);
             document.dispatchEvent(customEvent);
             // Execute onConfirm callback
             if (onConfirm && typeof onConfirm === "function") {
@@ -287,7 +290,7 @@ export function createCRUDActionEvent(
             urlActionRequest: crudActionData.actionUrl,
             sourceElement,
             timestamp: new Date().toISOString(),
-            httpMethodRequestAction:crudActionData.httpMethodRequestAction
+            httpMethodRequestAction: crudActionData.httpMethodRequestAction
         }
     });
 }
@@ -363,7 +366,7 @@ export function extractCRUDActionData(element: HTMLElement): ExtractedCRUDAction
         httpMethodRequestAction = "PATCH" as HttpMethod;
         console.warn("The HTTP method for sending the request for CRUDAction is missing in the attribute, but by default the HTTP method used is 'PATCH'");
     }
-    
+
     return {
         title,
         actionConfirmText,

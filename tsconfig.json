@@ -13,9 +13,9 @@
     "isolatedModules":false,
     "moduleDetection": "force",
     "esModuleInterop": true,
-     "noEmit": false,  // Autorise la génération des fichiers compilés
+     "noEmit": false, 
     "strict": true,
-    "moduleResolution": "bundler",    // Permet de résoudre les modules comme Node.js
+    "moduleResolution": "bundler",   
     "declaration": true,     
     "allowJs":false,
     "noUnusedLocals": false,
@@ -27,6 +27,6 @@
       "node"  
     ],
   },
-  "include": ["src/**/*", "global.d.ts","pdfjs-dist.d.ts"],
+  "include": ["src/**/*", "src/global.d.ts","pdfjs-dist.d.ts"],
   "exclude": ["node_modules","src/main.ts","dist","src/test/**/*"]
 }

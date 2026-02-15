@@ -11,57 +11,35 @@
  * @phone +229 0167 25 18 86
  * @linkedin https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * @package https://github.com/Agbokoudjo/
- * @version 2.1.0
+ * @version 2.2.0
  * @license MIT
  */
 
-import Swal, { SweetAlertOptions, SweetAlertResult } from "sweetalert2";
+
 import {
-    mapStatusToResponseType,
-    HttpResponse,
-    httpFetchHandler,
-    HttpMethod,
     Logger,
-    detectLanguageFromDom
+    detectLanguageFromDom,
+    showErrorDialog,
+    showSuccessDialog,
+    showLoadingDialog
 } from "../_Utils";
-import { CRUDActionEventDetail } from "./event";
+
+import { CRUDActionEventDetail } from "./Event";
+
+import {
+    safeFetch,
+    HttpMethod,
+    FetchResponseInterface,
+    HttpResponse
+} from "@wlindabla/http_client";
+
+import Swal, { SweetAlertOptions} from "sweetalert2";
 
 /**
  * Translator function signature
  */
 export type Translator = (key: string, error?: Error | null, language?: string) => string;
 
-/**
- * Options for showLoadingDialog
- */
-export interface ShowLoadingDialogOptions {
-    /** Custom configuration */
-    config?: Partial<SweetAlertOptions>;
-}
-
-/**
- * Options for showSuccessDialog
- */
-export interface ShowSuccessDialogOptions {
-    /** Dialog title */
-    title: string;
-    /** Success message */
-    message: string;
-    /** Custom configuration */
-    config?: Partial<SweetAlertOptions>;
-}
-
-/**
- * Options for showErrorDialog
- */
-export interface ShowErrorDialogOptions {
-    /** Dialog title */
-    title: string;
-    /** Error message */
-    message: string;
-    /** Custom configuration */
-    config?: Partial<SweetAlertOptions>;
-}
 
 /**
  * Parameters for processToggleAction
@@ -69,7 +47,7 @@ export interface ShowErrorDialogOptions {
 export interface ProcessCRUDActionParams {
     /** Event detail from custom event */
     eventDetail: CRUDActionEventDetail;
-    optionsheaders?: HeadersInit;
+    optionsHeaders?: HeadersInit;
     /** Translation function (optional) */
     translator?: Translator | null;
     /** Custom loading dialog config */
@@ -85,246 +63,10 @@ export interface ProcessCRUDActionParams {
     /** Callback after success */
     onSuccess?: ((data: unknown, eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
     /** Callback after error */
-    onError?: ((error: Error | HttpResponse<unknown>, eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
+    onError?: ((error: Error | FetchResponseInterface<unknown>, eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
     /** Callback after completion (always called) */
     onComplete?: ((eventDetail: CRUDActionEventDetail) => void | Promise<void>) | null;
 }
-
-/**
- * Timer interval wrapper
- */
-export interface TimerWrapper {
-    timerInterval?: NodeJS.Timeout;
-}
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-/**
- * Default configuration for loading dialog
- */
-export const DEFAULT_LOADING_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
-    icon: "info",
-    allowOutsideClick: false,
-    showConfirmButton: false,
-    timer: 50000,
-    timerProgressBar: true,
-    didOpen: (): void => {
-        const container = document.querySelector<HTMLElement>(".swal2-container");
-        if (container) {
-            container.style.zIndex = "99999";
-        }
-        Swal.showLoading();
-    },
-    customClass: {
-        loader: "spinner-border text-info",
-        timerProgressBar: "bg-info"
-    }
-} as const;
-
-/**
- * Default configuration for success dialog
- */
-export const DEFAULT_SUCCESS_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
-    icon: "success",
-    timer: 40000,
-    timerProgressBar: true,
-    showConfirmButton: false,
-    showCloseButton: true
-} as const;
-
-/**
- * Default configuration for error dialog
- */
-export const DEFAULT_ERROR_DIALOG_CONFIG: Partial<SweetAlertOptions> = {
-    icon: "error",
-    timer: 30000,
-    showConfirmButton: true,
-    confirmButtonText: "OK",
-    showCloseButton: true
-} as const;
-
-// ============================================================================
-// DIALOG FUNCTIONS
-// ============================================================================
-
-/**
- * Shows a loading dialog with timer
- * 
- * Displays a modal with loading spinner and progress bar.
- * Automatically updates timer display in real-time.
- * 
- * @param options - Configuration options
- * @returns Object containing timer interval
- * 
- * @example
- * ```typescript
- * const { timerInterval } = showLoadingDialog({
- *     translator: (key) => translations[key]
- * });
- * 
- * // Later: cleanup
- * if (timerInterval) clearInterval(timerInterval);
- * ```
- */
-export function showLoadingDialog(
-    options: ShowLoadingDialogOptions
-): TimerWrapper {
-    const { config = {} } = options;
-
-    let timerInterval: NodeJS.Timeout | undefined;
-
-    const finalConfig: SweetAlertOptions = {
-        icon: "info",
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        timer: 50000,
-        timerProgressBar: true,
-        background: config.background || "#00427E",
-        color: config.color || "#fff",
-        title: config.title || "Processing..." ,
-        html: `<div class="alert alert-info" role="alert">
-               ${config.text || 'Please wait...'}
-               </div>`
-               ,
-        didOpen: (): void => {
-            const container = document.querySelector<HTMLElement>(".swal2-container");
-            if (container) {
-                container.style.zIndex = "99999";
-            }
-            Swal.showLoading();
-            const timerElement =Swal.getPopup()?.querySelector<HTMLElement>("b");
-            if (timerElement) {
-                timerInterval = setInterval(() => {
-                    const timeLeft = Swal.getTimerLeft() || 0;
-                    timerElement.textContent = `${timeLeft}ms`;
-                }, 100);
-            }
-        },
-        willClose: (): void => {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-        },
-        customClass: {
-            loader: "spinner-border text-info",
-            timerProgressBar: "bg-info"
-        },
-        showClass: {
-            popup: `
-                animate__animated
-                animate__fadeInUp
-                animate__faster
-                `
-        },
-        hideClass: {
-            popup: `
-                animate__animated
-                animate__fadeOutDown
-                animate__faster
-                `
-        }
-       
-    };
-
-    Swal.fire(finalConfig);
-
-    return { timerInterval };
-}
-
-/**
- * Shows a success dialog
- * 
- * Displays a success modal with custom title and message.
- * 
- * @param options - Configuration options
- * @returns Promise resolving to SweetAlert result
- * 
- * @example
- * ```typescript
- * await showSuccessDialog({
- *     title: 'Success!',
- *     message: 'Operation completed successfully'
- * });
- * ```
- */
-export function showSuccessDialog(
-    options: ShowSuccessDialogOptions
-): Promise<SweetAlertResult> {
-    const {title, message, config = {} } = options;
-
-    const finalConfig: SweetAlertOptions = {
-        animation: true,
-        allowEscapeKey: false,
-        background: config.background || "#00427E",
-        color: config.color || "#fff",
-        showClass: {
-            popup: `
-                animate__animated
-                animate__fadeInUp
-                animate__faster
-                `
-        },
-        hideClass: {
-            popup: `
-                animate__animated
-                animate__fadeOutDown
-                animate__faster
-                `
-        },
-        title:title,
-        html: `<div class="alert alert-success" role="alert">
-               ${message}
-               </div>`,
-        icon: "success",
-        showConfirmButton: false,
-        showCloseButton: true
-    };
-
-    return Swal.fire(finalConfig);
-}
-
-/**
- * Shows an error dialog
- * 
- * Displays an error modal with custom title and message.
- * Message is automatically wrapped in an alert-danger div.
- * 
- * @param options - Configuration options
- * @returns Promise resolving to SweetAlert result
- * 
- * @example
- * ```typescript
- * await showErrorDialog({
- *     title: 'Error',
- *     message: 'Something went wrong'
- * });
- * ```
- */
-export function showErrorDialog(
-    options: ShowErrorDialogOptions
-): Promise<SweetAlertResult> {
-    const { title, message, config = {} } = options;
-
-    const finalConfig: SweetAlertOptions = {
-        icon: "error",
-        timer: 30000,
-        showConfirmButton: true,
-        confirmButtonText: "OK",
-        showCloseButton: true,
-        title:title,
-        html: `<div class="alert alert-danger" role="alert">${message}</div>`,
-        background:config.background || "#00427E",
-        color:config.color || "#fff"
-    };
-
-    return Swal.fire(finalConfig);
-}
-
-// ============================================================================
-// MAIN PROCESSING FUNCTION
-// ============================================================================
 
 /**
  * Processes toggle action with HTTP request
@@ -370,14 +112,14 @@ export function showErrorDialog(
  */
 export async function processCRUDAction(
     params: ProcessCRUDActionParams
-): Promise<HttpResponse<unknown>> {
+): Promise<FetchResponseInterface> {
     const {
         eventDetail,
         translator = null,
         loadingConfig = {},
         successConfig = {},
         errorConfig = {},
-        optionsheaders,
+        optionsHeaders,
         httpMethod = "PATCH",
         retryCount = 2,
         onSuccess = null,
@@ -388,8 +130,7 @@ export async function processCRUDAction(
     let timerInterval: NodeJS.Timeout | undefined;
 
     try {
-        // 1. Close any previously opened modal
-        Swal.close();
+        Swal.close();  // Close any previously opened modal
 
         // 2. Show loading dialog
         const timer = showLoadingDialog({
@@ -397,31 +138,28 @@ export async function processCRUDAction(
         });
         timerInterval = timer.timerInterval;
 
-        // 3. Execute HTTP request
-        const response = await httpFetchHandler({
+        const response = await safeFetch({
             url: eventDetail.urlActionRequest,
             data: eventDetail.data,
             methodSend: httpMethod,
-            optionsheaders:optionsheaders,
-            retryCount:retryCount,
-            responseType:"json"
+            headers: optionsHeaders,
+            retryCount: retryCount,
+            responseType: "json"
         });
 
-        // 4. Close loading dialog
-           Swal.close();
+        Swal.close();
 
         if (timerInterval) {
             clearInterval(timerInterval);
             timerInterval = undefined;
         }
 
-        // 5. Check if response indicates error
-        if (mapStatusToResponseType(response.status) === "error") {
+        if (response.failed) {
             throw response;
         }
 
         // 6. Log success
-        Logger.log("✅ CRUD action successful:", response);
+        Logger.log("CRUD action successful:", response);
 
         // 7. Extract response data
         const responseData = response.data || response;
@@ -441,15 +179,14 @@ export async function processCRUDAction(
         return response;
 
     } catch (error) {
-        // 10. Close loading dialog on error
-          Swal.close();
+        Swal.close();
 
         if (timerInterval) {
             clearInterval(timerInterval);
         }
 
         // 11. Log error
-        Logger.error("❌ CRUD action failed:", error);
+        Logger.error("CRUD action failed:", error);
 
         // 12. Determine error message and title
         let errorMessage = "An error occurred";
@@ -457,14 +194,14 @@ export async function processCRUDAction(
         if (error instanceof HttpResponse) {
             // HTTP response error
             Logger.error(`HTTP ${error.status}:`, error.data);
-            const errorData = error.data as { message?: string; title?: string,detail?:string };
+            const errorData = error.data as { message?: string; title?: string, detail?: string };
             errorMessage = errorData.message || errorData.detail || errorMessage;
             errorTitle = errorData.title || `HTTP ${error.status}`;
         } else if (error instanceof Error) {
             // JavaScript error (network, timeout, etc.)
             if (translator) {
                 // Use translator if available (e.g., fetchErrorTranslator)
-                errorMessage = translator(error.name, error,detectLanguageFromDom());
+                errorMessage = translator(error.name, error, detectLanguageFromDom());
             } else {
                 errorMessage = error.message || errorMessage;
             }
@@ -487,16 +224,12 @@ export async function processCRUDAction(
         throw error;
 
     } finally {
-        // 16. Execute onComplete callback (always runs)
         if (onComplete && typeof onComplete === "function") {
             await onComplete(eventDetail);
         }
     }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
 
 /**
  * Safe version of processCRUDAction that doesn't throw
@@ -526,7 +259,7 @@ export async function processCRUDActionSafe(
     error?: Error | HttpResponse<unknown>;
 }> {
     try {
-        const response = await processCRUDAction(params);
+        const response = await processCRUDAction(params) as HttpResponse;
         return { success: true, response };
     } catch (error) {
         return {

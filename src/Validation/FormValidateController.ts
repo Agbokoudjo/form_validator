@@ -9,7 +9,12 @@
  * For more information, please feel free to contact the author.
  */
 
-import { HTMLFormChildrenElement, Logger } from "../_Utils";
+import {
+    HTMLFormChildrenElement,
+    Logger,
+    addErrorMessageFieldDom,
+    clearErrorInput
+} from "../_Utils";
 
 import {
     FieldInputController,
@@ -234,17 +239,17 @@ export class FormValidateController {
 
         try {
             if (this.optionsValidatorCacheAdapter) {
-                // 1. Essayer de lire depuis le cache (Cache Hit)
+                // Essayer de lire depuis le cache (Cache Hit)
                 optionsValidate = await this.optionsValidatorCacheAdapter.getItem(target.name);
             }
 
-            // 2. Creation et Validation
+            // Creation et Validation
             // Si optionsValidate est 'undefined', FieldInputController calculera automatiquement les options lui meme (Cache Miss).
             const validator = new FieldInputController(target, optionsValidate);
             await validator.validate();
             this._formChildrenValidate.set(target.name, validator);
 
-            // 3. Mise à jour du cache (Cache Write)
+            //Mise à jour du cache (Cache Write)
             if (this.optionsValidatorCacheAdapter) {
                 // Utilisation de  .setItem() sans 'await' pour rendre l'écriture non-bloquante,
                 // et .catch() pour ignorer les erreurs de cache silencieusement.
@@ -258,6 +263,18 @@ export class FormValidateController {
         }
     }
 
+    public addErrorMessageChildrenForm(
+        elmtfield: JQuery<HTMLElement> | HTMLElement,
+        errormessagefield: string[],
+        className_container_ErrorMessage?: string): void {
+        
+        addErrorMessageFieldDom(
+            elmtfield,
+            errormessagefield,
+            className_container_ErrorMessage
+        )
+    }
+
     public clearErrorDataChildren(target: HTMLFormChildrenElement): void {
 
         const validatorClean = this._formChildrenValidate.get(target.name)
@@ -265,6 +282,7 @@ export class FormValidateController {
         if (!validatorClean) { return; }
 
         validatorClean.clearErrorField();
+        clearErrorInput(jQuery(target));
 
         this._formChildrenValidate.delete(target.name);
     }
@@ -338,4 +356,6 @@ export class FormValidateController {
     }
 
     public get form(): JQuery<HTMLFormElement> { return this._form; }
+
+    public get natifForm(): HTMLFormElement { return this.form.get(0)!; }
 }

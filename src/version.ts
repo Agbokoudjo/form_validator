@@ -1,10 +1,10 @@
 export const MAJOR_VERSION = 2;
-export const MINOR_VERSION = 4;
+export const MINOR_VERSION = 5;
 export const PATCH_VERSION = 0;
 export const CURRENT_VERSION = `${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}`;
 export const STABLE_VERSION = `2.4.0`;
 export const FUTURE_MAJOR_VERSION = 2
-export const FUTURE_MINOR_VERSION = 4;
+export const FUTURE_MINOR_VERSION = 5;
 export const FUTURE_PATCH_VERSION = 1;
 export const FUTURE_CURRENT_VERSION = `${FUTURE_MAJOR_VERSION}.${FUTURE_MINOR_VERSION}.${FUTURE_PATCH_VERSION}`;
 

@@ -10,6 +10,8 @@
  * For more information, please feel free to contact the author.
  */
 
+import { hasProperty } from "./string";
+
 if (typeof window.jQuery === 'undefined') {
     console.error("jQuery is required for usage of these functions");
 }
@@ -109,8 +111,8 @@ export function createSmallErrorMessage(
         messageerror: errorMessage,
         // Ajouter une classe spécifique pour cet élément d'erreur, et les classes de validation Bootstrap générales
         classnameerror: [`error-for-${fieldInputID}`, 'invalid-feedback', 'd-block'],
-        id: errorElementId, // Utiliser l'ID unique généré
-        separator_join: "<br/><hr/>" // Conserver votre séparateur choisi
+        id: errorElementId, 
+        separator_join: "<br/><hr/>" 
     });
 
     // Créer un nouvel élément jQuery à partir de la chaîne HTML générée
@@ -150,12 +152,16 @@ export function createSmallErrorMessage(
  * addErrorMessageFieldDom($('#user_email')); // Passing no errors or an empty array
  */
 export function addErrorMessageFieldDom(
-    elmtfield: JQuery<HTMLElement>, // Corrected type for better compatibility
+    elmtfield: JQuery<HTMLElement> | HTMLElement, 
     errormessagefield?: string[],
     className_container_ErrorMessage: string = "border border-3 border-light"
 ): void {
 
     if (!errormessagefield || errormessagefield.length === 0) { return; }
+
+    if (elmtfield instanceof HTMLElement){
+        elmtfield = jQuery(elmtfield);
+    }
     const fieldId = elmtfield.attr("id");
 
     if (!fieldId) {
@@ -165,7 +171,7 @@ export function addErrorMessageFieldDom(
 
     const containerId = `container-div-error-message-${fieldId}`;
     let containerDivErrorMessage = jQuery(`#${containerId}`);
-    
+
     if (!errormessagefield || errormessagefield.length === 0) {
         // If no errors provided, remove the invalid state and the error container
         elmtfield.removeClass('is-invalid');
@@ -244,7 +250,7 @@ export function handleErrorsManyForm(
     // Select all elements within the form that might have the 'is-invalid' class or an error message container.
     // Assuming error containers have IDs like 'container-div-error-message-FIELD_ID'.
     // A more robust approach might be to have a common class on all error containers.
-    const $form = jQuery(`#${formId}`);
+    let $form = jQuery(`#${formId}`);
     if ($form.length === 0) {
 
         console.warn(`Form with ID "${formId}" not found for error handling. Cannot clear previous errors.`);
@@ -253,6 +259,7 @@ export function handleErrorsManyForm(
         // but it's safer to assume a problem and exit if formId is meant for scoping.
         // For this version, we'll continue to try applying errors to individual elements
         // if the form isn't found, but log a warning.
+        $form = jQuery(`[name='${formName}']`);
     }
 
     // Find all fields and error containers that might have been marked as invalid by this system
@@ -284,7 +291,7 @@ export function handleErrorsManyForm(
 
     // 3. Apply new errors
     for (const key in errors) {
-        if (Object.prototype.hasOwnProperty.call(errors, key)) { // Good practice to check hasOwnProperty
+        if (hasProperty(errors, key)) { 
             const fieldId = `${formName}_${key.replace(/\./g, '_')}`;
 
             // Scope the element selection to the form if the form was found, otherwise search globally.
@@ -329,16 +336,18 @@ export function clearErrorInput(
         return;
     }
 
+    // D'après la fonction addErrorMessageFieldDom, le conteneur a un ID spécifique.
+    const containerId = `container-div-error-message-${fieldId}`;
+
     // Vérifiez si le champ a la classe 'is-invalid'. Si non, il n'y a rien à effacer.
     if (!inputFieldJQuery.hasClass('is-invalid')) {
         // Optionnel : Vérifier si le conteneur d'erreurs existe quand même et le supprimer.
         // Cela gère les cas où la classe 'is-invalid' a été retirée manuellement mais le div d'erreur est resté.
-        const containerId = `container-div-error-message-${fieldId}`;
         const existingContainer = jQuery(`#${containerId}`);
-
         if (existingContainer.length > 0) {
             existingContainer.remove();
         }
+
         return;
     }
 
@@ -346,10 +355,7 @@ export function clearErrorInput(
     inputFieldJQuery.removeClass('is-invalid');
 
     // 2. Cible et supprime le conteneur principal des messages d'erreur.
-    // D'après la fonction addErrorMessageFieldDom, le conteneur a un ID spécifique.
-    const containerId = `container-div-error-message-${fieldId}`;
     const errorContainer = jQuery(`#${containerId}`);
-
     if (errorContainer.length > 0) {
         errorContainer.remove(); // Supprime l'élément conteneur et tout son contenu du DOM.
     }
@@ -512,14 +518,240 @@ export function getAttr<T = unknown>(
     return value as T;
 }
 
+export function getValue(
+    element: HTMLElement | JQuery<HTMLElement>
+    ): string | number | string[] | undefined {
+
+    if (element instanceof HTMLElement) {
+        element = jQuery<HTMLElement>(element)
+    }
+
+    return element.val();
+}
+
 export function stringToRegex(regexString: string | null | undefined, flags: FlagRegExp = 'iu'): RegExp | undefined {
+
     if (!regexString) {
         return undefined;
     }
+
     try {
         return new RegExp(regexString, flags);
     } catch (e) {
         console.error(`Invalid regex string: ${regexString}`, e);
         throw e;
+    }
+}
+
+export function getFormAction(formElement: HTMLFormElement,submitter: HTMLButtonElement | HTMLInputElement): string {
+    return getAttr<string>(formElement, 'action', "") || getAttr<string>(submitter, 'formaction', "")
+}
+
+export function cancelEvent(event:Event):void {
+    event.preventDefault()
+    event.stopImmediatePropagation();
+}
+
+export type HTMLSubmitterElement = HTMLButtonElement | HTMLInputElement;
+
+/**
+ * Interface for handling form submission states.
+ * Defines the contract for managing submit button behavior during form processing.
+ * 
+ * @interface SubmitterHandleInterface
+ */
+interface SubmitterHandleInterface {
+
+    /**
+     * Retrieves the submit button or input associated with a form element.
+     * 
+     * Searches for submit elements in the following order:
+     * 1. Inside the form element itself
+     * 2. Inside the form's parent container
+     * 3. Anywhere in the document using the form's id attribute (form="formId")
+     * 4. Anywhere in the document using the form's name attribute (form="formName")
+     * 
+     * @param {HTMLFormElement} formElement - The form element to find the submitter for
+     * @returns {HTMLSubmitterElement} The submit button/input
+     * 
+     * @example
+     * const form = document.getElementById('myForm');
+     * const submitter = getSubmitterForm(form);
+     * submitter.disabled = true;
+     * 
+     * @throws {Error} Implicitly throws if no submitter is found (returns undefined cast as defined type)
+     */
+    getSubmitterForm(formElement: HTMLFormElement): HTMLSubmitterElement;
+
+    /**
+     * Sets the submitter text/value to the value specified in the data-submits-with attribute.
+     * 
+     * For button elements, updates the innerHTML.
+     * For input elements, updates the value property.
+     * Stores the original text for later restoration.
+     * 
+     * @returns {void}
+     * 
+     * @example
+     * // HTML: <button type="submit" data-submits-with="Loading...">Submit</button>
+     * // After calling setSubmitsWith(), button shows "Loading..."
+     */
+    getSubmitsWith(): void;
+
+    /**
+     * Restores the submitter's original text/value that was stored before setSubmitsWith() was called.
+     * 
+     * For button elements, restores the innerHTML.
+     * For input elements, restores the value property.
+     * 
+     * @returns {void}
+     * 
+     * @example
+     * // Restores button text from "Loading..." back to "Submit"
+     */
+    resetSubmitterText(): void;
+}
+
+/**
+ * Abstract base class for handling form submission button states.
+ * Provides common functionality for disabling/enabling submit buttons
+ * and managing their text during form submission.
+ * 
+ * Similar to Symfony's AbstractController pattern.
+ * 
+ * @abstract
+ * @implements {SubmitterHandleInterface}
+ * 
+ *  * Form Submitter Handler
+ * 
+ * This module follows interface-driven design principles similar to Symfony's approach.
+ * All public contracts are defined through interfaces to ensure type safety and extensibility.
+ * 
+ * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+ * @inspired-by Symfony Framework (PHP)
+ */
+export abstract class SubmitterHandle implements SubmitterHandleInterface {
+    protected readonly submitter: HTMLSubmitterElement ;
+    private readonly originalSubmitText: string;
+
+    protected constructor(formElement: HTMLFormElement) {
+        this.submitter = this.getSubmitterForm(formElement);
+        this.originalSubmitText=this.getSubmitsWith();
+    }
+
+    /**
+     * Disables a submit button/input and prevents any click events.
+     * 
+     * Sets the disabled property, adds aria-disabled for accessibility,
+     * and adds a click event listener that cancels all events.
+     * 
+     * @param {HTMLSubmitterElement} submitter - The submit element to disable
+     * @returns {void}
+     * 
+     * @example
+     * const submitBtn = document.querySelector('button[type="submit"]');
+     * SubmitterHandle.beforeSubmit(submitBtn);
+     */
+    protected static beforeSubmit(submitter: HTMLSubmitterElement): void {
+        submitter.disabled = true;
+        submitter.setAttribute("aria-disabled", "true");
+        submitter.addEventListener("click", cancelEvent, { capture: true });
+    }
+
+    /**
+     * Re-enables a submit button/input and removes click event prevention.
+     * 
+     * Removes the disabled property, aria-disabled attribute,
+     * and the click event listener that was canceling events.
+     * 
+     * @param {HTMLSubmitterElement} submitter - The submit element to enable
+     * @returns {void}
+     * 
+     * @example
+     * const submitBtn = document.querySelector('button[type="submit"]');
+     * SubmitterHandle.afterSubmit(submitBtn);
+     */
+    protected static afterSubmit(submitter: HTMLSubmitterElement): void {
+        submitter.disabled = false;
+        submitter.removeAttribute("aria-disabled");
+        submitter.removeEventListener("click", cancelEvent, { capture: true });
+    }
+
+    public getSubmitterForm(formElement: HTMLFormElement): HTMLSubmitterElement{
+        const formId = getAttr<string>(formElement,'id');
+        const formName = getAttr<string>(formElement, 'name');
+
+        // Construction du sélecteur complet
+        let selector = '[type="submit"]';
+
+        if (formId) {
+            selector += `, [type="submit"][form="${formId}"]`;
+        }
+
+        if (formName) {
+            selector += `, [type="submit"][form="${formName}"]`;
+        }
+
+        // Chercher dans le formulaire d'abord
+        let submitter = jQuery(formElement).find('[type="submit"]').get(0);
+
+        if (submitter) {
+            return submitter as HTMLSubmitterElement;
+        }
+
+        // Chercher dans le parent
+        const containerParent = jQuery(formElement).parent();
+        submitter = containerParent.find(selector).get(0);
+
+        if (submitter) {
+            return submitter as HTMLSubmitterElement;
+        }
+
+        // Chercher dans tout le document (pour les boutons vraiment externes)
+        submitter = jQuery(selector).get(0);
+
+        return submitter as HTMLSubmitterElement ;
+    }
+
+    public getSubmitsWith():string{
+        if (!this.submitter || !this.submitsWith) return 'Submit';
+
+        if (this.submitter.matches("button")) {
+            const _originalSubmitText = this.submitter.innerHTML
+            this.submitter.innerHTML = this.submitsWith
+            return _originalSubmitText;
+        } else if (this.submitter.matches("input")) {
+            const input = this.submitter
+            const _originalSubmitText = input.value
+            input.value = this.submitsWith
+
+            return _originalSubmitText;
+        }
+
+        return 'Submit'
+    }
+
+    public resetSubmitterText():void {
+        if (!this.submitter || !this.originalSubmitText) return
+
+        if (this.submitter.matches("button")) {
+            this.submitter.innerHTML = this.originalSubmitText
+        } else if (this.submitter.matches("input")) {
+            const input = this.submitter
+            input.value = this.originalSubmitText
+        }
+     }
+    
+    /**
+    * Gets the text to display while the form is submitting.
+    * 
+    * Reads from the data-submits-with attribute on the submitter element.
+    * Defaults to "Sending..." if the attribute is not present.
+    * 
+    * @private
+    * @returns {string} The text to display during submission
+    */
+    private get submitsWith(): string {
+        return getAttr<string>(this.submitter, "data-submits-with", "Sending...")
     }
 }

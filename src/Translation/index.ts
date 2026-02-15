@@ -1,3 +1,2 @@
-export * from "./TranslationCache"
+export * from "./cache";
 export * from "./AppTranslation";
-export * from "./FetchErrorTranslator";

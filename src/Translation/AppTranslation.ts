@@ -24,20 +24,19 @@
 
 import {
     ConfigCacheAdapterTranslation,
-    CacheTranslationInterface,
-    LocalStorageCacheTranslationAdapter,
     TranslationMessages
-} from "./TranslationCache";
+} from "@wlindabla/http_client";
+
+import {
+    CacheTranslationInterface,
+    LocalStorageCacheTranslationAdapter
+} from "./cache";
 
 import {
     detectLanguageFromDom,
     getMetaContentAsJSON,
     hasProperty
 } from "../_Utils";
-
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
 
 /**
  * Translation configuration options
@@ -705,10 +704,6 @@ export class TranslationCacheError extends Error {
         }
     }
 }
-
-// ============================================================================
-// SINGLETON INSTANCE
-// ============================================================================
 
 /**
  * Global singleton instance for convenient access

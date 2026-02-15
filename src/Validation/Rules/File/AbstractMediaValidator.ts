@@ -18,9 +18,7 @@ import { convertOctetToMo } from "../../../_Utils"
 */
 export abstract class AbstractMediaValidator extends AbstractFieldValidator implements MediaValidatorInterface {
 
-    protected constructor() {
-        super();
-    }
+    protected constructor() { super(); }
 
     public abstract validate: (media: File | FileList, targetInputname: string, optionsfile: OptionsValidateTypeFile) => Promise<this>;
 

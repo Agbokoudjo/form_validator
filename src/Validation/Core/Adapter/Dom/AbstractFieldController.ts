@@ -459,4 +459,20 @@ export abstract class AbstractFieldController {
 
         return delimiters ? delimiters.split(',') : ['/', '-'];
     }
+
+    protected get dataHostWhitelist(): (string | RegExp)[] | undefined{
+        return this.getAttrChildren('data-host-whitelist')
+            ?.split(',')
+            .map(v => v.trim())
+            .filter(Boolean) ?? []
+            ;
+    }
+
+    protected get dataHostBlacklist(): (string | RegExp)[] | undefined {
+        return this.getAttrChildren('data-host-blacklist')
+            ?.split(',')
+            .map(v => v.trim())
+            .filter(Boolean) ?? []
+            ;
+    }
 }

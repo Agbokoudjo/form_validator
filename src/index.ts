@@ -1,5 +1,3 @@
-// Export des interfaces
-// Export des fonctions
 export * from './_Utils';
 export * from './Formatting';
 export * from "./Cache";
@@ -7,5 +5,7 @@ export * from "./Translation";
 export * from "./User";
 export * from './Validation';
 export * from './Collection';
-export * from './FileUploader';
+export * from "./FormSubmit"
+export * from "./subscriber";
 export * from "./version";
+export * from "./compiler";

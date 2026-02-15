@@ -292,18 +292,9 @@ export class FieldInputController extends AbstractFieldController implements For
             allowQuotedLocal: this.parseBooleanAttr('data-allow-quoted-local', true),
             allowDisplayName: this.parseBooleanAttr('data-allow-display-name', false),
             requireDisplayName: this.parseBooleanAttr('data-require-display-name', false),
-
             blacklistedChars: this.getAttrChildren('data-blacklisted-chars') ?? undefined,
-
-            hostBlacklist: this.getAttrChildren('data-host-blacklist')
-                ?.split(',')
-                .map(v => v.trim())
-                .filter(Boolean) ?? [],
-
-            hostWhitelist: this.getAttrChildren('data-host-whitelist')
-                ?.split(',')
-                .map(v => v.trim())
-                .filter(Boolean) ?? []
+            hostBlacklist: this.dataHostBlacklist,
+            hostWhitelist: this.dataHostWhitelist
         };
     }
 
@@ -339,17 +330,8 @@ export class FieldInputController extends AbstractFieldController implements For
             requireHost: this.parseBooleanAttr('data-require-host', true),
             requireValidProtocol: this.parseBooleanAttr('data-require-valid-protocol', true),
             requireProtocol: this.parseBooleanAttr('data-require-protocol', false),
-
-            hostBlacklist: this.getAttrChildren('data-host-blacklist')
-                ?.split(',')
-                .map(x => x.trim())
-                .filter(Boolean) ?? [],
-
-            hostWhitelist: this.getAttrChildren('data-host-whitelist')
-                ?.split(',')
-                .map(x => x.trim())
-                .filter(Boolean) ?? [],
-
+            hostBlacklist: this.dataHostBlacklist,
+            hostWhitelist: this.dataHostWhitelist,
             regexValidator: this.patternRegExp,
         };
     }
@@ -490,6 +472,7 @@ export class FieldInputController extends AbstractFieldController implements For
             maxHeight: this.parseIntAttr('data-max-height', 2500)
         }
     }
+
     private get optionsValidateImage(): OptionsImage {
         return {
             ...this.baseOptionsValidateMedia,
@@ -508,6 +491,7 @@ export class FieldInputController extends AbstractFieldController implements For
             unityDimensions: this.getAttrChildren('data-unity-dimensions')
         }
     }
+
     private get optionsValidateFQDN(): FQDNOptions {
         return {
             allowWildcard: this.parseBooleanAttr('data-allow-wildcard', false),
@@ -528,6 +512,7 @@ export class FieldInputController extends AbstractFieldController implements For
             .filter(checkbox_elt => checkbox_elt.checked)
             .map(checkbox => checkbox.value);
     }
+    
     /**
      * Retrieves all possible values from the checkbox group.
      */
@@ -535,6 +520,7 @@ export class FieldInputController extends AbstractFieldController implements For
         const checkboxes = this._formParent.find<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`);
         return Array.from(checkboxes).map(checkbox => checkbox.value);
     }
+
     /**
      * Constructs validation options for checkbox fields based on attributes from their container.
      */
@@ -549,10 +535,10 @@ export class FieldInputController extends AbstractFieldController implements For
             optionsChoicesCheckbox: this._valueOptionsheckbox
         }
     }
+
     private get optionsValidateTel(): TelInputOptions {
         return {
             defaultCountry: this.getAttrChildren('data-default-country') as CountryCode,
-            // Hérite de TextInputOptions
             requiredInput: this.required,
             maxLength: this.getMaxLength(25),
             minLength: this.getMinLength(7),

@@ -65,23 +65,21 @@ yarn add @wlindabla/form_validator
   **A powerful, lightweight jQuery-based form validation library with comprehensive error handling and user-friendly feedback.**
   - [form](./docs/_Utils/form.md)
   
-  ## HTTP functions
-  A robust, production-ready HTTP client library with built-in retry mechanisms, automatic timeout handling, and intelligent response parsing for modern web applications.
+  ## FormSubmission
+  `FormSubmission` is a powerful module included in `@wlindabla/form_validator` that handles the **complete lifecycle of an HTML form submission** via the Fetch API.
 
-  `@wlindabla/form_validator` provides a powerful `httpFetchHandler` function that wraps the native Fetch API with enterprise-grade features including automatic retries, configurable timeouts, multiple response type handling, and comprehensive error management.
+  It provides out of the box:
+
+  - A **state machine** to track every step of the submission process
+  - A **typed event system** that lets you hook into each lifecycle phase
+  - **Automatic server-side field error handling** (e.g. Symfony validation errors)
+  - A **confirmation gate** before any request is fired
+  - A **delegation system** for custom navigation/redirect logic
+  - Full **TypeScript support**
+  -[FormSubmission](./docs/form_submission/formSubmission.md)
 
   ### Features
 
-  - ✅ **Automatic Retry Logic** - Configurable retry attempts with exponential backoff
-  - ⏱️ **Timeout Management** - Abort requests that exceed time limits
-  - 🔄 **Multiple Response Types** - JSON, text, blob, arrayBuffer, formData, and stream
-  - 📝 **FormData Support** - Automatic header management for multipart requests
-  - 🛡️ **Type-Safe** - Full TypeScript support with generic typing
-  - 🎯 **Smart Error Handling** - Detailed error context with custom HttpFetchError
-  - 🔁 **Status Code Retry** - Optional retry on server errors (5xx)
-  - 📊 **Response Status Mapping** - Categorizes responses as success, info, warning, or error
-  - [http](./docs/_Utils/http.md)
-  
   ## Logger Utility - Complete Documentation
   
   The **Logger** class is a singleton-based logging utility designed for TypeScript applications. It provides environment-aware, formatted console logging with color-coded output, automatic timestamps, and type-safe error handling.
@@ -130,11 +128,8 @@ yarn add @wlindabla/form_validator
   **Perfect for:** Symfony Sonata Admin, React, Vue.js, Angular, and any framework requiring translation caching.
   - [Cache](./docs/Translation/cache.md)
   
-  ### FetchErrorTranslator - Fetch API Error Translation System
+ 
 
-  Enterprise-grade translation system for Fetch API errors with intelligent pattern matching, multi-language support, and configurable caching. Convert cryptic error messages into user-friendly, localized text.
-  - [FetchErrorTranslator](./docs/Translation/FetchErrorTranslator.md)
-  
   ## CRUD Action 
 
   **@wlindabla/form_validator** is a powerful, **framework-agnostic** library for managing CRUD (Create, Read, Update, Delete) actions in modern web applications and admin dashboards (SonataAdminBundle, EasyAdmin, Django, etc.).
@@ -153,7 +148,3 @@ yarn add @wlindabla/form_validator
   The **Form Validator Library** is a centralized form error state management solution designed to provide a Single Source of Truth for form validation across your application. This library implements the Singleton pattern to ensure consistent form state management throughout your project.
   Built with TypeScript, it offers type-safe error tracking, field validity management, and intuitive chainable methods for seamless integration into modern web applications.
   - [Documentation](./docs/Validators/index.md)
-
-  ## Chunked File Uploader
-    **The most powerful**, flexible, and developer-friendly chunked upload library for modern web applications.
-  - [Chunked File Uploader](./docs/Media/index.md)

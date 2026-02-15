@@ -378,3 +378,21 @@ export function detectLanguageFromDom(defaultLanguage:string="en"): string {
     return defaultLanguage;
 }
 
+export function containsAlertDiv(message: string): boolean{
+    return /<div[^>]*class="[^"]*alert/i.test(message) 
+            || /<[a-z][\s\S]*>/i.test(message);
+}
+
+export function displayFlashMessage(
+            message: string,
+            type: string = "success",
+            classNameForContainer?:string): string{
+    if (containsAlertDiv(message)) {
+        return message;
+    }
+
+    return `<div class="alert alert-${type}  ${classNameForContainer ?? ' '}" 
+                 role="alert">
+            ${message}
+            </div>`
+}

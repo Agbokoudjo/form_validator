@@ -1,4 +1,4 @@
-import { HttpMethod } from "../_Utils";
+import { HttpMethod } from "../HttpKernel";
 
 /**
  * Custom event detail structure
@@ -6,15 +6,15 @@ import { HttpMethod } from "../_Utils";
  */
 export interface CRUDActionEventDetail {
     /** CRUDAction data including status and additional data */
-    data: {[key: string]: unknown;};
+    data: { [key: string]: unknown; };
     /** Action URL for HTTP request confirmation */
     urlActionRequest: string;
     /** Source DOM element */
     sourceElement: HTMLElement;
     /** Event timestamp */
     timestamp: string;
-    httpMethodRequestAction:HttpMethod
+    httpMethodRequestAction: HttpMethod
 
 }
 
-export const CRUD_ACTION_CONFIRMED_EVENT ="crud:action:confirmed"
+export const CRUD_ACTION_CONFIRMED_EVENT = "crud:action:confirmed"

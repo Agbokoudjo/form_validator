@@ -17,50 +17,11 @@
  * @license MIT
  */
 
-import { CacheItemInterface } from "../Cache";
-
-// ============================================================================
-// TYPE DEFINITIONS
-// ============================================================================
-
-/**
- * Translation messages structure
- * Maps translation keys to their localized strings
- * 
- * @example
- * ```typescript
- * const messages: TranslationMessages = {
- *     'LABEL_BTN_CONFIRM': 'Confirm',
- *     'LABEL_BTN_CANCEL': 'Cancel',
- *     'ACTION_PENDING_TITLE': 'Processing...'
- * };
- * ```
- */
-export type TranslationMessages = Record<string, string>;
-
-/**
- * Language-specific translation structure
- * Maps language codes to their translation messages
- * 
- * @example
- * ```typescript
- * const translations: LanguageTranslations = {
- *     en: {
- *         'AbortError': 'Request timed out',
- *         'TypeError': 'Network error'
- *     },
- *     fr: {
- *         'AbortError': 'La requête a expiré',
- *         'TypeError': 'Erreur réseau'
- *     }
- * };
- * ```
- */
-export type LanguageTranslations = Record<string, TranslationMessages>;
-
-// ============================================================================
-// INTERFACES
-// ============================================================================
+import {
+    TranslationMessages,
+    FetchCacheTranslationInterface,
+    ConfigCacheAdapterTranslation
+} from "@wlindabla/http_client";
 
 /**
  * Cache Translation Interface
@@ -70,7 +31,6 @@ export type LanguageTranslations = Record<string, TranslationMessages>;
  * async operations and error recovery gracefully.
  * 
  * @interface CacheTranslationInterface
- * @extends {CacheItemInterface}
  * 
  * @example
  * ```typescript
@@ -85,106 +45,9 @@ export type LanguageTranslations = Record<string, TranslationMessages>;
  * }
  * ```
  */
-export interface CacheTranslationInterface extends CacheItemInterface {
-    /**
-     * Retrieves translation messages for a specific key (usually language code)
-     * 
-     * @param key - The cache key, typically a language code (e.g., 'en', 'fr', 'es')
-     * @returns Promise resolving to translation messages object or null if not found
-     * 
-     * @throws Should not throw - implementations must handle errors internally
-     * 
-     * @example
-     * ```typescript
-     * const messages = await cache.getItem('en');
-     * if (messages) {
-     *     console.log(messages['LABEL_BTN_CONFIRM']); // "Confirm"
-     * }
-     * ```
-     */
-    getItem(key: string): Promise<TranslationMessages | null>;
-
-    /**
-     * Stores translation messages for a specific key
-     * 
-     * @param key - The cache key, typically a language code (e.g., 'en', 'fr', 'es')
-     * @param messages - Translation messages object to store
-     * @returns Promise that resolves when storage is complete
-     * 
-     * @throws Should not throw - implementations must handle errors internally
-     * 
-     * @example
-     * ```typescript
-     * await cache.setItem('en', {
-     *     'CONFIRM': 'Confirm',
-     *     'CANCEL': 'Cancel'
-     * });
-     * ```
-     */
-    setItem(key: string, messages: TranslationMessages): Promise<void>;
-
-    /**
-     * Optional: Clear all cached translations
-     * 
-     * @returns Promise that resolves when cache is cleared
-     */
-    clear?(): Promise<void>;
-
-    /**
-     * Optional: Check if a key exists in cache
-     * 
-     * @param key - The cache key to check
-     * @returns Promise resolving to true if key exists, false otherwise
-     */
-    has?(key: string): Promise<boolean>;
-
-    /**
-     * Optional: Delete a specific cache entry
-     * 
-     * @param key - The cache key to delete
-     * @returns Promise that resolves when deletion is complete
-     */
-    delete?(key: string): Promise<void>;
+export interface CacheTranslationInterface extends FetchCacheTranslationInterface {
+   
 }
-
-/**
- * Configuration Interface for Cache Adapter
- * 
- * Provides a standardized way to configure and access cache adapters.
- * Used for dependency injection and adapter swapping at runtime.
- * 
- * @interface ConfigCacheAdapterTranslation
- * 
- * @example
- * ```typescript
- * import { appTranslation } from "@wlindabla/form_validator";
- * 
- * // Configure with localStorage adapter
- * appTranslation.configAdapter = new LocalStorageCacheTranslationAdapter();
- * 
- * // Or configure with custom adapter
- * appTranslation.configAdapter = new DexieCacheAdapter();
- * ```
- */
-export interface ConfigCacheAdapterTranslation {
-    /**
-     * Gets the configured cache adapter instance
-     * 
-     * @returns The cache adapter implementation
-     */
-    get configAdapter(): CacheTranslationInterface;
-
-    /**
-     * Sets the cache adapter instance
-     * 
-     * @param adapter - The cache adapter to use
-     */
-    set configAdapter(adapter: CacheTranslationInterface);
-}
-
-// ============================================================================
-// DEFAULT IMPLEMENTATION: LOCALSTORAGE ADAPTER
-// ============================================================================
 
 /**
  * LocalStorage Cache Translation Adapter
@@ -268,7 +131,7 @@ export class LocalStorageCacheTranslationAdapter implements CacheTranslationInte
      * ```
      */
     public async getItem(key: string): Promise<TranslationMessages | null> {
-        
+
         return new Promise((resolve) => {
             try {
                 this.validateKey(key);
@@ -433,10 +296,6 @@ export class LocalStorageCacheTranslationAdapter implements CacheTranslationInte
             }
         });
     }
-
-    // ========================================================================
-    // PRIVATE HELPER METHODS
-    // ========================================================================
 
     /**
      * Gets the full storage key with prefix
