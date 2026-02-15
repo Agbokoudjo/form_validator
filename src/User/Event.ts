@@ -1,4 +1,4 @@
-import { HttpMethod } from "../HttpKernel";
+import { HttpMethod } from "@wlindabla/http_client";
 
 /**
  * Custom event detail structure
