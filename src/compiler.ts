@@ -14,7 +14,7 @@ if (!window.eventDispatcherBrowser) {
     window.eventDispatcherBrowser = new BrowserEventDispatcher(window);
 }
 
-const eventDispatcherBrowser: BrowserEventDispatcher = window.eventDispatcherBrowser;
+export const eventDispatcherBrowser: BrowserEventDispatcher = window.eventDispatcherBrowser;
 
 if (!window.fetchErrorTranslator) {
     window.fetchErrorTranslator = new FetchErrorTranslator({
@@ -24,6 +24,6 @@ if (!window.fetchErrorTranslator) {
     });
 }
 
-const fetchErrorTranslator: FetchErrorTranslator = window.fetchErrorTranslator;
+export const fetchErrorTranslator: FetchErrorTranslator = window.fetchErrorTranslator;
 
 eventDispatcherBrowser.addSubscriber(new HttpRequestSubscriber(fetchErrorTranslator));

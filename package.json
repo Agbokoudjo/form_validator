@@ -13,7 +13,7 @@
   "homepage": "https://github.com/Agbokoudjo/form_validator#readme",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "type": "module",
   "keywords": [
     "jquery",
@@ -70,25 +70,25 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/jquery": "^3.5.33",
+    "@types/jquery": "^4.0.0",
     "@types/lodash.debounce": "^4.0.9",
     "@types/papaparse": "^5.5.2",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/xlsx": "^0.0.36",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^8.0.1"
   },
   "dependencies": {
-    "@vitejs/plugin-legacy": "^7.2.1",
-    "@wlindabla/event_dispatcher": "^1.0.1",
-    "@wlindabla/http_client": "^1.1.0",
+    "@vitejs/plugin-legacy": "^8.0.0",
+    "@wlindabla/event_dispatcher": "^1.1.0",
+    "@wlindabla/http_client": "^1.1.1",
     "animate.css": "^4.1.1",
     "jquery": "^4.0.0",
-    "libphonenumber-js": "^1.12.36",
+    "libphonenumber-js": "^1.12.40",
     "lodash.debounce": "^4.0.8",
     "papaparse": "^5.5.3",
-    "pdfjs-dist": "^5.4.624",
-    "sweetalert2": "^11.26.18",
+    "pdfjs-dist": "^5.5.207",
+    "sweetalert2": "^11.26.24",
     "xlsx": "^0.18.5"
   },
   "packageManager": "yarn@4.6.0+sha512.5383cc12567a95f1d668fbe762dfe0075c595b4bfff433be478dbbe24e05251a8e8c3eb992a986667c1d53b6c3a9c85b8398c35a960587fbd9fa3a0915406728"

@@ -44,14 +44,9 @@ export const FormSubmissionState = {
     error: "error" 
 }
 
-import {
-    EventTargetType,
-    FetchRequest,
-    FetchRequestOptions,
-    FetchResponseInterface,
-    RequestType
-} from "@wlindabla/http_client";
-
+import { FetchRequest } from "@wlindabla/http_client";
+import { EventTargetType, RequestType,FetchRequestOptions } from "@wlindabla/http_client/types";
+import type { FetchResponseInterface } from "@wlindabla/http_client/contracts"; 
 import {
     EventDispatcherInterface,
     BrowserEventDispatcher

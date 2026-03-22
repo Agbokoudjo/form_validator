@@ -21,7 +21,7 @@ export class FormSubmitRequestEvents {
 
     public static FORM_SUBMIT_ERROR: string = "form-submit-error";       // timeout, network, abort
 
-    public static FORM_SUBMIT_FAILED: string = "form-submit-failed";     // ✅ 4xx, 5xx
+    public static FORM_SUBMIT_FAILED: string = "form-submit-failed";     //  4xx, 5xx
 
     public static FORM_SUBMIT_SUCCESS = "form-submit-success";
 

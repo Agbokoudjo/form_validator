@@ -1,4 +1,4 @@
-import { HttpMethod } from "../HttpKernel";
+import { HttpMethod } from "../_Utils";
 
 /**
  * Custom event detail structure

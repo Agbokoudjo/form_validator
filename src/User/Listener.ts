@@ -28,10 +28,15 @@ import { CRUDActionEventDetail } from "./Event";
 
 import {
     safeFetch,
-    HttpMethod,
-    FetchResponseInterface,
     HttpResponse
 } from "@wlindabla/http_client";
+import {
+    HttpMethod
+} from "@wlindabla/http_client/types";
+
+import {
+    FetchResponseInterface
+} from "@wlindabla/http_client/contracts";
 
 import Swal, { SweetAlertOptions} from "sweetalert2";
 

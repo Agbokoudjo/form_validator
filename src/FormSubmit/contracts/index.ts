@@ -13,7 +13,7 @@
 import {
     FetchResponseInterface,
     FetchDelegateInterface
-} from "@wlindabla/http_client";
+} from "@wlindabla/http_client/contracts";
 
 
 export interface FormSubmissionInterface extends FetchDelegateInterface {
