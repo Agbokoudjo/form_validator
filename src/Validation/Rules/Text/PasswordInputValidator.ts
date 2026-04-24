@@ -71,7 +71,7 @@ export class PasswordInputValidator extends AbstractFieldValidator {
         * an optional custom regular expression. Additionally, it can analyze the password and 
         * calculate a strength score.
         *
-        * 🔐 If scoring is enabled, a `CustomEvent` named `SCOREANALYSISPASSWORD` is dispatched on the document,
+        * If scoring is enabled, a `CustomEvent` named `SCOREANALYSISPASSWORD` is dispatched on the document,
         * containing the analysis result, calculated score, and input field name.
         *
         * @param datainput - The password input string to validate.
@@ -133,7 +133,8 @@ export class PasswordInputValidator extends AbstractFieldValidator {
             requiredInput,
             errorMessageInput,
             enableScoring,
-            scoringPasswordOptions
+            scoringPasswordOptions,
+            match
         } = this.mergeOptions(optionsValidate, ignoreMergeWithDefaultOptions);
 
         textInputValidator.validate(
@@ -145,6 +146,7 @@ export class PasswordInputValidator extends AbstractFieldValidator {
                 requiredInput: requiredInput,
                 regexValidator: regexValidator,
                 typeInput: "password",
+                match: match ,
                 errorMessageInput: errorMessageInput ?? "Password does not match the required pattern. ",
             },
             true
@@ -240,7 +242,7 @@ export class PasswordInputValidator extends AbstractFieldValidator {
             regexValidator: strongPasswordWithUpperRegex,
             requiredInput: true,
             enableScoring: true,
-
+            match:true
         })
     }
 }

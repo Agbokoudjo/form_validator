@@ -12,49 +12,44 @@
 
 import { hasProperty } from "./string";
 
-if (typeof window.jQuery === 'undefined') {
-    console.error("jQuery is required for usage of these functions");
-}
-
 /**
- * Génère une balise <small> HTML pour afficher des messages d'erreur.
- * Peut inclure un attribut `data-key` pour un usage JavaScript ou de debugging.
+ * Generates an HTML <small> tag to display error messages.
+ * Includes an optional `data-key` attribute for JavaScript tracking or debugging.
  *
- * @param message_error Le message d'erreur à afficher.
- * @param className Les classes CSS à appliquer à la balise <small>.
- * @param id L'ID unique de la balise <small>.
- * @param key (Optionnel) Une clé numérique à inclure comme attribut `data-key` pour un usage spécifique (ex: identification en JS).
- * @returns Une chaîne de caractères représentant la balise <small> HTML.
+ * @param {string} message_error - The error message text to display.
+ * @param {string} className - CSS classes to apply to the element.
+ * @param {string} id - Unique ID for the element.
+ * @param {number} [key] - Optional numeric key for identification.
+ * @returns {string} The HTML string representing the <small> tag.
  */
 export function smallError(message_error: string, className: string, id: string, key?: number): string {
     const dataKeyAttribute = (key !== undefined && key !== null) ? ` data-key="${key}"` : '';
 
-    return `<small id="${id}" class="${className}"  ${dataKeyAttribute}>${message_error}</small>`;
+    return `<small id="${id}" class="${className}" ${dataKeyAttribute}>${message_error}</small>`;
 }
 
 interface ValidatorErrorFieldProps {
     messageerror: string | string[];
     classnameerror?: string[];
-    id: string; // Cet ID sera la base pour générer des IDs uniques si plusieurs messages
-    separator_join: string; // Retourne une chaîne, donc le séparateur doit être une chaîne HTML
+    id: string; // Base ID for generating unique element IDs
+    separator_join: string; // HTML string used to join multiple messages
 }
 
 /**
- * Génère un bloc de messages d'erreur formatés en HTML.
- * Peut gérer un message unique ou plusieurs messages, en les joignant avec un séparateur.
- * 
- * @param validate_error_field Un objet contenant les messages d'erreur, les classes, l'ID et le séparateur.
- * @returns Une chaîne de caractères HTML représentant le(s) message(s) d'erreur.
+ * Generates an HTML block containing one or more formatted error messages.
+ * Handles single strings or arrays of messages by joining them with a separator.
+ * * @param {ValidatorErrorFieldProps} validate_error_field - Configuration for the error block.
+ * @returns {string} The HTML string containing the formatted error message(s).
  */
 export const validatorErrorField = (validate_error_field: ValidatorErrorFieldProps = {
     messageerror: ' ',
     classnameerror: ["fw-bold", "text-danger", "mt-2"],
-    id: `error-field-${Date.now()}`, // Préfixe pour l'ID pour éviter les conflits
+    id: `error-field-${Date.now()}`,
     separator_join: "<br/><hr/>"
 }): string => {
     const { messageerror, id, classnameerror, separator_join } = validate_error_field;
 
-    // Concaténation des classes CSS
+    // Combine CSS classes into a single string
     const combinedClassNames = classnameerror && classnameerror.length > 0
         ? `error-message ${classnameerror.join(" ")}`
         : 'error-message';
@@ -63,148 +58,131 @@ export const validatorErrorField = (validate_error_field: ValidatorErrorFieldPro
 
     if (Array.isArray(messageerror)) {
         messageerror.forEach((messageErrorItem, index) => {
-            // Pour chaque message, générer un ID unique et passer l'index comme 'key' pour data-key.
+            // Generate unique IDs and data-keys for each message in the array
             smallErrorHtmlStrings.push(
                 smallError(messageErrorItem, combinedClassNames, `${id}-${index}`, index)
             );
         });
     } else {
-        // Pour un seul message, utiliser l'ID de base et ne pas passer de 'key' (ou un 0 si désiré)
+        // Generate a single message using the base ID
         smallErrorHtmlStrings.push(
             smallError(messageerror, combinedClassNames, id)
         );
     }
 
-    // Joindre toutes les chaînes HTML des messages d'erreur avec le séparateur
     return smallErrorHtmlStrings.join(separator_join);
 };
 
 /**
- * Cette fonction crée ou récupère un petit élément de message d'erreur pour un champ de saisie donné.
- * @param fieldInputID - L'ID du champ de saisie pour lequel le message d'erreur est créé.
- * @param errorMessage - Le texte du message d'erreur à afficher.
- * @param keyError - Une clé ou un identifiant unique pour l'instance d'erreur spécifique, crucial pour plusieurs erreurs par champ.
- *
- * @returns {JQuery<HTMLElement>} - L'élément jQuery représentant le message d'erreur créé ou existant.
- *
- * Cette fonction vérifie d'abord si un élément d'erreur avec un ID spécifique (dérivé de `fieldInputID` et `keyError`)
- * existe déjà dans le DOM. Si trouvé, elle retourne cet élément existant. Sinon, elle génère une nouvelle
- * chaîne HTML de message d'erreur en utilisant `validatorErrorField`, l'enveloppe dans un objet jQuery, et la retourne.
+ * Creates or retrieves a small error message element for a specific input field.
+ * * This function checks the DOM for an existing error element with a specific ID.
+ * If not found, it creates a new HTML element from the template.
+ * * @param {string} fieldInputID - The ID of the input field being validated.
+ * @param {string} errorMessage - The text to display.
+ * @param {number | string} keyError - Unique key for the specific error instance.
+ * @returns {HTMLElement} The native DOM element representing the error message.
  */
 export function createSmallErrorMessage(
     fieldInputID: string,
     errorMessage: string,
     keyError: number | string
-): JQuery<HTMLElement> {
-    // Construire l'ID unique pour l'élément d'erreur
+): HTMLElement {
+    // Construct a unique ID for the error element
     const errorElementId = `error-item-${fieldInputID}-${keyError}`;
 
-    // Vérifier si un élément d'erreur avec cet ID existe déjà dans le DOM
-    const existingErrorItem = jQuery(`#${errorElementId}`);
-    if (existingErrorItem.length > 0) {
-        // S'il existe, retourner l'élément jQuery existant
+    // Check if the error element already exists in the DOM using native selection
+    const existingErrorItem = document.getElementById(errorElementId);
+    if (existingErrorItem) {
         return existingErrorItem;
     }
 
-    // Si aucun élément existant n'est trouvé, générer la chaîne HTML en utilisant validatorErrorField
+    // Generate HTML string using the validatorErrorField template
     const errorHtmlString = validatorErrorField({
         messageerror: errorMessage,
-        // Ajouter une classe spécifique pour cet élément d'erreur, et les classes de validation Bootstrap générales
         classnameerror: [`error-for-${fieldInputID}`, 'invalid-feedback', 'd-block'],
-        id: errorElementId, 
-        separator_join: "<br/><hr/>" 
+        id: errorElementId,
+        separator_join: "<br/><hr/>"
     });
 
-    // Créer un nouvel élément jQuery à partir de la chaîne HTML générée
-    // L'ajout d'un attribut `data-field-id` peut être utile pour sélectionner les erreurs
-    // liées à un champ spécifique ultérieurement.
-    const newErrorElement = jQuery(errorHtmlString)
-        .attr('data-field-id', fieldInputID); // Optionnel : Ajouter un attribut de données pour un ciblage facile
+    // Create a temporary container to transform the HTML string into a native DOM Node
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = errorHtmlString.trim();
+
+    const newErrorElement = tempContainer.firstChild as HTMLElement;
+
+    // Set optional metadata attribute for easier targeting
+    newErrorElement.setAttribute('data-field-id', fieldInputID);
 
     return newErrorElement;
 }
 
 /**
- * Appends or updates a list of validation error messages for a form field in the DOM.
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * * Appends or updates a list of validation error messages for a form field in the DOM.
+ */
+
+/**
+ * Appends or updates a list of validation error messages for a form field.
+ * * This function visually displays validation errors for a specific form field.
+ * It ensures only one error container exists per field, updating its content as needed.
+ * Each error is wrapped in a container inserted immediately after the targeted input.
+ * * It also toggles the Bootstrap 'is-invalid' class for visual feedback.
  *
- * This function visually displays server-side or client-side validation errors for a specific form field.
- * It ensures only one error container exists per field, adding or updating its content.
- * Each error message is wrapped in a `<small>` tag within a container `<div>` below the targeted input element.
- *
- * It also adds/removes the `is-invalid` class to the form field for Bootstrap-style validation feedback.
- *
- * @param elmtfield - The jQuery object representing the target form input/select/textarea element.
- * @param errormessagefield - An optional array of error messages to display for this field.
- * If empty or `undefined`, existing error messages and `is-invalid` class will be removed.
- * @param className_container_ErrorMessage - Optional custom class string for styling
- * the error message container. Defaults to a Bootstrap border style.
- *
- * @returns {void}
- *
- * @example
- * // To display errors for an input with ID "user_email":
- * addErrorMessageFieldDom($('#user_email'), [
- * 'This field is required.',
- * 'Must be a valid email address.'
- * ]);
- *
- * // To clear errors for the same input:
- * addErrorMessageFieldDom($('#user_email')); // Passing no errors or an empty array
+ * @param {HTMLElement} elmtfield - The native DOM element (input, select, textarea).
+ * @param {string[]} [errormessagefield] - Array of error messages. If empty, errors are cleared.
+ * @param {string} [className_container_ErrorMessage] - CSS classes for the error container.
  */
 export function addErrorMessageFieldDom(
-    elmtfield: JQuery<HTMLElement> | HTMLElement, 
+    elmtfield: HTMLElement,
     errormessagefield?: string[],
     className_container_ErrorMessage: string = "border border-3 border-light"
 ): void {
-
-    if (!errormessagefield || errormessagefield.length === 0) { return; }
-
-    if (elmtfield instanceof HTMLElement){
-        elmtfield = jQuery(elmtfield);
-    }
-    const fieldId = elmtfield.attr("id");
+     if (!errormessagefield || errormessagefield.length === 0) { return; }
+    const fieldId = elmtfield.id;
 
     if (!fieldId) {
         console.error("addErrorMessageFieldDom: The provided element does not have an 'id' attribute.", elmtfield);
-        return; // Exit if no ID, as it's crucial for error message management
+        return;
     }
 
     const containerId = `container-div-error-message-${fieldId}`;
-    let containerDivErrorMessage = jQuery(`#${containerId}`);
+    let containerDivErrorMessage = document.getElementById(containerId);
 
+    // Case 1: No error messages provided or empty array -> Clear errors
     if (!errormessagefield || errormessagefield.length === 0) {
-        // If no errors provided, remove the invalid state and the error container
-        elmtfield.removeClass('is-invalid');
-        if (containerDivErrorMessage.length > 0) {
+        elmtfield.classList.remove('is-invalid');
+        if (containerDivErrorMessage) {
             containerDivErrorMessage.remove();
         }
-
-        return; // All cleared, exit
+        return;
     }
-  
-    // If container doesn't exist, create it
-    if (containerDivErrorMessage.length === 0) {
-        containerDivErrorMessage = jQuery(`<div class="${className_container_ErrorMessage}" id="${containerId}"></div>`);
-        elmtfield.after(containerDivErrorMessage); // Append the container right after the field
+
+    // Case 2: Error messages exist -> Manage the container
+    if (!containerDivErrorMessage) {
+        // Create container if it doesn't exist
+        containerDivErrorMessage = document.createElement('div');
+        containerDivErrorMessage.id = containerId;
+        containerDivErrorMessage.className = className_container_ErrorMessage;
+
+        // Native equivalent of .after(): inserts the container right after the field
+        elmtfield.insertAdjacentElement('afterend', containerDivErrorMessage);
     } else {
-        // If container exists, clear its current content before adding new messages
-        containerDivErrorMessage.empty();
+        // Clear current content if the container already exists
+        containerDivErrorMessage.innerHTML = '';
     }
 
-    // Add 'is-invalid' class to the field if not already present
-    if (!elmtfield.hasClass('is-invalid')) {
-
-        elmtfield.addClass('is-invalid');
+    // Add Bootstrap invalid class
+    if (!elmtfield.classList.contains('is-invalid')) {
+        elmtfield.classList.add('is-invalid');
     }
 
-    // Generate jQuery error message elements
-    const errorMessagesJQuery = errormessagefield.map((errorMessageItem, keyError) => {
-
-        return createSmallErrorMessage(fieldId, errorMessageItem, keyError);
+    // Generate and append each error message
+    errormessagefield.forEach((errorMessageItem, keyError) => {
+        const errorSmallElement = createSmallErrorMessage(fieldId, errorMessageItem, keyError);
+        // Since createSmallErrorMessage now returns a native HTMLElement
+        containerDivErrorMessage!.appendChild(errorSmallElement);
     });
-
-    // Append all generated error messages to the container
-    containerDivErrorMessage.append(errorMessagesJQuery);
 }
 
 /**
@@ -250,127 +228,99 @@ export function handleErrorsManyForm(
     // Select all elements within the form that might have the 'is-invalid' class or an error message container.
     // Assuming error containers have IDs like 'container-div-error-message-FIELD_ID'.
     // A more robust approach might be to have a common class on all error containers.
-    let $form = jQuery(`#${formId}`);
-    if ($form.length === 0) {
-
+    let formElement = document.getElementById(formId) as HTMLFormElement | null;
+    if (!formElement) {
         console.warn(`Form with ID "${formId}" not found for error handling. Cannot clear previous errors.`);
         // If the form itself isn't found, we can't reliably clear errors.
         // We might still try to apply errors if field IDs are globally unique,
         // but it's safer to assume a problem and exit if formId is meant for scoping.
         // For this version, we'll continue to try applying errors to individual elements
         // if the form isn't found, but log a warning.
-        $form = jQuery(`[name='${formName}']`);
+        formElement = document.querySelector(`form[name='${formName}']`);
     }
 
-    // Find all fields and error containers that might have been marked as invalid by this system
-    // Using `[id^='${formName}_']` targets elements whose ID starts with the formName prefix.
-    // This assumes that ALL fields handled by this system follow the `${formName}_FIELD_ID` convention.
-    // This is more efficient than selecting all :input elements and iterating.
-    const $potentiallyInvalidFields = $form.length > 0 ?
-        $form.find(`[id^='${formName}_']`).add($form.find(`[id^='container-div-error-message-${formName}_']`)) :
-        jQuery(`[id^='${formName}_']`).add(jQuery(`[id^='container-div-error-message-${formName}_']`));
+    // Define the root for our search (the form if found, otherwise the whole document)
+    const searchRoot: ParentNode = formElement || document;
 
+    /**
+     * Clear previous errors.
+     * We target elements starting with the form prefix to reset their state.
+     */
+    const fieldsSelector = `input[id^='${formName}_'], select[id^='${formName}_'], textarea[id^='${formName}_']`;
+    const containerSelector = `div[id^='container-div-error-message-${formName}_']`;
 
-    // Iterate over all potentially invalid fields and clear their errors
-    $potentiallyInvalidFields.each(function () {
-        const $el = jQuery<HTMLElement>(this);
-        // If it's a field (e.g., input, select, textarea)
-        if ($el.is('input, select, textarea')) {
-            // Call addErrorMessageFieldDom with an empty array to clear errors for this specific field
-            addErrorMessageFieldDom($el, []);
-        } else if ($el.attr('id')?.startsWith('container-div-error-message-')) {
-            // If it's an error container div, just remove it directly
-            $el.remove();
-        }
+    // Reset all potentially invalid fields within the scope
+    const fields = searchRoot.querySelectorAll<HTMLElement>(fieldsSelector);
+    fields.forEach(field => {
+        addErrorMessageFieldDom(field, []);
     });
+
+    // Remove any leftover error containers
+    const containers = searchRoot.querySelectorAll<HTMLElement>(containerSelector);
+    containers.forEach(container => container.remove());
+
 
     // 2. If no new errors are provided, we've already cleared them, so we're done.
     if (Object.keys(errors).length === 0) {
         return;
     }
 
-    // 3. Apply new errors
+    // Apply new errors
     for (const key in errors) {
-        if (hasProperty(errors, key)) { 
+        if (hasProperty(errors, key)) {
+            // Symfony nested fields (e.g., address.city) use underscores in IDs (address_city)
             const fieldId = `${formName}_${key.replace(/\./g, '_')}`;
+            const element = searchRoot.querySelector<HTMLElement>(`#${fieldId}`);
 
-            // Scope the element selection to the form if the form was found, otherwise search globally.
-            const element = $form.length > 0 ? $form.find(`#${fieldId}`) : jQuery(`#${fieldId}`);
-
-            if (element.length === 0) {
-                console.warn(`handleErrorsManyForm: Field '${fieldId}' (derived from '${key}') not found in DOM or within form '#${formId}'.`);
+            if (!element) {
+                console.warn(`handleErrorsManyForm: Field '${fieldId}' (from key '${key}') not found in DOM.`);
                 continue;
             }
 
-            // addErrorMessageFieldDom already handles adding 'is-invalid' and appending messages
+            // Display messages using our previously cleaned utility
             addErrorMessageFieldDom(element, errors[key]);
         }
     }
 }
 
 /**
- * Cette fonction efface les messages d'erreur associés à un champ de saisie du DOM.
- * Elle supprime la classe d'invalidation (par ex. 'is-invalid' de Bootstrap) du champ
- * et retire le conteneur des messages d'erreur du DOM.
+ * Clears error messages and invalid status from a specific input field.
+ * Removes Bootstrap 'is-invalid' class and deletes the error container.
  *
- * @param inputFieldJQuery - Un élément jQuery représentant le champ de saisie dont les erreurs doivent être effacées.
- * @returns {void} - Ne retourne rien.
- *
- * Cette fonction vérifie si le champ de saisie a la classe 'is-invalid'.
- * Si c'est le cas, elle :
- * - Supprime la classe 'is-invalid' du champ.
- * - Supprime l'élément conteneur des messages d'erreur (généré par `addErrorMessageFieldDom`) du DOM.
- *
- * @example
- * // Pour effacer les erreurs d'un champ avec l'ID "user_email":
- * clearErrorInput($('#user_email'));
+ * @param {HTMLElement} inputField - The native DOM input element to clear.
  */
-export function clearErrorInput(
-    inputFieldJQuery: JQuery<HTMLElement> // Type corrigé pour une meilleure compatibilité
-): void {
-    // Obtenez l'ID du champ. C'est crucial pour cibler le conteneur d'erreurs.
-    const fieldId = inputFieldJQuery.attr('id');
-    // Assurez-vous que le champ a un ID pour éviter les erreurs de ciblage.
+export function clearErrorInput(inputField: HTMLElement): void {
+    const fieldId = inputField.id;
+
     if (!fieldId) {
-        console.warn("clearErrorInput : Le champ de saisie fourni n'a pas d'attribut 'id'. Impossible d'effacer les erreurs de manière fiable.", inputFieldJQuery);
+        console.warn("clearErrorInput: Provided field has no 'id' attribute. Cannot clear errors reliably.", inputField);
         return;
     }
 
-    // D'après la fonction addErrorMessageFieldDom, le conteneur a un ID spécifique.
+    // Error container ID follows the convention established in addErrorMessageFieldDom
     const containerId = `container-div-error-message-${fieldId}`;
+    const existingContainer = document.getElementById(containerId);
 
-    // Vérifiez si le champ a la classe 'is-invalid'. Si non, il n'y a rien à effacer.
-    if (!inputFieldJQuery.hasClass('is-invalid')) {
-        // Optionnel : Vérifier si le conteneur d'erreurs existe quand même et le supprimer.
-        // Cela gère les cas où la classe 'is-invalid' a été retirée manuellement mais le div d'erreur est resté.
-        const existingContainer = jQuery(`#${containerId}`);
-        if (existingContainer.length > 0) {
-            existingContainer.remove();
-        }
-
-        return;
+    // 1. Remove invalid visual state
+    if (inputField.classList.contains('is-invalid')) {
+        inputField.classList.remove('is-invalid');
     }
 
-    // 1. Supprime la classe 'is-invalid' du champ.
-    inputFieldJQuery.removeClass('is-invalid');
-
-    // 2. Cible et supprime le conteneur principal des messages d'erreur.
-    const errorContainer = jQuery(`#${containerId}`);
-    if (errorContainer.length > 0) {
-        errorContainer.remove(); // Supprime l'élément conteneur et tout son contenu du DOM.
+    // 2. Remove the error container from the DOM
+    if (existingContainer) {
+        existingContainer.remove();
     }
 }
 
 type SingleFlag = 'g' | 'i' | 'm' | 'u' | 'y' | 's';
 
-// Exemples de combinaisons courantes que vous voulez supporter
 type CommonFlagCombinations = SingleFlag |
     `${'g' | 'i' | 'm' | 'u' | 'y' | 's'}${'g' | 'i' | 'm' | 'u' | 'y' | 's'}` | // Permet des combinaisons de 2 flags
     `${'g' | 'i' | 'm' | 'u' | 'y' | 's'}${'g' | 'i' | 'm' | 'u' | 'y' | 's'}${'g' | 'i' | 'm' | 'u' | 'y' | 's'}`; // Permet des combinaisons de 3 flags
 
-// Vous pouvez continuer cette logique pour 4, 5, 6 flags si nécessaire.
-// Ou pour des combinaisons spécifiques comme 'gi', 'iu', etc.
+
 export type FlagRegExp = CommonFlagCombinations | 'gi' | 'iu' | 'gim';
+
 /**
  * Extracts the `pattern` attribute from an input or textarea element
  * and returns it as a JavaScript `RegExp` object, with optional flags.
@@ -434,14 +384,11 @@ export function MyFormComponent() {
  */
 
 export function getInputPatternRegex(
-    children: HTMLElement | JQuery<HTMLElement>,
+    children: HTMLElement,
     formParentName: string,
     flag: string = 'i'
 ): RegExp | undefined {
-    if (children instanceof HTMLElement) {
-        children = jQuery<HTMLElement>(children);
-    }
-    if (children.length <= 0) {
+    if (!children) {
         console.warn(`The input element is not present in the DOM for ${formParentName}`);
         return undefined;
     }
@@ -454,8 +401,8 @@ export function getInputPatternRegex(
     }
 
     try {
-        const pattern = children.attr('pattern') ?? children.attr('data-pattern');
-        const fieldName = children.attr('name') ?? '[unknown name]';
+        const pattern = getAttr(children, 'pattern') ?? getAttr(children,'data-pattern');
+        const fieldName = getAttr(children,'name') ?? '[unknown name]';
 
         if (!pattern) {
             console.error(
@@ -464,7 +411,7 @@ export function getInputPatternRegex(
 
             return undefined;
         }
-        const regex = new RegExp(pattern, flag);
+        const regex = new RegExp(pattern as string| RegExp, flag);
 
         console.log('Pattern transform in javascript:', regex)
 
@@ -479,6 +426,7 @@ export function getInputPatternRegex(
  * @type 
  */
 export type MediaType = "video" | "document" | "image";
+export type MediaRequiredType = "pdf" | "excel" | "word" | "odf" | "csv";
 export type FormInputType = "fqdn" | "file" | "radio" | "checkbox" | "number" | "text" | "email" | "password" | "url" | "select" | "textarea" | "date" | "tel";
 export type HTMLFormChildrenElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 export type DataInput = string | string[] | number | null | undefined | File | FileList | Date;
@@ -486,7 +434,7 @@ export type DataInput = string | string[] | number | null | undefined | File | F
 export const MediaTypeArray = ['video', 'image', 'document'];
 
 export function getAttr<T = unknown>(
-    element: HTMLElement | null | undefined | JQuery<HTMLElement>,
+    element: HTMLElement | null | undefined ,
     name: string,
     defaults: unknown = null,
     toJson = false,
@@ -496,11 +444,7 @@ export function getAttr<T = unknown>(
         return defaults as T;
     }
 
-    if (element instanceof HTMLElement) {
-        element = jQuery<HTMLElement>(element)
-    }
-
-    let value = element.attr(name);
+    let value = element.getAttribute(name);
 
     if (!value) { return defaults as T }
 
@@ -693,22 +637,22 @@ export abstract class SubmitterHandle implements SubmitterHandleInterface {
         }
 
         // Chercher dans le formulaire d'abord
-        let submitter = jQuery(formElement).find('[type="submit"]').get(0);
+        let submitter = formElement.querySelector('[type="submit"]');
 
         if (submitter) {
             return submitter as HTMLSubmitterElement;
         }
 
         // Chercher dans le parent
-        const containerParent = jQuery(formElement).parent();
-        submitter = containerParent.find(selector).get(0);
+        const containerParent = formElement.parentElement;
+        submitter = containerParent!.querySelector(selector);
 
         if (submitter) {
             return submitter as HTMLSubmitterElement;
         }
 
         // Chercher dans tout le document (pour les boutons vraiment externes)
-        submitter = jQuery(selector).get(0);
+        submitter = document.querySelector(selector);
 
         return submitter as HTMLSubmitterElement ;
     }

@@ -87,15 +87,27 @@ export class LocalStorageCacheAdapter implements FieldOptionsValidateCacheAdapte
         }
     }
 
+    /**
+     * Retrieves the name or ID of the parent form for a given input name.
+     * Replaces jQuery with native DOM API for better performance and compatibility.
+     */
     private getFormParentName(targetInputName: string): string {
+        const input = document.querySelector(`[name="${targetInputName}"]`);
 
-        const form = jQuery<HTMLFormElement>(`[name="${targetInputName}"]`).closest('form');
+        if (!input) {
+            throw new Error(`Input with name "${targetInputName}" not found in the DOM.`);
+        }
 
-        const id_or_name = form.attr('name') ?? form.attr('id');
+        const form = input.closest('form');
+
+        if (!form) {
+            throw new Error(`The input "${targetInputName}" is not associated with any <form>.`);
+        }
+
+        const id_or_name = form.getAttribute('name') ?? form.getAttribute('id');
 
         if (!id_or_name) {
-
-            throw new FormAttributeNoFoundException(form.get(0)!, 'name', targetInputName);
+            throw new FormAttributeNoFoundException(form, 'name', targetInputName);
         }
 
         return id_or_name;

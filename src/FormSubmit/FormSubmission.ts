@@ -45,12 +45,12 @@ export const FormSubmissionState = {
 }
 
 import {
-    EventTargetType,
     FetchRequest,
     FetchRequestOptions,
-    FetchResponseInterface,
-    RequestType
 } from "@wlindabla/http_client";
+
+import type { FetchResponseInterface } from "@wlindabla/http_client/contracts"
+import { EventTargetType, RequestType } from "@wlindabla/http_client/types";
 
 import {
     EventDispatcherInterface,
@@ -111,7 +111,7 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         return Promise.resolve(confirm(message))
     }
 
-    //permettre au deeveloppeur de modifier le header
+    //permettre au developpeur de modifier le header
     public prepareRequest(request: Request): void {
         this.formEventDispatcher.dispatch(
             new PrepareRequestFormSubmitEvent(request, this.form),
@@ -188,18 +188,23 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         this._result = { success: false, fetchResponse: response }
         
         if (response.statusCode === 422 && this.isHandleErrorsManyForm) {
-            handleErrorsManyForm(
-                this.formName,
-                this.formId,
-                response.data
-            )
+            const errorData = response.data;
+            if (errorData.violations) {
+                handleErrorsManyForm(
+                    this.formName,
+                    this.formId,
+                    errorData.violations
+                )
 
-            Logger.info(
-                `
-                consulting documentation https://github.com/Agbokoudjo/form_validator/docs/_Utils/form.md
+                console.info(
+                    `
+                consulting documentation https://github.com/Agbokoudjo/form_validator/blob/master/docs/_Utils/form.md#handleerrorsmanyform
                 for infos more on using of function  handleErrorsManyForm
                 `
-            );
+                );
+            } else {
+                this.isHandleErrorsManyForm = false;
+            }
         }
         
         this.formEventDispatcher.dispatch(

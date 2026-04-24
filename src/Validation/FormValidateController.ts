@@ -188,51 +188,76 @@ export class FormValidateController {
 
     private _idChildrens: string[] = [];
 
-    private readonly _form: JQuery<HTMLFormElement>;
+    private readonly _form: HTMLFormElement;
 
     private readonly _formChildrenValidate: Map<string, FormChildrenValidateInterface>;
 
     private readonly _excludedTypes = ["hidden", "submit", "datetime", "datetime-local", "time", "month"];
 
+    private _eventGroups: Map<string, string[]> = new Map();
+
     constructor(
         formCssSelector: string = ".form-validate",
         private readonly optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface) {
-        this._form = jQuery<HTMLFormElement>(`form${formCssSelector}`);
+        
+        const formElement = document.querySelector<HTMLFormElement>(`form${formCssSelector}`);
 
-        this.init(formCssSelector);
-
-        this._formChildrenValidate = new Map<string, FormChildrenValidateInterface>();
-    }
-
-    private readonly init = (formCssSelector: string): void => {
-        if (this._form.length === 0) {
-            Logger.error(`No form found with selector: form${formCssSelector}`);
-            return;
+        if (!formElement) {
+            throw new Error(`No form found with selector: form${formCssSelector}`);
         }
 
-        this._idChildrens = this._form
-            .find("input, select, textarea")
-            .filter((_index, el) => {
-                if (el instanceof HTMLInputElement) {
-                    const type = el.type;
-                    return !this._excludedTypes.includes(type);
-                }
-                return true;
-            })
-            .map((_i, el) => el.id)
-            .get()
-            .filter((id) => id !== undefined && id !== "");
+        this._form = formElement;
+        this._formChildrenValidate = new Map<string, FormChildrenValidateInterface>();
+
+        this.init();
     }
 
-    public autoValidateAllFields = async (): Promise<void> => {
+    private readonly init = (): void => {
+        // We get all children and filter them immediately
+        const allChildren = this.getChildrensArray();
 
-        this.childrens.each((_i, el) => {
-            this.validateChildrenForm(el)
-                .catch(error => console.warn(error));
-            ;
+        // 1. Indexing IDs (Replacing .find().filter().map().get())
+        this._idChildrens = allChildren
+            .map(el => el.id)
+            .filter(id => id !== undefined && id !== "");
+
+        // 2. Indexing Events (Replacing .each() and .attr())
+        allChildren.forEach(el => {
+            ['blur', 'input', 'change', 'dragenter', 'focus'].forEach(evt => {
+                if (el.hasAttribute(`data-event-validate-${evt}`)) {
+                    const current = this._eventGroups.get(evt) || [];
+                    current.push(el.id);
+                    this._eventGroups.set(evt, current);
+                }
+            });
         });
     }
 
+    /**
+     * Helper to get children as a real Array instead of a JQuery object.
+     */
+    private readonly getChildrensArray =(): HTMLFormChildrenElement[] =>{
+        const elements = Array.from(this._form.querySelectorAll<HTMLFormChildrenElement>("input, select, textarea"));
+        
+        return elements.filter(el => {
+            if (el instanceof HTMLInputElement) {
+                return !this._excludedTypes.includes(el.type);
+            }
+            return true;
+        });
+    }
+
+    public autoValidateAllFields = (): Promise<void> => {
+        const children = this.getChildrensArray();
+
+        return Promise.all(
+            children.map(el =>
+                this.validateChildrenForm(el)
+                    .catch(error => console.warn(`Validation skipped for ${el.name}:`, error))
+            )
+        ).then(() => void 0);
+    }
+    
     public validateChildrenForm = async (target: HTMLFormChildrenElement): Promise<void> => {
 
         let optionsValidate: OptionsValidate | undefined = undefined;
@@ -264,7 +289,7 @@ export class FormValidateController {
     }
 
     public addErrorMessageChildrenForm(
-        elmtfield: JQuery<HTMLElement> | HTMLElement,
+        elmtfield: HTMLElement,
         errormessagefield: string[],
         className_container_ErrorMessage?: string): void {
         
@@ -282,70 +307,36 @@ export class FormValidateController {
         if (!validatorClean) { return; }
 
         validatorClean.clearErrorField();
-        clearErrorInput(jQuery(target));
+        clearErrorInput(target);
 
         this._formChildrenValidate.delete(target.name);
     }
 
     /**
-     * Returns the list of all input/select/textarea elements inside the form.
-     */
-    public get childrens(): JQuery<HTMLFormChildrenElement> {
-
-        const childrens = this._form.find("input, select, textarea") as JQuery<HTMLFormChildrenElement>;
-        return childrens.filter((_index, elmt_children) => {
-            if (elmt_children instanceof HTMLInputElement) {
-                return !this._excludedTypes.includes(elmt_children.type);
-            }
-            return true;
-        });
-
+    * Replaces the getter 'childrens' to return an Array of native elements.
+    */
+    public get childrens(): HTMLFormChildrenElement[] {
+        return this.getChildrensArray();
     }
 
     public get idChildrenUsingEventBlur(): string[] {
-        return this.childrens.filter((_index, children) => {
-            if (children instanceof HTMLInputElement || children instanceof HTMLTextAreaElement) {
-                return jQuery(children).attr('data-event-validate-blur') === "blur";
-            }
-            return false;
-        })
-            .get()
-            .map((el, _i) => el.id)
+        return this._eventGroups.get('blur') || [];
     }
 
     public get idChildrenUsingEventInput(): string[] {
-        return this.childrens.filter((_index, children) => {
-            if (children instanceof HTMLInputElement || children instanceof HTMLTextAreaElement) {
-                return jQuery(children).attr('data-event-validate-input') === "input";
-            }
-            return false;
-        })
-            .get()
-            .map((el, _i) => el.id)
+        return this._eventGroups.get('input') || [];
     }
 
     public get idChildrenUsingEventChange(): string[] {
-        return this.childrens.filter((_index, children) => {
-            return jQuery(children).attr('data-event-validate-change') === "change";
-        })
-            .get()
-            .map((el, _i) => el.id)
+        return this._eventGroups.get('change') || [];
     }
 
     public get idChildrenUsingEventDragenter(): string[] {
-        return this.childrens.filter((_index, children) => {
-            return jQuery(children).attr('data-event-validate-dragenter') === "dragenter";
-        })
-            .get()
-            .map((el, _i) => el.id)
+        return this._eventGroups.get('dragenter') || [];
     }
 
     public get idChildrenUsingEventFocus(): string[] {
-        return this.childrens.filter((_index, children) => {
-            return jQuery(children).attr('data-event-validate-focus') === "focus";
-        })
-            .get()
-            .map((el, _i) => el.id)
+        return this._eventGroups.get('focus') || [];
     }
 
     /**
@@ -355,7 +346,30 @@ export class FormValidateController {
         return this._idChildrens;
     }
 
-    public get form(): JQuery<HTMLFormElement> { return this._form; }
+    public get form(): HTMLFormElement { return this._form; }
 
-    public get natifForm(): HTMLFormElement { return this.form.get(0)!; }
+    /**
+  * Valide l'intégralité du formulaire.
+  * @returns true si TOUS les champs sont valides, false sinon.
+  */
+    public async isFormValid(): Promise<boolean> {
+        const allChildren = this.childrens;
+
+        const results = await Promise.all(
+            allChildren.map(async (el) => {
+                try {
+                   
+                    await this.validateChildrenForm(el);
+                    const v = this._formChildrenValidate.get(el.name);
+
+                    return v ? v.isValid() : true;
+                } catch (e) {
+                    Logger.error(`Validation interrupted for field ${el.name}:`, e);
+                    return false; 
+                }
+            })
+        );
+
+        return results.every(res => res === true);
+    }
 }

@@ -3,13 +3,12 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module":"ESNext",
-    "lib": ["DOM", "DOM.Iterable","esnext","ES5"],
+    "lib": ["DOM", "DOM.Iterable","esnext"],
     "skipLibCheck": true,
    "outDir": "dist",
     "rootDir": "src",  
     "allowImportingTsExtensions":false,
     "declarationMap": true,
-    "emitDeclarationOnly":false,
     "isolatedModules":false,
     "moduleDetection": "force",
     "esModuleInterop": true,
@@ -23,7 +22,6 @@
     "noFallthroughCasesInSwitch": true,
      "allowSyntheticDefaultImports": true,
     "types": [
-      "jquery",
       "node"  
     ],
   },

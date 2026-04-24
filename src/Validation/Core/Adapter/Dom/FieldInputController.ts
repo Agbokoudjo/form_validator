@@ -11,12 +11,20 @@
 import {
     WordScoringOptions,
     HTMLFormChildrenElement,
-    stringToRegex
+    stringToRegex,
+    escapeHtmlBalise,
+    MediaRequiredType,
+    MediaType,
+    FormInputType
 } from "../../../../_Utils";
 
 import { CountryCode } from "libphonenumber-js";
 
-import { AbstractFieldController, EventValidate } from "./AbstractFieldController";
+import {
+    AbstractFieldController,
+    EventValidate,
+    DocumentTypeResolver
+ } from "./AbstractFieldController";
 
 import { formInputValidator, OptionsValidate } from "../../Router";
 
@@ -36,7 +44,13 @@ import {
     EmailInputOptions,
     TelInputOptions,
     FieldValidatorInterface,
-    DimensionsMediaOption
+    DimensionsMediaOption,
+    OptionsExcelFile,
+    OptionsCsvFile,
+    CsvColumnType,
+    OptionsWordFile,
+    OptionsOdfFile,
+    UnityMaxSizeTypeFile
 } from "../../../Rules"
 
 /**
@@ -101,17 +115,38 @@ export class FieldInputController extends AbstractFieldController implements For
      * Validation options are resolved from attributes or defaults if not explicitly provided.
      */
     public async validate(): Promise<void> {
+        const val = this.value;
+        if (!val && !this.isRequiredField()) return;
 
-        // si le champ n'est pas obligatoire et il n'y a pas de donnée dans le champ
-        // on arrête la validation immédiatement
-        if (!this.value && !this.isRequiredField()) return;
+        const currentType = this.type;
 
-        await formInputValidator.allTypesValidator(
-            this.value,
-            this.name,
-            this.type,
-            this.fieldOptionsValidate
-        );
+        if (currentType === "document" && val) {
+            DocumentTypeResolver.clearCache(this.name);
+            const detectedTypes = DocumentTypeResolver.detect(val as File | File[] | FileList, this.name);
+            const files = Array.from(val as FileList | File[]);
+
+            for (let i = 0; i < files.length; i++) {
+                const specificType = detectedTypes[i];
+
+                // MATH LOGIC: We resolve the specific options for THIS specific file type
+                const specificOptions = this.resolveOptionsByType(specificType);
+
+                await formInputValidator.allTypesValidator(
+                    files[i],
+                    this.name,
+                    specificType,
+                    specificOptions // Each file now has its own specific rule set!
+                );
+            }
+        } else {
+            // Standard non-document validation
+            await formInputValidator.allTypesValidator(
+                val,
+                this.name,
+                currentType,
+                this.fieldOptionsValidate
+            );
+        }
 
         this.emitEventHandler();
     }
@@ -179,28 +214,33 @@ export class FieldInputController extends AbstractFieldController implements For
 
         return formInputValidator.getValidator(this.name);
     }
+
     /**
      * Ensures that all checkboxes with the same name are grouped within a container with the same ID.
      * Throws an error if the structure is invalid.
      */
     private hasContainerCheckbox(): boolean {
+        // Remplacement de closest() jQuery par le natif
+        const container = this._children.closest(`[id="${this.name}"]`) as HTMLElement | null;
 
-        const container = this._children.closest(`[id="${this.name}"]`);
-
-        if (!container.length) { // Utilisez .length pour les objets jQuery
+        if (!container) {
             throw new Error(`All checkboxes with name "${this.name}" must be wrapped inside a container with id="${this.name}".`);
         }
 
-        const checkboxes = this._formParent.find<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`).get(); // Récupérez les éléments DOM natifs
+        // querySelectorAll remplace .find() et Array.from remplace .get()
+        const checkboxes = Array.from(
+            this._formParent.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`)
+        );
 
-        const notInsideContainer = checkboxes.some((checkbox) => !container[0].contains(checkbox)); // Utilisez la méthode native contains
+        // .contains est déjà une méthode native du DOM
+        const notInsideContainer = checkboxes.some((checkbox) => !container.contains(checkbox));
 
         if (notInsideContainer) {
             throw new Error(`Some checkboxes with name "${this.name}" are not inside the container with id="${this.name}". Group them correctly.`);
         }
-        this._checkBoxContainer = container;
 
-        return true; // Toutes les cases à cocher sont à l'intérieur du conteneur spécifié
+        this._checkBoxContainer = container;
+        return true;
     }
 
     /**
@@ -208,48 +248,52 @@ export class FieldInputController extends AbstractFieldController implements For
      * Throws an error if the structure is invalid.
      */
     private hasContainerRadio(): boolean {
+        // Remplacement de closest() jQuery par le natif
+        const container = this._children.closest(`[id="${this.name}"]`) as HTMLElement | null;
 
-        const container = this._children.closest(`[id="${this.name}"]`);
-
-        if (!container.length) { // Utilisez .length pour les objets jQuery
+        if (!container) {
             throw new Error(`All radios with name "${this.name}" must be wrapped inside a container with id="${this.name}".`);
         }
 
-        const radios = this._formParent.find<HTMLInputElement>(`input[type="radio"][name="${this.name}"]`).get(); // Récupérez les éléments DOM natifs
+        // querySelectorAll pour récupérer toutes les radios du formulaire
+        const radios = Array.from(
+            this._formParent.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${this.name}"]`)
+        );
 
-        const notInsideContainer = radios.some((radio) => !container[0].contains(radio)); // Utilisez la méthode native contains
+        const notInsideContainer = radios.some((radio) => !container.contains(radio));
 
         if (notInsideContainer) {
             throw new Error(`Some radios with name "${this.name}" are not inside the container with id="${this.name}". Group them correctly.`);
         }
 
         this._radiosContainer = container;
-
-        return true; // Toutes les cases à cocher sont à l'intérieur du conteneur spécifié
+        return true;
     }
+
+    
 
     /**
     * Retrieves a specific attribute from the checkbox container.
     */
-    private getAttrCheckboxContainer(attributeName: string): string | undefined {
+    private getAttrCheckboxContainer(attributeName: string): string | undefined|null {
 
         this.hasContainerCheckbox();
 
         if (!this._checkBoxContainer) { return undefined; }
 
-        return this._checkBoxContainer.attr(attributeName);
+        return this._checkBoxContainer.getAttribute(attributeName);
     }
 
     /**
     * Retrieves a specific attribute from the radio container.
     */
-    private getAttrRadioContainer(attributeName: string): string | undefined {
+    private getAttrRadioContainer(attributeName: string): string | undefined |null {
 
         this.hasContainerRadio();
 
         if (!this._radiosContainer) { return undefined; }
 
-        return this._radiosContainer.attr(attributeName);
+        return this._radiosContainer.getAttribute(attributeName);
     }
 
     /**
@@ -271,7 +315,8 @@ export class FieldInputController extends AbstractFieldController implements For
                             - All required fields must be correctly filled in.
 
                             Please review your entry and try again.`,
-            regexValidator: this.patternRegExp
+            regexValidator: this.patternRegExp,
+            match: this.matchRegex,
         }
     }
 
@@ -283,6 +328,7 @@ export class FieldInputController extends AbstractFieldController implements For
             requiredInput: this.required,
             escapestripHtmlAndPhpTags: this.escapestripHtmlAndPhpTags,
             errorMessageInput: this.errorMessage,
+            match: this.matchRegex,
             egAwait: this.egAwait,
             // FQDNOptions
             ...this.optionsValidateFQDN,
@@ -333,6 +379,7 @@ export class FieldInputController extends AbstractFieldController implements For
             hostBlacklist: this.dataHostBlacklist,
             hostWhitelist: this.dataHostWhitelist,
             regexValidator: this.patternRegExp,
+            match: this.matchRegex,
         };
     }
     /**
@@ -360,27 +407,23 @@ export class FieldInputController extends AbstractFieldController implements For
 
     /**
      * Generates validation options for select dropdowns.
+     * Extracts all available values from the <option> elements.
      */
     private get optionsValidateSelect(): SelectOptions {
-        const children = this._children as JQuery<HTMLSelectElement>;
+        // Suppression du cast JQuery
+        const selectElement = this._children as HTMLSelectElement;
 
-        let options_choices: string[] = [];
-
-        children.find('option').map(function (index, elementOption) {
-            const option = jQuery<HTMLOptionElement>(elementOption);
-
-            if (option.attr('value')) {
-                options_choices.push(option.val()!)
-
-            } else {
-                options_choices.push(option.text())
-            }
-        })
+        // On récupère toutes les options et on les transforme en tableau de chaînes
+        const options_choices: string[] = Array.from(selectElement.options).map((option) => {
+            // En Vanilla JS, option.value renvoie l'attribut value 
+            // ou le texte de l'option si value est absent. C'est automatique !
+            return option.value;
+        });
 
         return {
             optionsChoices: options_choices,
             escapestripHtmlAndPhpTags: this.escapestripHtmlAndPhpTags
-        }
+        };
     }
 
     /**
@@ -410,7 +453,8 @@ export class FieldInputController extends AbstractFieldController implements For
             escapestripHtmlAndPhpTags: this.escapestripHtmlAndPhpTags,
             errorMessageInput: this.errorMessage,
             typeInput: "text",
-            egAwait: this.egAwait
+            egAwait: this.egAwait,
+            match:this.matchRegex
         }
     }
     /**
@@ -428,6 +472,7 @@ export class FieldInputController extends AbstractFieldController implements For
             minLength: this.getMinLength(8),
             requiredInput: this.required,
             errorMessageInput: this.errorMessage,
+            match: this.matchRegex,
             minLowercase: this.parseIntAttr('data-min-lowercase'),
             minUppercase: this.parseIntAttr('data-min-uppercase'),
             minNumbers: this.parseIntAttr('data-min-number'),
@@ -486,9 +531,56 @@ export class FieldInputController extends AbstractFieldController implements For
         return {
             allowedMimeTypeAccept: allowedMimeTypeAccept_file ? allowedMimeTypeAccept_file.split(',') : undefined,
             maxsizeFile: this.parseIntAttr('data-maxsize-file', 2),
-            unityMaxSizeFile: this.getAttrChildren('data-unity-max-size-file') ?? 'MiB',
-            extensions: extensions_file ? extensions_file.split(',') : undefined,
+            unityMaxSizeFile: this.getAttrChildren('data-unity-max-size-file') as UnityMaxSizeTypeFile,
+            allowedExtensions: extensions_file ? extensions_file.split(',') : undefined,
             unityDimensions: this.getAttrChildren('data-unity-dimensions')
+        }
+    }
+
+    private get optionsValidateExcelFile():OptionsExcelFile{
+        return {
+            minSheets: this.parseIntAttr('data-min-sheets', 1),
+            maxSheets: this.parseIntAttr('data-max-sheets'),
+            requiredColumns: this.resolveColumns(this.getAttrChildren('data-required-columns')),
+            rejectEmptySheet: this.parseBooleanAttr('data-reject-empty-sheet', true),
+            sheetIndex: this.parseIntAttr('data-sheet-index', 1) ,
+            ...this.baseOptionsValidateMedia
+        }
+    }
+
+    private get optionsValidateCsvFile():OptionsCsvFile{
+        return {
+            delimiter: this.getAttrChildren('data-delimiter'),
+            requiredHeaders: this.resolveRequiredHeaders(this.getAttrChildren('data-required-headers')),
+            columnTypes: this.resolveColumnTypes(this.getAttrChildren('data-column-types')),
+            useFirstLineAsHeaders: this.parseBooleanAttr('data-use-first-line-as-headers',true),
+            skipEmptyLines: this.parseBooleanAttr('data-skip-empty-lines', true),
+            maxRows: this.parseIntAttr('data-max-rows'),
+            minRows: this.parseIntAttr('data-min-rows',1),
+            maxRowErrors: this.parseIntAttr('data-max-row-errors',2),
+            worker: this.parseBooleanAttr('data-worker'),
+            ...this.baseOptionsValidateMedia
+        }
+    }
+
+    private get optionsValidateWordFile(): OptionsWordFile{
+        return {
+            rejectEmptyDocument: this.parseBooleanAttr('data-reject-empty-document', true),
+            minParagraphs: this.parseIntAttr('data-min-paragraphs'),
+            maxPages: this.parseIntAttr('data-max-pages'),
+            allowLegacyDoc: this.parseBooleanAttr('data-allow-legacy-doc', true),
+            requiredTextFragments: this.parseRawToStringArray(this.getAttrChildren('data-required-text-fragments')),
+            ...this.baseOptionsValidateMedia
+        }
+    }
+
+    private get optionsValidateOdfFile(): OptionsOdfFile{
+        return {
+            rejectEmptyDocument: this.parseBooleanAttr('data-reject-empty-document', true),
+            minParagraphs: this.parseIntAttr('data-min-paragraphs'),
+            allowRtf : this.parseBooleanAttr('data-allow-rtf', true),
+            requiredTextFragments: this.parseRawToStringArray(this.getAttrChildren('data-required-text-fragments')),
+            ...this.baseOptionsValidateMedia
         }
     }
 
@@ -504,20 +596,29 @@ export class FieldInputController extends AbstractFieldController implements For
     }
 
     /**
-    * Retrieves the selected values of a group of checkboxes.
-    */
+     * Retrieves the selected values of a group of checkboxes.
+     * Uses native querySelectorAll for better performance.
+     */
     private get _valueCheckbox(): string | string[] {
-        const checkboxes = this._formParent.find<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`);
-        return Array.from(checkboxes)
-            .filter(checkbox_elt => checkbox_elt.checked)
+        const selector = `input[type="checkbox"][name="${this.name}"]`;
+        const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
+
+        const checkedValues = Array.from(checkboxes)
+            .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
+
+        // Si tu veux rester cohérent avec ton type de retour string | string[]
+        // Tu peux ajouter une condition ici, ou retourner le tableau vide/plein.
+        return checkedValues;
     }
-    
+
     /**
      * Retrieves all possible values from the checkbox group.
      */
     private get _valueOptionsheckbox(): string[] {
-        const checkboxes = this._formParent.find<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`);
+        const selector = `input[type="checkbox"][name="${this.name}"]`;
+        const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
+
         return Array.from(checkboxes).map(checkbox => checkbox.value);
     }
 
@@ -559,4 +660,79 @@ export class FieldInputController extends AbstractFieldController implements For
     }
 
     public eventClearError(): EventValidate { return this.toConvertTypeEvent(this.getAttrChildren('event-clear-error') ?? 'change'); }
+
+    /**
+     * Resolves column types mapping from an HTML attribute.
+     * Expected format: A JSON object string like '{"Age": "number", "Email": "email"}'
+     * * @param rawValue - The raw JSON string from the HTML attribute.
+     * @returns Record<string, CsvColumnType> - A sanitized mapping of column types.
+     */
+    private resolveColumnTypes(rawValue: string | null | undefined): Record<string, CsvColumnType> {
+        const types: Record<string, CsvColumnType> = {};
+
+        if (!rawValue || typeof rawValue !== 'string') {
+            return types;
+        }
+
+        try {
+            const parsed = JSON.parse(rawValue);
+
+            // Ensure we are dealing with a plain object, not an array or null
+            if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                for (const [key, value] of Object.entries(parsed)) {
+                    // Clean the column name (the key)
+                    let cleanKey = escapeHtmlBalise(String(key).trim()) as string;
+                       cleanKey= cleanKey.replace(/\s+/g, ' ');
+
+                    // Clean and validate the type (the value)
+                    const cleanValue = String(value).trim().toLowerCase() as CsvColumnType;
+
+                    // Optional: Only add if the value is a valid CsvColumnType
+                    const validTypes: CsvColumnType[] = ['string', 'number', 'date', 'boolean', 'email'];
+                    if (validTypes.includes(cleanValue)) {
+                        types[cleanKey] = cleanValue;
+                    } else {
+                        console.warn(`[Validator] Unknown type "${cleanValue}" for column "${cleanKey}". Defaulting to "string".`);
+                        types[cleanKey] = 'string';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("[Validator] Failed to parse columnTypes JSON:", error);
+        }
+
+        return types;
+    }
+
+    /**
+     * Resolves column headers from an HTML attribute.
+     */
+    private resolveColumns(rawValue: string | undefined): string[] {
+        return this.parseRawToStringArray(rawValue);
+    }
+
+    /**
+     * Resolves required headers from an HTML attribute.
+     */
+    private resolveRequiredHeaders(rawValue: string | null | undefined): string[] {
+        return this.parseRawToStringArray(rawValue);
+    }
+
+    /**
+     * Resolves specific validation options based on the detected document type.
+     * This ensures that if a field has multiple files, each file gets its 
+     * specific rules (e.g., CSV rules for .csv, Word rules for .docx).
+     */
+    private resolveOptionsByType(type: FormInputType | MediaType | MediaRequiredType): OptionsValidate {
+        switch (type) {
+            case 'excel': return this.optionsValidateExcelFile;
+            case 'csv': return this.optionsValidateCsvFile;
+            case 'word': return this.optionsValidateWordFile;
+            case 'odf': return this.optionsValidateOdfFile;
+            case 'image': return this.optionsValidateImage;
+            case 'video': return this.optionsValidateVideo;
+            case 'pdf': return this.baseOptionsValidateMedia; // PDF usually uses base file options
+            default: return this.fieldOptionsValidate;    // Fallback to standard logic
+        }
+    }
 }

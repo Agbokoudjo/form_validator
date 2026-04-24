@@ -6,25 +6,21 @@ import {
     detectLanguageFromDom
 } from "../_Utils";
 
-/*
- * This file is part of the project by AGBOKOUDJO Franck.
- *
- * (c) AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
- * Phone: +229 0167 25 18 86
- * LinkedIn: https://www.linkedin.com/in/internationales-web-apps-services-120520193/
- * Company: INTERNATIONALES WEB APP & SERVICES
- *
- * For more information, please feel free to contact the author.
- */
-
 export interface OptionsFormattingEvent {
     locales?: string | string[];
 }
+
+/**
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ */
 export class FormFormattingEvent {
     private m_option_module: OptionsFormattingEvent;
     private static m_instance_formatting: FormFormattingEvent;
+
+    private m_event_listeners: Map<string, (event: Event) => void> = new Map();
+
     private constructor() {
-        // Définir la locale par défaut ici, si non fournie via init ou des appels de méthode spécifiques
         this.m_option_module = { locales: detectLanguageFromDom() };
     }
 
@@ -35,142 +31,101 @@ export class FormFormattingEvent {
         return FormFormattingEvent.m_instance_formatting;
     }
 
-    /**
-    * Initialise les options globales pour le gestionnaire d'événements de formatage.
-    * Cette méthode peut être utilisée pour définir une locale par défaut pour toutes les opérations de formatage
-    * si elle n'est pas spécifiée directement dans d'autres méthodes de formatage.
-    *
-    * @param {OptionsFormattingEvent} [options={}] - Configuration optionnelle pour les événements de formatage.
-    * @returns {this} L'instance actuelle de FormFormattingEvent pour le chaînage de méthodes.
-    */
     public init = (options: OptionsFormattingEvent = {}): this => {
         this.m_option_module = { ...this.m_option_module, ...options };
         Logger.info("FormFormattingEvent initialisé avec les options :", this.m_option_module);
         return this;
     }
 
-    /**
-     * Converts the last name input field's value to uppercase in real-time.
-     * 
-     * This function listens for input events on an input field with the class `.lastname` 
-     * and automatically converts its value to uppercase. It ensures that the specified 
-     * input field exists before applying the transformation.
-     * 
-     * **Usage Example:**
-     * ```typescript
-     * formHandler.lastnameToUpperCase(document);
-     * ```
-     * 
-     * @param {any} subject - The DOM element or context within which to search for the `.lastname` input field.
-     * @param {string | string[]} [locales] - Optional locale settings for uppercase transformation.
-     * @throws {Error} If the `.lastname` input field does not exist in the provided subject.
-     */
+    private delegateEvent(
+        subject: HTMLElement | Document,
+        selector: string,
+        handler: (target: HTMLInputElement) => void
+    ): void {
+        const eventKey = `${selector}:blur`;
 
-    public lastnameToUpperCase(subject: HTMLElement | Document | JQuery, locales?: string | string[]): void {
+        if (this.m_event_listeners.has(eventKey)) {
+            subject.removeEventListener('blur', this.m_event_listeners.get(eventKey)!, true);
+        }
+
+        const listener = (event: Event) => {
+            const target = event.target as HTMLElement;
+            if (target && target.matches(selector)) {
+                handler(target as HTMLInputElement);
+            }
+        };
+
+        subject.addEventListener('blur', listener, true);
+        this.m_event_listeners.set(eventKey, listener);
+    }
+
+    public lastnameToUpperCase(subject: HTMLElement | Document, locales?: string | string[]): void {
         const effectiveLocales = locales ?? this.m_option_module.locales;
 
-        // Utiliser la délégation d'événements sur le sujet
-        jQuery(subject).off("blur", 'input.lastname').on("blur", 'input.lastname', function (event: JQuery.BlurEvent) {
-            const target = jQuery<HTMLInputElement>(event.target);
-            let lastname = target.val();
+        this.delegateEvent(subject, 'input.lastname', (target) => {
+            const lastname = target.value;
 
             if (!lastname) {
                 Logger.info("The last name input field is empty, uppercase formatting ignored.");
                 return;
             }
-            // S'assurer que lastname est une chaîne et la nettoyer, puis échapper le HTML avant le formatage
+
             let processedLastname = escapeHtmlBalise(String(lastname).trim()) as string;
             processedLastname = processedLastname.toLocaleUpperCase(effectiveLocales);
 
-            target.val(processedLastname);
+            target.value = processedLastname;
             Logger.log(`Formatted last name: "${lastname}" -> "${processedLastname}"`);
         });
-        Logger.info(`The listener 'LASTNAMETOUPPERCASE' is attached to ${jQuery(subject).prop('tagName') || subject.constructor.name}.`);
+
+        const subjectName = subject instanceof Document ? "Document" : subject.tagName;
+        Logger.info(`The listener 'LASTNAMETOUPPERCASE' is attached to ${subjectName}.`);
     }
 
-    /**
-     * Capitalizes each word in the first name field when the user finishes typing.
-     *
-     * This function ensures that every word in the first name input field starts with an uppercase letter,
-     * followed by lowercase letters. It is triggered when the user leaves the input field (`blur` event).
-     *
-     * **Use case:**
-     * - Helps in formatting names correctly in form fields (e.g., "john doe" → "John Doe").
-     * - Prevents inconsistent capitalization in user-entered data.
-     *
-     * **Example Usage:**
-     * - Input: "john DOE"
-     * - Output: "John Doe"
-     *
-     * @param {any} subject - The parent container where the input field is located.
-     * @param {string} [separator_toString=" "] - The separator for words in the input field.
-     * @param {string} [finale_separator_toString=" "] - The final separator used when formatting.
-     * @param {string | string[]} [locales] - The locale(s) used for capitalization.
-     * @throws {Error} If the input field with the `.firstname` class is not found.
-     */
-
     public capitalizeUsername(
-        subject: HTMLElement | Document | JQuery,
+        subject: HTMLElement | Document,
         separator_toString: string = " ",
         finale_separator_toString: string = " ",
         locales?: string | string[]
     ): void {
         const effectiveLocales = locales ?? this.m_option_module.locales;
 
-        // Utiliser la délégation d'événements sur le sujet
-        jQuery(subject).off("blur", 'input.firstname').on("blur", 'input.firstname', function (event: JQuery.BlurEvent) {
-            const target = jQuery<HTMLInputElement>(event.target);
-            let username = target.val();
+        this.delegateEvent(subject, 'input.firstname', (target) => {
+            const username = target.value;
 
             if (!username) {
                 Logger.info(`The first name field is empty, capitalization is ignored.`);
                 return;
             }
 
-            // S'assurer que username est une chaîne et la nettoyer
             let processedUsername = String(username).trim();
             processedUsername = capitalizeString(processedUsername, separator_toString, finale_separator_toString, true, effectiveLocales);
 
-            target.val(processedUsername);
+            target.value = processedUsername;
             Logger.log(`Formatted first name: "${username}" -> "${processedUsername}"`);
         });
-        Logger.info(`The listener 'capitalizeUsername' is attached to ${jQuery(subject).prop('tagName') || subject.constructor.name}.`);
+
+        const subjectName = subject instanceof Document ? "Document" : subject.tagName;
+        Logger.info(`The listener 'capitalizeUsername' is attached to ${subjectName}.`);
     }
 
-    /**
-     * Automatically formats the input field for first and last names by applying the correct formatting.
-     * 
-     * This function listens for the `blur` event on `input.username` fields and applies the `usernameFormat` function,
-     * respecting the order of the last name (either on the left or right) based on the `position-lastname` attribute.
-     * 
-     * @param subject HTML element or jQuery selector containing the relevant fields.
-     * @param separator_toString Separator for words in the initial string (default: `" "`).
-     * @param finale_separator_toString Final separator for words after processing (default: `" "`).
-     * @param locales Locale used for formatting (optional).
-     * @throws {Error} If no `input.username` field is found within the `subject`.
-     */
-
     public usernameFormatDom = (
-        subject: HTMLElement | Document | JQuery,
+        subject: HTMLElement | Document,
         separator_toString: string = " ",
         finale_separator_toString: string = " ",
         locales?: string | string[]
     ): void => {
         const effectiveLocales = locales ?? this.m_option_module.locales;
 
-        // Utiliser la délégation d'événements sur le sujet
-        jQuery(subject).off('blur', 'input.username').on("blur", 'input.username', (event: JQuery.BlurEvent) => {
-            const target = jQuery<HTMLInputElement>(event.target);
-            let username = target.val();
+        this.delegateEvent(subject, 'input.username', (target) => {
+            const username = target.value;
 
             if (!username) {
                 Logger.info("The username field is empty, formatting ignored.");
                 return;
             }
 
-            // S'assurer que username est une chaîne et la nettoyer
             let processedUsername = String(username).trim();
-            const positionLastname = target.attr('data-position-lastname') as 'left' | 'right' ?? 'left';
+            const positionLastname = target.getAttribute('data-position-lastname') as 'left' | 'right' ?? 'left';
 
             processedUsername = usernameFormat(
                 processedUsername,
@@ -180,10 +135,12 @@ export class FormFormattingEvent {
                 effectiveLocales
             );
 
-            target.val(processedUsername);
+            target.value = processedUsername;
             Logger.log(`Formatted username: "${username}" -> "${processedUsername}"`);
         });
-        Logger.info(`The listener 'usernameFormatDom' is attached to ${jQuery(subject).prop('tagName') || subject.constructor.name}.`);
+
+        const subjectName = subject instanceof Document ? "Document" : subject.tagName;
+        Logger.info(`The listener 'usernameFormatDom' is attached to ${subjectName}.`);
     }
 }
 

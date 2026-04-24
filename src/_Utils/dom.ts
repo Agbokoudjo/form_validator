@@ -9,7 +9,6 @@
  * LinkedIn: https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * @version 1.0.0
  */
-import { validateJQueryAvailability,JQueryElement } from "./jQueryExtension";
 
 /**
  * Options for getMetaContent function
@@ -97,7 +96,6 @@ function validateMetaName(name: string): void {
  * @returns The value of the 'content' attribute
  * 
  * @throws {TypeError} If the name parameter is invalid
- * @throws {JQueryNotAvailableError} If jQuery is not available globally
  * @throws {MetaTagNotFoundError} If the <meta> tag does not exist in the DOM
  * @throws {EmptyContentError} If the 'content' attribute is empty and throwOnEmpty is true
  * 
@@ -134,12 +132,11 @@ export function getMetaContent(
 
     // Validation Phase
     validateMetaName(name);
-    validateJQueryAvailability();
 
     // DOM Query Phase
-    const $element: JQueryElement = window.jQuery!(`meta[name="${name}"]`);
+    const $element = document.querySelector(`meta[name="${name}"]`);
 
-    if ($element.length === 0) {
+    if (!$element) {
         if (defaultValue !== undefined) {
             return defaultValue;
         }
@@ -147,7 +144,7 @@ export function getMetaContent(
     }
 
     // Content Extraction Phase
-    const rawContent: string | undefined = $element.attr('content');
+    const rawContent = $element.getAttribute('content');
 
     if (rawContent === undefined || rawContent === null) {
         if (defaultValue !== undefined) {
@@ -220,10 +217,9 @@ export function getMetaContentSafe(
 export function hasMetaTag(name: string): boolean {
     try {
         validateMetaName(name);
-        validateJQueryAvailability();
 
-        const $element: JQueryElement = window.jQuery!(`meta[name="${name}"]`);
-        return $element.length > 0;
+        const $element = document.querySelector(`meta[name="${name}"]`);
+        return $element ? true :false;
     } catch {
         return false;
     }

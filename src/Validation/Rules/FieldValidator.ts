@@ -71,8 +71,6 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 	}
 
 	public setValidationState = (isValid: boolean, errorMessage: string | string[], fieldName: string): this => {
-
-		// Définir le statut de validité
 		formErrorStore.setFieldValid(fieldName, isValid);
 
 		// Ajouter le message d'erreur (la logique d'ajout est dans le Store)

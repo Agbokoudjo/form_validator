@@ -149,7 +149,7 @@ export class FormErrorStore implements FormErrorStoreInterface {
         } else {
             // Si le tableau est vide, on supprime la clé pour nettoyer le store
             this.fieldErrors.delete(fieldName);
-            this.setFieldValid(fieldName, true); // On Marque comme valide si le dernier message a été retiré
+            this.setFieldValid(fieldName, true); 
         }
 
         return this;

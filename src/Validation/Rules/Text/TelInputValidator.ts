@@ -116,9 +116,16 @@ export class TelInputValidator extends AbstractFieldValidator {
                 );
             }
 
-            // JQUERY UPDATE (Cleanup Side-Effect)
-            if (typeof jQuery !== 'undefined') {
-                jQuery(`input[name="${targetInputname}"]`).val(phoneNumber.formatInternational());
+            if (typeof window !== "undefined" && typeof document !== "undefined") {
+                const targetInput = document.querySelector<HTMLInputElement>(`input[name="${targetInputname}"]`);
+
+                if (targetInput) {
+                    targetInput.value = phoneNumber.formatInternational();
+
+                    // Si tu as besoin de déclencher manuellement l'événement 'input' ou 'change' 
+                    // pour que d'autres scripts (ou React/Angular) voient la modification :
+                    targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
 
         } catch (error) {
@@ -144,7 +151,7 @@ export class TelInputValidator extends AbstractFieldValidator {
             minLength: optionsinputTel.minLength ?? 8,
             maxLength: optionsinputTel.maxLength ?? 80,
             requiredInput: optionsinputTel.requiredInput ?? true,
-            typeInput: 'tel'
+            typeInput: 'tel',
         }, true);
 
         // Short-circuiting: if the field is invalid, stop here.

@@ -8,7 +8,7 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { FormInputType, DataInput, MediaType } from "../../../_Utils";
+import { FormInputType, DataInput, MediaType, MediaRequiredType } from "../../../_Utils";
 
 import {
 	//BaseRule
@@ -36,14 +36,22 @@ import {
 	OptionsMediaVideo,
 	imageValidator,
 	videoValidator,
-	documentValidator,
+	OptionsWordFile,
+	OptionsCsvFile,
+	OptionsExcelFile,
+	OptionsOdfFile,
+	microsoftWordValidator,
+	csvValidator,
+	pdfValidator,
+	excelValidator,
 	//Choice
 	OptionsCheckbox,
 	OptionsRadio,
 	SelectOptions,
 	checkboxValidator,
 	radioValidator,
-	selectValidator
+	selectValidator,
+	odtValidator
 } from "../../Rules";
 
 export type OptionsValidate = TextInputOptions
@@ -59,6 +67,10 @@ export type OptionsValidate = TextInputOptions
 	| OptionsFile
 	| OptionsImage
 	| OptionsMediaVideo
+	| OptionsWordFile
+	| OptionsOdfFile
+	| OptionsCsvFile
+	| OptionsExcelFile
 	;
 
 export interface FormInputValidatorInterface {
@@ -69,7 +81,7 @@ export interface FormInputValidatorInterface {
 	  *
 	  * @param {string | string[] | number | null | undefined | File | FileList} datainput - The value of the input field to validate. This can be a string (text, email, URL, date, tel, radio), an array of strings (select, checkbox), a number (number, checkbox), null, undefined, or a File/FileList for file inputs.
 	  * @param {string} targetInputname - The name of the input field being validated.
-	  * @param {FormInputType} type_field - The type of input field (e.g., 'text', 'url', 'date', 'password', 'image', 'video', 'document', 'email', 'tel', 'select', 'number', 'checkbox', 'radio').
+	  * @param {FormInputType | MediaType | MediaRequiredType} type_field - The type of input field (e.g., 'text', 'url', 'date', 'password', 'image', 'video', 'document', 'email', 'tel', 'select', 'number', 'checkbox', 'radio').
 	  * @param {OptionsValidateNoTypeFile} options_validator - Configuration options specific to the field type.
 	  *
 	  * @returns {void} This function modifies the validator's internal state (e.g., sets error messages) but does not return a value directly.
@@ -92,8 +104,9 @@ export interface FormInputValidatorInterface {
 	allTypesValidator: (
 		datainput: DataInput,
 		targetInputname: string,
-		type_field: FormInputType | MediaType,
-		options_validator: OptionsValidate, ...othersArg: any) => Promise<void>;
+		type_field: FormInputType | MediaType | MediaRequiredType,
+		options_validator: OptionsValidate,
+		...othersArg: any) => Promise<void>;
 }
 
 export interface ContainerValidatorInterface {
@@ -106,14 +119,13 @@ export interface ContainerValidatorInterface {
 /**
  * @class FormInputValidator
  * @description 
- * Routeur Central et Gestionnaire d'Instances (Singleton).
- * Cette classe agit comme la Façade principale du moteur de validation.
- * Elle achemine (dispatche) les données d'entrée vers le validateur spécialisé 
- * approprié (Email, Password, Fichier, etc.) en fonction du type de champ, 
- * et maintient un registre de ces validateurs pour la gestion de l'état des erreurs.
- * 
- * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
-* @package <https://github.com/Agbokoudjo/form_validator>
+ * Central Router and Instance Manager (Singleton).
+ * This class acts as the main Facade for the validation engine.
+ * It routes (dispatches) input data to the appropriate specialized validator 
+ * (Email, Password, File, etc.) based on the field type, and maintains 
+ * a registry of these validators to manage error states.
+ * * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
  */
 export class FormInputValidator implements FormInputValidatorInterface, ContainerValidatorInterface {
 	private static m_instance_validator: FormInputValidator;
@@ -130,10 +142,13 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
 		return FormInputValidator.m_instance_validator;
 	}
 
+	/**
+	* Dispatches the input data to the correct validator based on the field type.
+	*/
 	public allTypesValidator = async (
 		datainput: DataInput,
 		targetInputname: string,
-		type_field: FormInputType | MediaType,
+		type_field: FormInputType | MediaType | MediaRequiredType,
 		options_validator: OptionsValidate,
 		...othersArg: any
 	): Promise<void> => {
@@ -149,9 +164,28 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
 					await videoValidator.validate(datainput, targetInputname, options_validator as OptionsMediaVideo);
 					this.setValidator(targetInputname, videoValidator);
 					break;
-				default: //document
-					await documentValidator.validate(datainput, targetInputname, options_validator as OptionsFile);
-					this.setValidator(targetInputname, documentValidator);
+				case "word":
+					await microsoftWordValidator.validate(datainput, targetInputname, options_validator as OptionsWordFile);
+					this.setValidator(targetInputname, microsoftWordValidator);
+					break;
+				case "odf":
+					await odtValidator.validate(datainput, targetInputname, options_validator as OptionsOdfFile);
+					this.setValidator(targetInputname, odtValidator);
+					break;
+				case "excel":
+					await excelValidator.validate(datainput, targetInputname, options_validator as OptionsExcelFile) ;
+					this.setValidator(targetInputname, excelValidator);
+					break ;
+				case "csv":
+					await csvValidator.validate(datainput, targetInputname, options_validator as OptionsCsvFile);
+					this.setValidator(targetInputname, csvValidator); 
+					break;
+				case "pdf":
+					await pdfValidator.validate(datainput, targetInputname, options_validator as OptionsFile);
+					this.setValidator(targetInputname, pdfValidator); 
+					break;
+				default: 
+					console.error(`[FormValidator] File validation for type "${type_field}" is not implemented.`);
 					break;
 			}
 			return;
@@ -219,13 +253,22 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
 		}
 	};
 
+	/**
+	 * Stores a validator instance associated with a specific field name.
+	 */
 	public setValidator(targetInputname: string, validator: FieldValidatorInterface): void {
 		this.__containerValidator.set(targetInputname, validator);
 	}
 
+	/**
+	 * Retrieves a stored validator instance by field name.
+	 */
 	public getValidator = (targetInputname: string): FieldValidatorInterface | undefined => {
-		return this.__containerValidator.get(targetInputname)
+		return this.__containerValidator.get(targetInputname);
 	}
 }
 
+/**
+ * Exported Singleton instance for global application use.
+ */
 export const formInputValidator = FormInputValidator.getInstance();

@@ -119,7 +119,8 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
                 maxLength: __UrlOptions.maxAllowedLength,
                 escapestripHtmlAndPhpTags: __UrlOptions.escapestripHtmlAndPhpTags,
                 typeInput: "url",
-                egAwait: undefined
+                egAwait: undefined,
+                match:__UrlOptions.match ?? true
             }, true)
 
             if (!this.formErrorStore.isFieldValid(targetInputname)) { return this; }

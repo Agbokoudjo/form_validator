@@ -131,6 +131,7 @@ export class EmailInputValidator extends AbstractFieldValidator implements Email
             escapestripHtmlAndPhpTags: optionsinputemail.escapestripHtmlAndPhpTags,
             regexValidator: this.__defaultEmailRegex,
             egAwait: optionsinputemail.egAwait ?? "franckagbokoudjo301@gmail.com",
+            match: optionsinputemail.match ?? true
         }, true);
 
         if (!this.formErrorStore.isFieldValid(targetInputname)) { return this; };

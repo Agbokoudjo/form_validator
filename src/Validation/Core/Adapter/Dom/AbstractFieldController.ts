@@ -23,10 +23,12 @@ import {
     getInputPatternRegex,
     FormAttributeNoFoundException,
     MediaType,
-    MediaTypeArray
+    MediaTypeArray,
+    escapeHtmlBalise,
+    MediaRequiredType
 } from "../../../../_Utils";
 
-import { FieldValidatorInterface } from "../../../Rules";
+import { FieldValidatorInterface, OdtValidator } from "../../../Rules";
 
 /**
  * @event Validate
@@ -48,27 +50,28 @@ export type EventValidate = 'change' | 'blur' | 'input' | 'focus';
  */
 export abstract class AbstractFieldController {
 
-    protected readonly _children: JQuery<HTMLFormChildrenElement>;
+    protected readonly _children: HTMLFormChildrenElement;
 
-    protected readonly _formParent: JQuery<HTMLFormElement>;
+    protected readonly _formParent: HTMLFormElement;
 
-    protected _checkBoxContainer: JQuery<HTMLElement> | undefined;
+    protected _checkBoxContainer: HTMLElement | undefined;
 
-    protected _radiosContainer: JQuery<HTMLElement> | undefined;
+    protected _radiosContainer: HTMLElement | undefined;
 
     /**
      * @param children The raw HTML input or textarea element to be validated.
      */
     protected constructor(children: HTMLFormChildrenElement) {
 
-        this._children = jQuery<HTMLFormChildrenElement>(children);
+        this._children = children;
 
-        this._formParent = this._children.closest('form');
-        // Optionally, you can check if the element is inside a <form>
-        if (this._formParent.length === 0) {
+        const parent = this._children.closest('form');
 
-            throw new Error(`The input field "${children.name}" is not inside a <form> element.`);
+        if (!parent) {
+            throw new Error(`The input field "${children.name || 'unnamed'}" is not inside a <form> element.`);
         }
+
+        this._formParent = parent as HTMLFormElement;
 
         this._checkBoxContainer = undefined;
 
@@ -125,6 +128,7 @@ export abstract class AbstractFieldController {
         if (type === "file") {
 
             type = this.getAttrChildren('data-media-type');
+            
             if (!type) {
 
                 throw new AttributeException('data-media-type', this.name, this.getAttrFormParent('name') ?? 'form');
@@ -139,30 +143,33 @@ export abstract class AbstractFieldController {
     * Supports checkboxes, radio buttons, file inputs, and standard inputs.
     */
     protected get value(): DataInput {
+        const element = this._children;
 
-        if ((this.type === "file" || MediaTypeArray.includes(this.type)) && this.htmlElementChildren instanceof HTMLInputElement) {
-
-            const files = this.htmlElementChildren.files
-
-            if (!this.isMultiple) { return files ? files[0] : null; }
-
-            return files
+        // File management
+        if ((this.type === "file" || MediaTypeArray.includes(this.type)) && element instanceof HTMLInputElement) {
+            const files = element.files;
+            if (!this.isMultiple) return files && files.length > 0 ? files[0] : null;
+            return files;
         }
 
+        // Checkbox management (returns count of checked items with same name)
         if (this.type === "checkbox") {
-
-            const checkboxes = this._formParent.find<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`);
-            const checkedCheckboxes = Array.from(checkboxes).filter(checkbox_elt => checkbox_elt.checked);
-            return checkedCheckboxes.length;
+            const selector = `input[type="checkbox"][name="${this.name}"]`;
+            const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            return checkedCount;
         }
 
+        // Radio management
         if (this.type === "radio") {
-            const radios = this._formParent.find<HTMLInputElement>(`input[type="radio"][name="${this.name}"]`);
-            const selected = Array.from(radios).find(radio => radio.checked);
+            const selector = `input[type="radio"][name="${this.name}"]`;
+            const radios = this._formParent.querySelectorAll<HTMLInputElement>(selector);
+            const selected = Array.from(radios).find(r => r.checked);
             return selected ? selected.value : undefined;
         }
 
-        return this._children.val();
+        // Default Input / Textarea / Select
+        return (element as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
     }
 
     /**
@@ -170,23 +177,21 @@ export abstract class AbstractFieldController {
      * @param attributeName The name of the attribute to retrieve.
      */
     protected getAttrChildren(attributeName: string): string | undefined {
-
-        return this._children.attr(attributeName);
+        return this._children.getAttribute(attributeName) ?? undefined;
     }
+
 
     /**
      * Returns a specific attribute from the parent form.
-     * @param attributeName The name of the attribute to retrieve.
+     * @param {string} attributeName The name of the attribute to retrieve.
      * @returns {string} The value of the requested attribute.
      * @throws {Error} If the attribute is missing on the parent form element.
      */
     protected getAttrFormParent(attributeName: string): string {
 
-        const attributeValue = this._formParent.attr(attributeName);
+        const attributeValue = this._formParent.getAttribute(attributeName);
 
         if (attributeValue === undefined || attributeValue === null) {
-
-            // on Lance l'exception en utilisant la représentation HTML complète.
             throw new FormAttributeNoFoundException(
                 this.htmlElementFormParent,
                 attributeName,
@@ -199,14 +204,15 @@ export abstract class AbstractFieldController {
     /**
      * Returns the raw HTML element wrapped by jQuery.
      */
+    /**
+     * Directly returns the element (no more .get(0))
+     */
     protected get htmlElementChildren(): HTMLFormChildrenElement {
-
-        return this._children.get(0)!;
+        return this._children;
     }
 
     protected get htmlElementFormParent(): HTMLFormElement {
-
-        return this._formParent.get(0)!
+        return this._formParent;
     }
 
     /**
@@ -266,7 +272,6 @@ export abstract class AbstractFieldController {
 
     /**
      * Clears the validation error for this field using the form error handler, 
-     * seulement si le validateur existe.
      */
     public clearErrorField(): void {
         const validator = this.errorStoreAccessor;
@@ -279,17 +284,20 @@ export abstract class AbstractFieldController {
         console.warn(`the validator instance of ${this.name} no exist in container `);
     }
 
+    /**
+     * Checks if the field is valid. 
+     * Defaults to true if no validator is present for this field.
+     */
     public isValid(): boolean {
-
         const validator = this.errorStoreAccessor;
 
         if (validator) {
             return validator.formErrorStore.isFieldValid(this.name);
         }
 
-        console.warn(`the validator instance of ${this.name} no exist in container `);
+        console.warn(`[FormValidator] No validator instance for ${this.name}. Field is considered valid by default.`);
 
-        return true; //on renvoie true simplement lorsque lorsque l'instance de validator n'exist pas
+        return true;
     }
 
     /**
@@ -429,6 +437,15 @@ export abstract class AbstractFieldController {
         return this.getAttrChildren('data-error-message-input');
     }
 
+    protected get matchRegex(): boolean | undefined {
+
+        const match=this.getAttrChildren('data-match-regex')
+            ?? this.getAttrChildren('data-match')
+            ?? this.getAttrChildren('match')
+            ;
+        return toBoolean(match ?? "true");
+    }
+
     protected get egAwait(): string | undefined {
 
         return this.getAttrChildren('data-eg-await');
@@ -474,5 +491,103 @@ export abstract class AbstractFieldController {
             .map(v => v.trim())
             .filter(Boolean) ?? []
             ;
+    }
+
+    /**
+     * Core utility to parse a raw string into a sanitized string array.
+     * Handles both JSON arrays and comma-separated strings.
+     */
+    protected parseRawToStringArray(rawValue: string | null | undefined): string[] {
+        if (!rawValue || typeof rawValue !== 'string') {
+            return [];
+        }
+
+        let items: any[] = [];
+        const trimmedValue = rawValue.trim();
+
+        // Detect and parse format
+        if (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) {
+            try {
+                const parsed = JSON.parse(trimmedValue);
+                items = Array.isArray(parsed) ? parsed : [trimmedValue];
+            } catch {
+                items = rawValue.split(',');
+            }
+        } else {
+            items = rawValue.split(',');
+        }
+
+        //  Deep sanitation
+        return items
+            .map(item => {
+                // Convert to string, escape HTML, trim, and collapse multiple spaces
+                const sanitized = String(escapeHtmlBalise(item)).trim();
+                // Assuming escapeHtmlBalise is available in your context
+                return sanitized.replace(/\s+/g, ' ');
+            })
+            .filter(item => item.length > 0);
+    }
+}
+
+/**
+ * Class: DocumentTypeResolver
+ * A static utility class to detect and cache document types.
+ * Now supports single and multiple file uploads.
+ */
+export class DocumentTypeResolver {
+
+    private static documentTypeCache: Map<string, MediaRequiredType[]> = new Map();
+
+    private constructor() { }
+
+    /**
+     * Detects document types for one or more files.
+     * * @param files A single File or a FileList/Array of files.
+     * @param targetName The name attribute of the input field.
+     * @returns {MediaRequiredType[]} An array of detected types.
+     */
+    public static detect(files: File | File[] | FileList, targetName: string): MediaRequiredType[] {
+        // Consistency check: Convert everything to an array
+        const fileArray = files instanceof File
+            ? [files]
+            : Array.from(files);
+
+        // Return from cache if already detected
+        if (this.documentTypeCache.has(targetName)) {
+            return this.documentTypeCache.get(targetName)!;
+        }
+
+        const detectedTypes: MediaRequiredType[] = fileArray.map(file => {
+            const extension = file.name.split('.').pop()?.toLowerCase() || '';
+
+            if (OdtValidator.LIBREOFFICE_EXTENSIONS.includes(extension)) return "odf";
+            if (['docx', 'doc', 'dotx'].includes(extension)) return "word";
+            if (extension === 'pdf') return "pdf";
+            if (extension === 'csv') return "csv";
+            if (['xls', 'xlsx', 'xlsm'].includes(extension)) return "excel";
+
+            return "pdf";
+        });
+
+        // Save result
+        this.documentTypeCache.set(targetName, detectedTypes);
+
+        return detectedTypes;
+    }
+
+    /**
+     * Helper to get the primary type (useful for choosing a single validator).
+     */
+    public static resolvePrimaryType(files: File | File[] | FileList, targetName: string): MediaRequiredType {
+        const types = this.detect(files, targetName);
+        return types.length > 0 ? types[0] : "pdf";
+    }
+
+    public static clearCache(targetName?: string): void {
+        if (targetName) {
+            this.documentTypeCache.delete(targetName);
+        } else {
+            this.documentTypeCache.clear();
+        }
     }
 }

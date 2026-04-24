@@ -77,10 +77,6 @@ export interface TranslationResult {
     isFallback: boolean;
 }
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
 /**
  * Default configuration values
  */
@@ -96,11 +92,6 @@ const DEFAULT_CONFIG: Required<TranslationConfig> = {
  * Cache key prefix for translation storage
  */
 const CACHE_KEY_PREFIX = 'app_translation_';
-
-// ============================================================================
-// MAIN CLASS
-// ============================================================================
-
 
 /**
  * AppTranslation
@@ -648,10 +639,6 @@ export class AppTranslation implements ConfigCacheAdapterTranslation {
         });
     }
 }
-
-// ============================================================================
-// CUSTOM ERROR CLASSES
-// ============================================================================
 
 /**
  * Error thrown when a translation key is not found

@@ -8,7 +8,11 @@
  *
  * For more information, please feel free to contact the author.
  */
-import { MediaValidatorInterface, OptionsValidateTypeFile } from './InterfaceMedia';
+import {
+    MediaValidatorInterface,
+    UnityMaxSizeTypeFile,
+    OptionsValidateTypeFile
+} from './InterfaceMedia';
 import { AbstractFieldValidator, } from '../FieldValidator';
 import { convertOctetToMo } from "../../../_Utils"
 
@@ -37,10 +41,24 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
      * Validates the size of the image file against the maximum allowed size.
      * Valide la taille du fichier image par rapport à la taille maximale autorisée.
      */
-    protected sizeValidate = (file: File, targetInputname: string = 'photofile', sizeImg: number = 5, unitysize = 'MiB'): this => {
-        if (convertOctetToMo(file.size) > sizeImg) {
-            this.setValidationState(false, `the ${this.getContext()} ${file.name} file is too large, maximum recommended size is ${sizeImg} ${unitysize}`, targetInputname)
+    protected sizeValidate = (
+        file: File,
+        targetInputname: string = 'photofile',
+        sizeMax: number = 5,
+        unitysize: UnityMaxSizeTypeFile = 'MiB'
+    ): this => {
+        const fileSizeInUnit = convertBytesToUnit(file.size, unitysize);
+
+        if (fileSizeInUnit > sizeMax) {
+            this.setValidationState(
+                false,
+                `The ${this.getContext()} "${file.name}" is too large. ` +
+                `Maximum allowed size is ${sizeMax} ${unitysize} ` +
+                `(current: ${fileSizeInUnit.toFixed(2)} ${unitysize}).`,
+                targetInputname
+            );
         }
+
         return this;
     }
 
@@ -50,21 +68,50 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
      * @param allowedExtensions Un tableau des extensions autorisées.
      * @returns L'instance de la classe.
      */
-    protected extensionValidate = (file: File, targetInputname: string, allowedExtensions?: string[]): string | undefined => {
+    protected isValidExtension = (file: File,allowedExtensions?: string[]): string | null=> {
         const fileExtension = this.getFileExtension(file);
-        if (fileExtension && allowedExtensions && !allowedExtensions.includes(fileExtension)) {
-            this.setValidationState(false, `The ${this.getContext()} ${file.name} extension .${fileExtension} is not allowed.`, targetInputname);
+        if (!fileExtension || !allowedExtensions){ return null ;}
+
+        if (!allowedExtensions.includes(fileExtension)) {
+            return `The ${this.getContext()} ${file.name} extension .${fileExtension} is not allowed.`;
         }
-        return fileExtension;
+
+        return null;
     }
 
     protected getFileExtension(file: File): string | undefined {
         return file.name.split('.').pop()?.toLowerCase() || undefined;
     }
 
-    protected abstract mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[]): Promise<string | null>
-    protected abstract signatureFileValidate(file: File, uint8Array?: Uint8Array): Promise<string | null>;
-    protected abstract getFileDimensions(file: File): Promise<{ width: number, height: number }>
+    protected async signatureFileValidate(file: File, uint8Array: Uint8Array): Promise<string | null> {
+        return null;     
+    }
+
+    /**
+     * the children class can modify this method 
+     */
+    protected validateDocumentSignature(uint8Array: Uint8Array, allowedSignatures: string[]): boolean {
+        if (uint8Array.length < 4) return false;
+        const header = Array.from(uint8Array.subarray(0, 4))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+        return allowedSignatures.some(sig => header.startsWith(sig.toLowerCase()));
+    }
+
+    protected  async mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[] | undefined): Promise<string | null> {
+        return null;
+    }
+
+    /**
+     * the children class (VideoValidator and ImageValidator can modify this)
+     */
+    protected async getFileDimensions(file: File): Promise<{ width: number, height: number }>{
+        return {
+            width: 0,
+            height: 0
+        }
+    }
 
     /**
     * Valide la hauteur de l'image.
@@ -97,5 +144,53 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
             this.setValidationState(false, `The width of the ${this.getContext()} ${file.name} is greater than ${maxWidth}${unity_dimensions}`, targetInputname);
         }
         return this;
+    }
+
+    protected async readFileAsUint8Array(file: File): Promise<Uint8Array> {
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+            reader.onerror = () => reject(`Failed to read file: ${file.name}`);
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    /**
+     * Attempts to parse an XML string using DOMParser.
+     * Returns an error string if the XML is malformed, null otherwise.
+     *
+     * @param xml      - The XML string to validate.
+     * @param filename - Used in the error message.
+     */
+    protected validateXml(xml: string, filename: string, context: string ="word/document.xml"): string | null {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xml, 'application/xml');
+            const parseError = doc.querySelector('parsererror');
+            if (parseError) {
+                return (
+                    `The "${context}" in "${filename}" is malformed XML: ` +
+                    `${parseError.textContent?.slice(0, 200)}`
+                );
+            }
+        } catch (error) {
+            return `Failed to parse "${context}" in "${filename}": ${error}`;
+        }
+        return null;
+    }
+
+}
+
+/**
+ * Converts bytes to the specified unit.
+ */
+function convertBytesToUnit(bytes: number, unit: UnityMaxSizeTypeFile): number {
+    switch (unit) {
+        case 'B': return bytes;
+        case 'KiB': return bytes / 1024;
+        case 'MiB': return bytes / (1024 ** 2);
+        case 'GiB': return bytes / (1024 ** 3);
+        default: return bytes / (1024 ** 2); // fallback MiB
     }
 }

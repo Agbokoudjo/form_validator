@@ -99,11 +99,6 @@ export interface TimerWrapper {
     timerInterval?: NodeJS.Timeout;
 }
 
-
-// ============================================================================
-// DIALOG FUNCTIONS
-// ============================================================================
-
 /**
  * Shows a loading dialog with timer
  * 

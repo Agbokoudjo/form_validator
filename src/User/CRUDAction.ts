@@ -18,7 +18,6 @@
 import Swal, { SweetAlertOptions } from "sweetalert2";
 import {
     MissingAttributeError,
-    validateJQueryAvailability,
     HttpMethod
 } from "../_Utils";
 import {
@@ -195,10 +194,6 @@ export async function CRUDActionConfirmationHandle(
     }
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
 /**
  * Creates a safe version of CRUDActionConfirmationHandle that doesn't throw
  * 
@@ -233,31 +228,41 @@ export async function CRUDActionConfirmationHandleSafe(
 }
 
 /**
- * Checks if an element has all required CRUDAction attributes
- * 
- * @param element - DOM element to check
- * @returns True if element has all required attributes
- * 
- * @example
- * ```typescript
- * if (hasRequiredCRUDActionAttributes(element)) {
- *     const data = extractCRUDActionData(element);
- * }
- * ```
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * (c) INTERNATIONALES WEB SERVICES
+ */
+
+/**
+ * Checks if a DOM element contains all the necessary attributes for a CRUD action (like Delete/Confirm).
+ * It verifies the presence of a confirmation flag, a title (for tooltips/modals), and a target URL.
+ * * @param {HTMLElement} element - The native DOM element to validate.
+ * @returns {boolean} True if all required CRUD attributes are present, false otherwise.
  */
 export function hasRequiredCRUDActionAttributes(element: HTMLElement): boolean {
     try {
+        // Assuming validateElement is a native utility that throws error if element is invalid
         validateElement(element);
-        validateJQueryAvailability();
 
-        const $element = jQuery(element);
+        // 1. Check for confirmation attribute (data-action-confirm)
+        const hasActionConfirm: boolean = element.hasAttribute("data-action-confirm");
 
-        const hasActionConfirm = !!$element.attr("data-action-confirm");
-        const hasTitle = !!($element.attr("title") || $element.attr("data-bs-original-title"));
-        const hasUrl = !!($element.attr("href") || $element.attr("data-href") || $element.attr("data-url"));
+        // 2. Check for Title (standard title or Bootstrap's original title attribute)
+        const hasTitle: boolean = !!(
+            element.getAttribute("title") ||
+            element.getAttribute("data-bs-original-title")
+        );
+
+        // 3. Check for URL (href for links, or custom data-href/data-url for other elements)
+        const hasUrl: boolean = !!(
+            (element instanceof HTMLAnchorElement && element.getAttribute("href")) ||
+            element.getAttribute("data-href") ||
+            element.getAttribute("data-url")
+        );
 
         return hasActionConfirm && hasTitle && hasUrl;
     } catch {
+        // Returns false if validation fails or an error occurs during attribute access
         return false;
     }
 }
@@ -296,75 +301,68 @@ export function createCRUDActionEvent(
 }
 
 /**
- * Extracts and validates CRUD Action data from a DOM element
- * 
- * Uses jQuery internally for maximum browser compatibility (IE8+).
- * Validates all required attributes and parses additional data.
- * 
- * @param element - DOM element containing toggle data attributes
- * @returns Validated CRUD Action  data object
- * @throws {TypeError} If element is null or undefined
- * @throws {Error} If jQuery is not available
- * @throws {MissingAttributeError} If required attributes are missing
- * 
- * @example
- * ```typescript
- * const element = document.querySelector('.btn-toggle');
- * const data = extractCRUDActionData(element);
- * console.log(data.title); // "Toggle Account"
- * ```
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * (c) INTERNATIONALES WEB SERVICES
+ */
+
+/**
+ * Extracts and validates CRUD Action data from a DOM element.
+ * * This function retrieves confirmation text, titles, URLs, and additional JSON data
+ * directly from the DOM attributes without external dependencies.
+ * * @param {HTMLElement} element - DOM element containing CRUD data attributes.
+ * @returns {ExtractedCRUDActionData} Validated CRUD Action data object.
+ * @throws {TypeError} If the element is null or undefined.
+ * @throws {MissingAttributeError} If mandatory attributes are missing.
  */
 export function extractCRUDActionData(element: HTMLElement): ExtractedCRUDActionData {
-    // Validate input
+    // 1. Validate the input element using your existing utility
     validateElement(element);
-    validateJQueryAvailability();
 
-    // Convert to jQuery for compatibility
-    const $element = jQuery(element);
-
-    // Extract and validate data-action-confirm
-    const actionConfirmText = $element.attr("data-action-confirm");
+    // 2. Extract and validate 'data-action-confirm'
+    const actionConfirmText = element.getAttribute("data-action-confirm");
     if (!actionConfirmText || actionConfirmText.trim() === "") {
         throw new MissingAttributeError("data-action-confirm", element.outerHTML);
     }
 
-    // Extract title (Bootstrap 5 compatible)
+    // 3. Extract title (Compatible with Bootstrap tooltips and standard titles)
     const title =
-        $element.attr("title") ||
-        $element.attr("data-bs-original-title") ||
-        $element.attr("data-original-title");
+        element.getAttribute("title") ||
+        element.getAttribute("data-bs-original-title") ||
+        element.getAttribute("data-original-title");
 
     if (!title || title.trim() === "") {
         throw new MissingAttributeError("title", element.outerHTML);
     }
 
-    // Extract action URL
+    // 4. Extract action URL (Supports links or custom data attributes)
     const actionUrl =
-        $element.attr("href") ||
-        $element.attr("data-href") ||
-        $element.attr("data-url");
+        element.getAttribute("href") ||
+        element.getAttribute("data-href") ||
+        element.getAttribute("data-url");
 
     if (!actionUrl || actionUrl.trim() === "") {
         throw new MissingAttributeError("href or data-url", element.outerHTML);
     }
 
-    // Parse additional data (optional)
-    const additionalDataAttr = $element.attr("data-additional");
+    // 5. Parse optional additional JSON data
+    const additionalDataAttr = element.getAttribute("data-additional");
     let additionalData: Record<string, unknown> = {};
 
     if (additionalDataAttr) {
         try {
             additionalData = JSON.parse(additionalDataAttr) as Record<string, unknown>;
         } catch (error) {
-            console.warn("[CRUDActionConfirmation] Failed to parse data-additional attribute:", error);
+            console.warn("[CRUDAction] Failed to parse data-additional attribute:", error);
         }
     }
 
-    let httpMethodRequestAction = $element.attr('data-http-method-request-action') as HttpMethod | undefined;
+    // 6. Resolve HTTP Method (Defaulting to PATCH if missing)
+    let httpMethodRequestAction = element.getAttribute('data-http-method-request-action') as HttpMethod | undefined;
 
     if (!httpMethodRequestAction || (typeof httpMethodRequestAction === 'string' && httpMethodRequestAction.trim() === "")) {
         httpMethodRequestAction = "PATCH" as HttpMethod;
-        console.warn("The HTTP method for sending the request for CRUDAction is missing in the attribute, but by default the HTTP method used is 'PATCH'");
+        console.warn("[CRUDAction] HTTP method missing, defaulting to 'PATCH'");
     }
 
     return {
@@ -392,7 +390,7 @@ export function validateElement(element: HTMLElement | null | undefined): assert
 export class CRUDActionConfirmationError extends Error {
     constructor(message: string, public readonly cause?: Error) {
         super(message);
-        this.name = " CRUDActionConfirmationError";
+        this.name = "CRUDActionConfirmationError";
 
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, CRUDActionConfirmationError);

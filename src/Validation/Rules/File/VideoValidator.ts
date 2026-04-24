@@ -1,7 +1,7 @@
 /** 
  * This file is part of the project by AGBOKOUDJO Franck.
  *
- * (c) AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * (c) AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * Phone: +229 0167 25 18 86
  * LinkedIn: https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * Company: INTERNATIONALES WEB APP & SERVICES
@@ -62,16 +62,34 @@ export interface VideoValidatorInterface {
 }
 
 /**
-* @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
-* @package <https://github.com/Agbokoudjo/form_validator>
-*/
+ * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * @class VideoValidator
+ *
+ * Validates video files by checking:
+ *  - file extension
+ *  - file size
+ *  - MIME type (declared + startsWith "video/")
+ *  - binary signature (magic bytes)
+ *  - video metadata (duration, width, height) via a hidden <video> element
+ *
+ * @extends AbstractMediaValidator
+ * @implements VideoValidatorInterface
+ */
 export class VideoValidator extends AbstractMediaValidator implements VideoValidatorInterface {
-    private m_dimension: Record<string, VideoDimensions>;
+    /**
+     * Temporary cache of video dimensions, keyed by filename.
+     * Populated during metadataValidate() and cleared after each validate() call
+     * to prevent unbounded memory growth on large FileLists.
+     */
+    private m_dimension: Record<string, VideoDimensions> = {};
+
     private static m_instance_media: VideoValidator;
+
     private constructor() {
         super();
-        this.m_dimension = {};
     }
+
 
     public static getInstance(): VideoValidator {
         if (!VideoValidator.m_instance_media) {
@@ -81,69 +99,105 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
         return VideoValidator.m_instance_media;
     }
 
+
+    /**
+     * Validates a File or FileList of video files against the given options.
+     *
+     * Validation order per file:
+     *  1. Extension
+     *  2. Size
+     *  3. MIME type
+     *  4. Binary signature (magic bytes)
+     *  5. Metadata (duration, dimensions)
+     */
     public validate = async (
         medias: File | FileList,
         targetInputname: string = 'videofile',
         optionsmedia: OptionsMediaVideo = {}
     ): Promise<this> => {
-
         this.formErrorStore.clearFieldState(targetInputname);
-
+        // Reset dimension cache for this validation run
+        this.m_dimension = {};
         const files = medias instanceof FileList ? Array.from(medias) : [medias];
+
         const {
-            extensions = this.defautOptions.extensions!,
-            allowedMimeTypeAccept = this.defautOptions.allowedMimeTypeAccept!,
-            maxsizeFile = 5,
-            unityMaxSizeFile = "MiB"
+            allowedExtensions = this.defaultOptions.allowedExtensions,
+            allowedMimeTypeAccept = this.defaultOptions.allowedMimeTypeAccept,
+            maxsizeFile = 50,   // 50 MiB is a more realistic default for video
+            unityMaxSizeFile = 'MiB',
+            validateBySignature = true 
         } = optionsmedia;
 
         for (const file of files) {
-            // 1. Validation de l'extension
-            this.extensionValidate(file, targetInputname, extensions);
-            // 2. Validation de la taille du fichier
-            this.sizeValidate(file, targetInputname, maxsizeFile, unityMaxSizeFile);
-            // 3. Validation du type MIME
-            const mimeError = await this.mimeTypeFileValidate(file, allowedMimeTypeAccept);
-            if (mimeError) {
-                this.handleValidationError(targetInputname, file.name, `MIME type error: ${mimeError}`);
+            const extensionError = this.isValidExtension(
+                file,
+                allowedExtensions 
+            );
+
+            if (extensionError) {
+                this.handleValidationError(targetInputname, file.name, extensionError);
                 break;
             }
-            // 4. Validation des métadonnées (dimensions, durée, etc.)
+
+            this.sizeValidate(file, targetInputname, maxsizeFile, unityMaxSizeFile);
+            // Validation du type MIME
+            const mimeError = await this.mimeTypeFileValidate(file, allowedMimeTypeAccept!);
+            if (mimeError) {
+                this.handleValidationError(
+                    targetInputname,
+                    file.name,
+                    `MIME type error: ${mimeError}`);
+                break;
+            }
+
+            if (validateBySignature) {
+                // Binary signature (magic bytes)
+                const signatureError = await this.signatureFileValidate(file);
+                if (signatureError) {
+                    this.handleValidationError(targetInputname, file.name, signatureError);
+                    break;
+                }
+            }
+
+            // Validation des métadonnées (dimensions, durée, etc.)
             try {
                 await this.metadataValidate(file, targetInputname, optionsmedia);
             } catch (error) {
-                this.handleValidationError(targetInputname, file.name, `Metadata validation failed: ${error}`);
+                this.handleValidationError(
+                    targetInputname,
+                    file.name,
+                    `Metadata validation failed: ${error instanceof Error ? error.message : error}`);
                 break;
             }
+            
+            if (!this.formErrorStore.isFieldValid(targetInputname)) { break; }
         }
 
         return this;
     };
 
-    protected signatureFileValidate = async (file: File, uint8Array?: Uint8Array): Promise<string | null> => {
-        return null;
-    }
-
     protected getContext(): string {
         return 'video';
     }
     /**
- * Valide le type MIME d'un fichier pour vérifier s'il s'agit d'une vidéo.
- * 
- * Cette fonction vérifie si le type MIME du fichier est inclus dans la liste des types MIME acceptés pour les vidéos. 
- * Si ce n'est pas le cas, elle retourne un message d'erreur avec la liste des types autorisés.
- * 
- * @param media Le fichier à valider.
- * @param allowedMimeTypeAccept Liste des types MIME autorisés pour les vidéos.
- * @returns Une promesse contenant une chaîne d'erreur ou null si le type MIME est valide.
- */
+     * Valide le type MIME d'un fichier pour vérifier s'il s'agit d'une vidéo.
+     * 
+     * Cette fonction vérifie si le type MIME du fichier est inclus dans la liste des types MIME acceptés pour les vidéos. 
+     * Si ce n'est pas le cas, elle retourne un message d'erreur avec la liste des types autorisés.
+     * 
+     * @param media Le fichier à valider.
+     * @param allowedMimeTypeAccept Liste des types MIME autorisés pour les vidéos.
+     * @returns Une promesse contenant une chaîne d'erreur ou null si le type MIME est valide.
+     */
     protected mimeTypeFileValidate(
         media: File,
         allowedMimeTypeAccept: string[]
     ): Promise<string | null> {
         return new Promise((resolve, reject) => {
             // Vérification de la présence du type MIME et si c'est un type vidéo autorisé
-            if (!media.type || !media.type.startsWith("video/") || !allowedMimeTypeAccept.includes(media.type)) {
+            if (!media.type ||
+                !media.type.startsWith("video/") ||
+                !allowedMimeTypeAccept.includes(media.type)) {
                 resolve(`Invalid MIME type ${media.type} for video ${media.name}. Authorized types are: ${allowedMimeTypeAccept.join(', ')}`);
             } else {
                 resolve(null); // Aucun problème, le type MIME est valide
@@ -151,78 +205,215 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
         });
     }
 
+    /**
+    * Returns the cached dimensions for a given file.
+    * Dimensions are populated during metadataValidate() and are only
+    * available after that step has completed successfully.
+    *
+    * @throws If dimensions are not yet cached for this file.
+    */
     protected getFileDimensions(file: File): Promise<{ width: number; height: number }> {
-        return new Promise<{ width: number; height: number }>((resolve, reject) => {
-            // Si les dimensions sont déjà stockées, les retourner
-            if (this.m_dimension[file.name]) {
-                return resolve(this.m_dimension[file.name]);
-            }
-            // Autrement, rejeter si les dimensions ne sont pas disponibles
-            reject(`Dimensions not available for file: ${file.name}`);
-        });
+        const cached = this.m_dimension[file.name];
+        if (cached) {
+            return Promise.resolve(cached);
+        }
+        // Dimensions are only available after metadataValidate() — this should
+        // not be called before that step.
+        return Promise.reject(
+            new Error(
+                `Dimensions not yet available for "${file.name}". ` +
+                `Ensure metadataValidate() has completed first.`
+            )
+        );
     }
 
-    private metadataValidate = async (media: File, targetInputname: string, optionsvideo?: OptionsMediaVideo): Promise<this> => {
-
+    /**
+    * Loads video metadata via a hidden <video> element and validates:
+    *  - duration (must be positive and finite)
+    *  - height / width (if min/max options are provided)
+    *
+    * Caches dimensions in this.m_dimension for later use by getFileDimensions().
+    * Always revokes the object URL to prevent memory leaks.
+    */
+    private metadataValidate = (
+        media: File,
+        targetInputname: string,
+        optionsvideo?: OptionsMediaVideo
+    ): Promise<this> => {
         return new Promise<this>((resolve, reject) => {
-            // Création d'un élément vidéo pour analyser les métadonnées
             const video = document.createElement('video') as HTMLVideoElement;
-            video.preload = "metadata";
+            video.preload = 'metadata';
+
+            const objectUrl = URL.createObjectURL(media);
+
+            const cleanup = () => URL.revokeObjectURL(objectUrl); //always free memory
+
             video.onloadedmetadata = () => {
-                // Révoquer l'URL de l'objet pour libérer la mémoire
-                window.URL.revokeObjectURL(video.src);
-                if (video.duration < 0 || Number.isNaN(video.duration)) {
-                    this.setValidationState(false,
-                        `The file "${media.name}" is not a valid video file or is corrupted.`,
-                        targetInputname);
-                    return reject(this);  // Rejeter la promesse en cas de fichier vidéo invalide
+                cleanup();
+
+                // Duration must be a positive finite number
+                if (!isFinite(video.duration) || video.duration <= 0) {
+                    this.setValidationState(
+                        false,
+                        `The file "${media.name}" is not a valid video file or is corrupted (invalid duration).`,
+                        targetInputname
+                    );
+                    return reject(new Error(`Invalid duration for "${media.name}".`));
                 }
 
-                // Sauvegarder les dimensions de la vidéo pour utilisation future
-                this.m_dimension = {
-                    ...this.m_dimension,
-                    [media.name]: { width: video.videoWidth, height: video.videoHeight }
+                // Cache dimensions so getFileDimensions() can serve them
+                this.m_dimension[media.name] = {
+                    width: video.videoWidth,
+                    height: video.videoHeight,
                 };
 
-                // Validation avec les options fournies si disponibles
                 if (optionsvideo) {
-                    // Validation de la hauteur
-                    this.heightValidate(media, targetInputname, optionsvideo.minHeight, optionsvideo.maxHeight)
-                        .then(() => {
-                            // Validation de la largeur
-                            return this.widthValidate(media, targetInputname, optionsvideo.minWidth, optionsvideo.maxWidth);
-                        })
-                        .then(() => resolve(this))  // Résoudre la promesse si toutes les validations passent
-                        .catch((error) => reject(error));  // Rejeter la promesse si une validation échoue
+                    // Chain dimension validations sequentially
+                    this.heightValidate(
+                        media,
+                        targetInputname,
+                        optionsvideo.minHeight,
+                        optionsvideo.maxHeight,
+                        optionsvideo.unityDimensions
+                    )
+                        .then(() =>
+                            this.widthValidate(
+                                media,
+                                targetInputname,
+                                optionsvideo.minWidth,
+                                optionsvideo.maxWidth,
+                                optionsvideo.unityDimensions
+                            )
+                        )
+                        .then(() => resolve(this))
+                        .catch(reject);
                 } else {
-                    // Résoudre immédiatement si aucune option n'est spécifiée
                     resolve(this);
                 }
             };
 
-            // Gestion des erreurs de chargement
             video.onerror = () => {
-                this.setValidationState(false,
-                    `Failed to load the metadata for the video file "${media.name}". It might not be a valid video file.`,
-                    targetInputname);
-                reject();  // Rejeter la promesse en cas d'erreur de chargement
+                cleanup(); 
+                const msg = `Failed to load metadata for "${media.name}". The file may not be a valid video.`;
+                this.setValidationState(false, msg, targetInputname);
+                reject(new Error(msg)); // always reject with a meaningful Error
             };
 
-            // Définir la source de la vidéo
-            video.src = URL.createObjectURL(media);
+            //Set src AFTER registering event handlers to avoid race conditions
+            video.src = objectUrl;
         });
     };
 
-    protected get defautOptions(): OptionsMediaVideo {
+     /**
+     * Default validation options for video files.
+     */
+    private get defaultOptions(): OptionsMediaVideo {
         return {
-            extensions: ["avi", "flv", "wmv", "mp4", "mov", "mkv", "webm", "3gp", "3g2", "m4v", "mpg", "mpeg", "ts", "ogv", "asf", "rm", "divx"],
-            allowedMimeTypeAccept: [
-                "video/x-msvideo", "video/x-flv", "video/x-ms-wmv", "video/mp4",
-                "video/quicktime", "video/x-matroska", "video/webm", "video/3gpp",
-                "video/3gpp2", "video/x-m4v", "video/mpeg", "video/mp2t", "video/ogg",
-                "video/x-ms-asf", "application/vnd.rn-realmedia", "video/divx"
-            ]
+            allowedExtensions: [
+                "avi", "flv", "wmv", "mp4",
+                "mov", "mkv", "webm", "3gp",
+                "3g2", "m4v", "mpg", "mpeg",
+                "ts", "ogv", "asf", "rm", "divx"
+            ],
+             allowedMimeTypeAccept: [
+                'video/x-msvideo',                  // AVI
+                'video/x-flv',                      // FLV
+                'video/x-ms-wmv',                   // WMV
+                'video/mp4',                        // MP4
+                'video/quicktime',                  // MOV
+                'video/x-matroska',                 // MKV
+                'video/webm',                       // WebM
+                'video/3gpp',                       // 3GP
+                'video/3gpp2',                      // 3G2
+                'video/x-m4v',                      // M4V
+                'video/mpeg',                       // MPEG / MPG
+                'video/mp2t',                       // TS
+                'video/ogg',                        // OGV
+                'video/x-ms-asf',                   // ASF
+                'application/vnd.rn-realmedia',     // RM
+                'video/divx',                       // DivX
+            ],
         }
+    }
+
+
+    /**
+     * Validates the binary signature (magic bytes) of a video file.
+     *
+     * Known video magic bytes (first 4–12 bytes):
+     *  - MP4 / M4V  : 00 00 00 XX 66 74 79 70  (ftyp box, offset 4)
+     *  - WebM / MKV : 1A 45 DF A3
+     *  - AVI        : 52 49 46 46 ... 41 56 49  (RIFF....AVI)
+     *  - MOV        : 00 00 00 XX 66 74 79 70 71 74  (ftyp qt)
+     *  - MPEG / MPG : FF FB, FF F3, FF F2 (MPEG audio/video frames) | 00 00 01 Bx
+     *  - FLV        : 46 4C 56
+     *  - WMV / ASF  : 30 26 B2 75
+     *  - OGG / OGV  : 4F 67 67 53
+     *  - 3GP / 3G2  : ftyp box (same as MP4 family)
+     *
+     * Note: MP4-family files share the ISO Base Media File Format container
+     * and are identified by the 'ftyp' atom at byte offset 4.
+     *
+     * @param file - The video file to validate.
+     * @returns A promise resolving to an error string, or null if the signature is valid.
+     */
+    protected async signatureFileValidate(file: File): Promise<string | null> {
+        let uint8Array: Uint8Array;
+
+        try {
+            uint8Array = await this.readFileAsUint8Array(file);
+        } catch {
+            return `Unable to read file "${file.name}" for signature validation.`;
+        }
+
+        // Read the first 12 bytes as a hex string
+        const hex = Array.from(uint8Array.subarray(0, 12))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+
+        if (this.isValidVideoSignature(hex, uint8Array)) {
+            return null;
+        }
+
+        return (
+            `The file "${file.name}" does not have a recognised video signature. ` +
+            `It may be corrupt or disguised as a video file.`
+        );
+    }
+
+    /**
+     * Checks whether the hex signature matches any known video container format.
+     *
+     * @param hex        - Hex string of the first 12 bytes.
+     * @param uint8Array - Raw bytes (used for MP4-family ftyp atom check).
+     */
+    private isValidVideoSignature(hex: string, uint8Array: Uint8Array): boolean {
+        // WebM / MKV  : 1A 45 DF A3
+        if (hex.startsWith('1a45dfa3')) return true;
+
+        // FLV         : 46 4C 56
+        if (hex.startsWith('464c56')) return true;
+
+        // WMV / ASF   : 30 26 B2 75
+        if (hex.startsWith('3026b275')) return true;
+
+        // OGG / OGV   : 4F 67 67 53
+        if (hex.startsWith('4f676753')) return true;
+
+        // MPEG-PS     : 00 00 01 BA or 00 00 01 B3
+        if (hex.startsWith('000001ba') || hex.startsWith('000001b3')) return true;
+
+        // AVI : RIFF (52494646) at byte 0 + AVI  (41564920) at byte 8
+        if (hex.startsWith('52494646') && hex.substring(16, 24) === '41564920') return true;
+
+        // MP4 / MOV / M4V / 3GP / 3G2:
+        // ISO Base Media File Format — 'ftyp' atom at byte offset 4 (bytes 4–7 = 66 74 79 70)
+        const ftypHex = Array.from(uint8Array.subarray(4, 8))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+        if (ftypHex === '66747970') return true;
+
+        return false;
     }
 }
 

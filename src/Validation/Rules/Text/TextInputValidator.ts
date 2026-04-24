@@ -20,6 +20,7 @@ export interface BaseInputOptions {
     errorMessageInput?: string;
     typeInput?: FormInputType;
     regexValidator?: RegExp;
+    match?: boolean;
 }
 
 export interface TextInputOptions extends BaseInputOptions {
@@ -120,7 +121,14 @@ export class TextInputValidator extends AbstractFieldValidator {
                 errorMessage = `${errorMessage} e.g.:${__base_options.egAwait}`;
             }
 
-            if (!regex.test(dataValue)) {
+            if ((__base_options.match && __base_options.match === true) &&
+                !regex.test(dataValue)) {
+                // Return immediately if regex fails
+                return this.setValidationState(false, errorMessage || "Format is invalid.", targetInputname);
+            }
+
+            //if match is false but the dataValue containt the caracter who not are autorized
+            if (__base_options.match === false && regex.test(dataValue)) {
                 // Return immediately if regex fails
                 return this.setValidationState(false, errorMessage || "Format is invalid.", targetInputname);
             }
@@ -140,6 +148,7 @@ export class TextInputValidator extends AbstractFieldValidator {
             errorMessageInput: "The content of this field must contain only alphabetical letters and must not null",
             escapestripHtmlAndPhpTags: true,
             regexValidator: /^\p{L}+$/iu,
+            match:true
         };
     }
 
