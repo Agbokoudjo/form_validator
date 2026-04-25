@@ -1,26 +1,26 @@
 # @wlindabla/form_validator
 
-> **Bibliothèque de validation de formulaires puissante et indépendante de tout framework JavaScript/TypeScript**
+> **Powerful, framework-agnostic JavaScript/TypeScript form validation library**
 
-Une bibliothèque de validation complète pour les formulaires HTML supportant `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `checkbox`, `radio`, et les types de fichiers enrichis : **images**, **PDFs**, **documents Word**, **Excel**, **CSV**, **ODF/RTF** et **vidéos** — avec inspection binaire des signatures (magic bytes), validation de métadonnées réelles, et un store d'erreurs centralisé.
+A comprehensive form validation library for HTML forms supporting `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `checkbox`, `radio`, and enriched file types: **images**, **PDFs**, **Word documents**, **Excel**, **CSV**, **ODF/RTF**, and **videos** — with binary signature inspection (magic bytes), real metadata validation, and a centralized error store.
 
-**Auteur :** [AGBOKOUDJO Franck](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)  
-**Entreprise :** INTERNATIONALES WEB APPS & SERVICES  
-**GitHub :** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator)  
-**Issues :** [https://github.com/Agbokoudjo/form_validator/issues](https://github.com/Agbokoudjo/form_validator/issues)
+**Author:** [AGBOKOUDJO Franck](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)  
+**Company:** INTERNATIONALES WEB APPS & SERVICES  
+**GitHub:** [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator)  
+**Issues:** [https://github.com/Agbokoudjo/form_validator/issues](https://github.com/Agbokoudjo/form_validator/issues)
 
 ---
 
-## Table des Matières
+## Table of Contents
 
 - [@wlindabla/form\_validator](#wlindablaform_validator)
-  - [Table des Matières](#table-des-matières)
+  - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Architecture](#architecture)
-  - [Démarrage Rapide](#démarrage-rapide)
-    - [Utilisation du Routeur Central (recommandé)](#utilisation-du-routeur-central-recommandé)
-    - [Utilisation du Contrôleur de Formulaire Complet (piloté par HTML)](#utilisation-du-contrôleur-de-formulaire-complet-piloté-par-html)
-  - [Validateurs Texte](#validateurs-texte)
+  - [Quick Start](#quick-start)
+    - [Using the Central Router (recommended)](#using-the-central-router-recommended)
+    - [Using the Full Form Controller (HTML-driven)](#using-the-full-form-controller-html-driven)
+  - [Text Validators](#text-validators)
     - [TextInputValidator](#textinputvalidator)
     - [TextareaValidator](#textareavalidator)
     - [EmailInputValidator](#emailinputvalidator)
@@ -30,11 +30,11 @@ Une bibliothèque de validation complète pour les formulaires HTML supportant `
     - [FQDNInputValidator](#fqdninputvalidator)
     - [DateInputValidator](#dateinputvalidator)
     - [NumberInputValidator](#numberinputvalidator)
-  - [Validateurs de Choix](#validateurs-de-choix)
+  - [Choice Validators](#choice-validators)
     - [SelectValidator](#selectvalidator)
     - [CheckBoxValidator](#checkboxvalidator)
     - [RadioValidator](#radiovalidator)
-  - [Validateurs de Fichiers](#validateurs-de-fichiers)
+  - [File Validators](#file-validators)
     - [ImageValidator](#imagevalidator)
     - [VideoValidator](#videovalidator)
     - [PdfValidator](#pdfvalidator)
@@ -42,24 +42,24 @@ Une bibliothèque de validation complète pour les formulaires HTML supportant `
     - [CsvValidator](#csvvalidator)
     - [MicrosoftWordValidator](#microsoftwordvalidator)
     - [OdtValidator](#odtvalidator)
-  - [Routeur Central : FormInputValidator](#routeur-central--forminputvalidator)
-  - [Orchestrateur : FormValidateController](#orchestrateur--formvalidatecontroller)
-  - [Store d'Erreurs : FormErrorStore](#store-derreurs--formerrorstore)
-  - [Événements de Validation](#événements-de-validation)
+  - [Central Router: FormInputValidator](#central-router-forminputvalidator)
+  - [Orchestrator: FormValidateController](#orchestrator-formvalidatecontroller)
+  - [Error Store: FormErrorStore](#error-store-formerrorstore)
+  - [Validation Events](#validation-events)
   - [Cache Adapter](#cache-adapter)
-  - [Validation par Attributs HTML](#validation-par-attributs-html)
-  - [Intégration par Framework](#intégration-par-framework)
+  - [HTML Attribute-Based Validation](#html-attribute-based-validation)
+  - [Framework Integration](#framework-integration)
     - [Vanilla JS / TypeScript](#vanilla-js--typescript)
     - [React / Next.js](#react--nextjs)
     - [Angular](#angular)
     - [Vue.js](#vuejs)
     - [jQuery](#jquery)
     - [Symfony + Twig](#symfony--twig)
-  - [Référence API](#référence-api)
-    - [Table des exports](#table-des-exports)
-    - [Méthodes communes à tous les validateurs](#méthodes-communes-à-tous-les-validateurs)
-    - [FormValidateController — Méthodes publiques](#formvalidatecontroller--méthodes-publiques)
-  - [Licence](#licence)
+  - [API Reference](#api-reference)
+    - [Exports Table](#exports-table)
+    - [Methods Common to All Validators](#methods-common-to-all-validators)
+    - [FormValidateController — Public Methods](#formvalidatecontroller--public-methods)
+  - [License](#license)
 
 ---
 
@@ -128,40 +128,40 @@ src/Validation/
     └── index.ts
 ```
 
-**Principes de conception clés :**
-- **Validators Singleton** — chaque classe de validateur expose une instance unique partagée via `getInstance()`.
-- **Store d'erreurs centralisé** — tous les résultats de validation sont stockés dans `FormErrorStore`, source unique de vérité.
-- **Orienté événements** — les résultats de validation sont diffusés comme `CustomEvent` sur l'élément `<form>` parent.
-- **Indépendant du framework** — fonctionne avec Vanilla JS, React, Angular, Vue, jQuery, ou tout template côté serveur.
-- **Détection de type de document automatique** — `DocumentTypeResolver` détecte automatiquement le type réel de chaque fichier uploadé et applique le validateur approprié.
+**Key design principles:**
+- **Singleton Validators** — each validator class exposes a single shared instance via `getInstance()`.
+- **Centralized error store** — all validation results are stored in `FormErrorStore`, the single source of truth.
+- **Event-driven** — validation results are dispatched as `CustomEvent` on the parent `<form>` element.
+- **Framework-agnostic** — works with Vanilla JS, React, Angular, Vue, jQuery, or any server-side template.
+- **Automatic document type detection** — `DocumentTypeResolver` automatically detects the real type of each uploaded file and applies the appropriate validator.
 
 ---
 
-## Démarrage Rapide
+## Quick Start
 
-### Utilisation du Routeur Central (recommandé)
+### Using the Central Router (recommended)
 
 ```typescript
 import { formInputValidator } from '@wlindabla/form_validator/validation/core/router';
 
-// Champ texte
+// Text field
 await formInputValidator.allTypesValidator(
-  'Jean Dupont',
+  'John Doe',
   'fullName',
   'text',
   { minLength: 2, maxLength: 100, requiredInput: true }
 );
 
-// Vérifier le résultat
+// Check the result
 const validator = formInputValidator.getValidator('fullName');
 if (validator?.formErrorStore.isFieldValid('fullName')) {
-  console.log('Valide !');
+  console.log('Valid!');
 } else {
   console.log(validator?.formErrorStore.getFieldErrors('fullName'));
 }
 ```
 
-### Utilisation du Contrôleur de Formulaire Complet (piloté par HTML)
+### Using the Full Form Controller (HTML-driven)
 
 ```html
 <form name="registrationForm" class="form-validate">
@@ -172,7 +172,7 @@ if (validator?.formErrorStore.isFieldValid('fullName')) {
     required
     data-event-validate="blur"
     data-event-validate-blur="blur"
-    data-error-message-input="Veuillez entrer un email valide."
+    data-error-message-input="Please enter a valid email address."
   />
 </form>
 ```
@@ -182,51 +182,51 @@ import { FormValidateController } from '@wlindabla/form_validator';
 
 const controller = new FormValidateController('.form-validate');
 
-// Valider tous les champs à la fois (ex. au submit)
+// Validate all fields at once (e.g. on submit)
 const isValid = await controller.isFormValid();
 
-// Valider un seul champ
+// Validate a single field
 const input = document.querySelector<HTMLInputElement>('#email')!;
 await controller.validateChildrenForm(input);
 ```
 
 ---
 
-## Validateurs Texte
+## Text Validators
 
 ### TextInputValidator
 
-Valide les champs texte avec regex, contraintes de longueur, suppression de tags HTML/PHP, et vérification de champ requis.
+Validates text fields with regex, length constraints, HTML/PHP tag stripping, and required field checking.
 
-**Import :**
+**Import:**
 ```typescript
 import { textInputValidator, TextInputOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Options (`TextInputOptions`) :**
+**Options (`TextInputOptions`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `requiredInput` | `boolean` | `true` | Champ obligatoire |
-| `minLength` | `number` | `1` | Nombre minimum de caractères |
-| `maxLength` | `number` | `255` | Nombre maximum de caractères |
-| `regexValidator` | `RegExp` | `/^\p{L}+$/iu` | Pattern à tester |
-| `match` | `boolean` | `true` | `true` = la valeur doit correspondre au regex ; `false` = ne doit pas correspondre |
-| `escapestripHtmlAndPhpTags` | `boolean` | `true` | Supprimer les tags HTML/PHP avant validation |
-| `errorMessageInput` | `string` | — | Message d'erreur personnalisé |
-| `egAwait` | `string` | — | Exemple de valeur affiché dans l'erreur |
-| `typeInput` | `FormInputType` | `'text'` | Indication pour les messages d'erreur |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `requiredInput` | `boolean` | `true` | Field is required |
+| `minLength` | `number` | `1` | Minimum number of characters |
+| `maxLength` | `number` | `255` | Maximum number of characters |
+| `regexValidator` | `RegExp` | `/^\p{L}+$/iu` | Pattern to test |
+| `match` | `boolean` | `true` | `true` = value must match the regex; `false` = must not match |
+| `escapestripHtmlAndPhpTags` | `boolean` | `true` | Strip HTML/PHP tags before validation |
+| `errorMessageInput` | `string` | — | Custom error message |
+| `egAwait` | `string` | — | Example value shown in error |
+| `typeInput` | `FormInputType` | `'text'` | Hint for error messages |
 
-**Exemple :**
+**Example:**
 ```typescript
-textInputValidator.validate('Jean-Pierre', 'firstName', {
+textInputValidator.validate('John-Pierre', 'firstName', {
   minLength: 2,
   maxLength: 50,
   requiredInput: true,
   regexValidator: /^[\p{L}\s\-']+$/u,
   match: true,
-  errorMessageInput: 'Uniquement des lettres, espaces, tirets et apostrophes.',
-  egAwait: 'Jean-Pierre'
+  errorMessageInput: 'Only letters, spaces, hyphens and apostrophes.',
+  egAwait: 'John-Pierre'
 });
 
 const errors = textInputValidator.formErrorStore.getFieldErrors('firstName');
@@ -236,7 +236,7 @@ const errors = textInputValidator.formErrorStore.getFieldErrors('firstName');
 
 ### TextareaValidator
 
-Délègue à `TextInputValidator` avec `ignoreMergeWithDefaultOptions: true`. Utilisez-le pour les textes longs.
+Delegates to `TextInputValidator` with `ignoreMergeWithDefaultOptions: true`. Use it for long text content.
 
 ```typescript
 import { textareaInputValidator } from '@wlindabla/form_validator/validation/rules/text';
@@ -258,33 +258,33 @@ textareaInputValidator.validate(
 
 ### EmailInputValidator
 
-Validation complète conforme RFC : regex, noms d'affichage, vérification FQDN du domaine, parties locales UTF-8, listes noires/blanches d'hôtes.
+Full RFC-compliant validation: regex, display names, FQDN domain check, UTF-8 local parts, host blacklists/whitelists.
 
-**Import :**
+**Import:**
 ```typescript
 import { emailInputValidator, EmailInputOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Options clés (`EmailInputOptions`) :**
+**Key Options (`EmailInputOptions`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `allowUtf8LocalPart` | `boolean` | `true` | Autoriser Unicode dans la partie locale |
-| `allowIpDomain` | `boolean` | `false` | Autoriser les domaines IP |
-| `allowDisplayName` | `boolean` | `false` | Autoriser le format `"Jean Doe <jean@example.com>"` |
-| `requireDisplayName` | `boolean` | `false` | Exiger le nom d'affichage |
-| `hostBlacklist` | `(string\|RegExp)[]` | `[]` | Domaines bloqués |
-| `hostWhitelist` | `(string\|RegExp)[]` | `[]` | Domaines autorisés uniquement |
-| `blacklistedChars` | `string` | `''` | Caractères interdits dans la partie locale |
-| `ignoreMaxLength` | `boolean` | `false` | Ignorer la vérification de longueur max |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `allowUtf8LocalPart` | `boolean` | `true` | Allow Unicode in local part |
+| `allowIpDomain` | `boolean` | `false` | Allow IP domains |
+| `allowDisplayName` | `boolean` | `false` | Allow `"John Doe <john@example.com>"` format |
+| `requireDisplayName` | `boolean` | `false` | Require display name |
+| `hostBlacklist` | `(string\|RegExp)[]` | `[]` | Blocked domains |
+| `hostWhitelist` | `(string\|RegExp)[]` | `[]` | Allowed domains only |
+| `blacklistedChars` | `string` | `''` | Forbidden characters in local part |
+| `ignoreMaxLength` | `boolean` | `false` | Ignore max length check |
 
-**Exemple :**
+**Example:**
 ```typescript
-await emailInputValidator.validate('franckagbokoudjo301@gmail.com', 'userEmail', {
+await emailInputValidator.validate('john.doe@example.com', 'userEmail', {
   requiredInput: true,
   allowUtf8LocalPart: true,
   hostBlacklist: ['tempmail.com', 'guerrillamail.com'],
-  errorMessageInput: 'Veuillez entrer une adresse email professionnelle valide.'
+  errorMessageInput: 'Please enter a valid professional email address.'
 });
 
 if (!emailInputValidator.formErrorStore.isFieldValid('userEmail')) {
@@ -296,34 +296,34 @@ if (!emailInputValidator.formErrorStore.isFieldValid('userEmail')) {
 
 ### PasswordInputValidator
 
-Valide les mots de passe selon des règles de caractères (majuscules, minuscules, chiffres, symboles, ponctuation), la longueur, et un scoring de force optionnel. Déclenche un `CustomEvent` avec le score si activé.
+Validates passwords based on character rules (uppercase, lowercase, digits, symbols, punctuation), length, and optional strength scoring. Triggers a `CustomEvent` with the score if enabled.
 
-**Import :**
+**Import:**
 ```typescript
 import { passwordInputValidator, PassworkRuleOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Options clés (`PassworkRuleOptions`) :**
+**Key Options (`PassworkRuleOptions`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `minLength` | `number` | `8` | Longueur minimale |
-| `maxLength` | `number` | `256` | Longueur maximale |
-| `upperCaseAllow` | `boolean` | `true` | Exiger une majuscule |
-| `lowerCaseAllow` | `boolean` | `true` | Exiger une minuscule |
-| `numberAllow` | `boolean` | `true` | Exiger un chiffre |
-| `symbolAllow` | `boolean` | `true` | Exiger un caractère spécial |
-| `enableScoring` | `boolean` | `true` | Déclencher l'événement de score |
-| `regexValidator` | `RegExp` | regex fort | Remplacer le pattern |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `minLength` | `number` | `8` | Minimum length |
+| `maxLength` | `number` | `256` | Maximum length |
+| `upperCaseAllow` | `boolean` | `true` | Require uppercase letter |
+| `lowerCaseAllow` | `boolean` | `true` | Require lowercase letter |
+| `numberAllow` | `boolean` | `true` | Require digit |
+| `symbolAllow` | `boolean` | `true` | Require special character |
+| `enableScoring` | `boolean` | `true` | Trigger score event |
+| `regexValidator` | `RegExp` | strong regex | Override pattern |
 
-**Événement de scoring :**
+**Scoring Event:**
 ```typescript
 document.addEventListener('scoreAnalysisPassword', (e: CustomEvent) => {
   const { score, analysis, input } = e.detail;
-  console.log(`Champ: ${input}, Score de force: ${score}`);
+  console.log(`Field: ${input}, Strength score: ${score}`);
 });
 
-passwordInputValidator.validate('MonP@ssw0rd!', 'password', {
+passwordInputValidator.validate('MyP@ssw0rd!', 'password', {
   minLength: 10,
   upperCaseAllow: true,
   numberAllow: true,
@@ -336,14 +336,14 @@ passwordInputValidator.validate('MonP@ssw0rd!', 'password', {
 
 ### TelInputValidator
 
-Valide les numéros de téléphone internationaux via [`libphonenumber-js`](https://gitlab.com/catamphetamine/libphonenumber-js). Formate automatiquement les numéros valides dans le champ DOM.
+Validates international phone numbers via [`libphonenumber-js`](https://gitlab.com/catamphetamine/libphonenumber-js). Automatically formats valid numbers in the DOM field.
 
-**Import :**
+**Import:**
 ```typescript
 import { telInputValidator, TelInputOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Exemple :**
+**Example:**
 ```typescript
 telInputValidator.validate('+22901672518 86', 'phone', {
   defaultCountry: 'BJ',
@@ -351,7 +351,7 @@ telInputValidator.validate('+22901672518 86', 'phone', {
   requiredInput: true
 });
 
-// Numéro français :
+// French number:
 telInputValidator.validate('+33612345678', 'mobile', {
   defaultCountry: 'FR',
   minLength: 10,
@@ -359,38 +359,38 @@ telInputValidator.validate('+33612345678', 'mobile', {
 });
 ```
 
-> Le numéro doit commencer par `+`. Le validateur formate automatiquement les numéros valides en format international (ex. `+229 01 67 25 18 86`).
+> The number must start with `+`. The validator automatically formats valid numbers into international format (e.g. `+229 01 67 25 18 86`).
 
 ---
 
 ### URLInputValidator
 
-Valide les URLs selon les règles de protocole, hôte, IP, localhost, paramètres de requête, fragments, port, identifiants d'authentification, et listes noires/blanches.
+Validates URLs against protocol rules, host, IP, localhost, query parameters, fragments, port, auth credentials, and blacklists/whitelists.
 
-**Import :**
+**Import:**
 ```typescript
 import { urlInputValidator, URLOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Options clés :**
+**Key Options:**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `allowedProtocols` | `string[]` | `['http','https','file','blob','url','data']` | Protocoles acceptés |
-| `requireProtocol` | `boolean` | `false` | L'URL doit inclure un protocole |
-| `requireValidProtocol` | `boolean` | `true` | Le protocole doit être dans `allowedProtocols` |
-| `allowLocalhost` | `boolean` | `false` | Autoriser `localhost` / `127.0.0.1` |
-| `allowIP` | `boolean` | `false` | Autoriser les hôtes IP |
-| `allowQueryParams` | `boolean` | `true` | Autoriser `?key=value` |
-| `allowHash` | `boolean` | `true` | Autoriser `#fragment` |
-| `disallowAuth` | `boolean` | `false` | Rejeter `user:pass@host` |
-| `maxAllowedLength` | `number` | `2048` | Longueur max de l'URL |
-| `hostBlacklist` | `(string\|RegExp)[]` | `[]` | Hôtes bloqués |
-| `hostWhitelist` | `(string\|RegExp)[]` | `[]` | Hôtes autorisés uniquement |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `allowedProtocols` | `string[]` | `['http','https','file','blob','url','data']` | Accepted protocols |
+| `requireProtocol` | `boolean` | `false` | URL must include a protocol |
+| `requireValidProtocol` | `boolean` | `true` | Protocol must be in `allowedProtocols` |
+| `allowLocalhost` | `boolean` | `false` | Allow `localhost` / `127.0.0.1` |
+| `allowIP` | `boolean` | `false` | Allow IP hosts |
+| `allowQueryParams` | `boolean` | `true` | Allow `?key=value` |
+| `allowHash` | `boolean` | `true` | Allow `#fragment` |
+| `disallowAuth` | `boolean` | `false` | Reject `user:pass@host` |
+| `maxAllowedLength` | `number` | `2048` | Max URL length |
+| `hostBlacklist` | `(string\|RegExp)[]` | `[]` | Blocked hosts |
+| `hostWhitelist` | `(string\|RegExp)[]` | `[]` | Allowed hosts only |
 
-**Exemple :**
+**Example:**
 ```typescript
-await urlInputValidator.validate('https://proticeditions.com/catalogue', 'website', {
+await urlInputValidator.validate('https://example.com/catalogue', 'website', {
   allowedProtocols: ['https'],
   requireProtocol: true,
   allowQueryParams: true,
@@ -403,7 +403,7 @@ await urlInputValidator.validate('https://proticeditions.com/catalogue', 'websit
 
 ### FQDNInputValidator
 
-Valide les Fully Qualified Domain Names (FQDN) : exigence TLD, underscores, wildcards, point final, longueur des labels.
+Validates Fully Qualified Domain Names (FQDN): TLD requirement, underscores, wildcards, trailing dot, label length.
 
 ```typescript
 import { fqdnInputValidator, FQDNOptions } from '@wlindabla/form_validator/validation/rules/text';
@@ -419,26 +419,26 @@ await fqdnInputValidator.validate('mail.example.com', 'domain', {
 
 ### DateInputValidator
 
-Parse et valide les chaînes de date par rapport à des templates de format, des plages de dates, et des restrictions futur/passé.
+Parses and validates date strings against format templates, date ranges, and future/past restrictions.
 
-**Options (`DateInputOptions`) :**
+**Options (`DateInputOptions`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `format` | `string` | `'YYYY/MM/DD'` | Template de format de date |
-| `strictMode` | `boolean` | `false` | Imposer une correspondance exacte de longueur |
-| `delimiters` | `string[]` | `['/', '-']` | Séparateurs autorisés |
-| `minDate` | `Date` | — | Date minimale autorisée |
-| `maxDate` | `Date` | — | Date maximale autorisée |
-| `allowFuture` | `boolean` | — | Autoriser les dates futures |
-| `allowPast` | `boolean` | — | Autoriser les dates passées |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `format` | `string` | `'YYYY/MM/DD'` | Date format template |
+| `strictMode` | `boolean` | `false` | Enforce exact length match |
+| `delimiters` | `string[]` | `['/', '-']` | Allowed separators |
+| `minDate` | `Date` | — | Minimum allowed date |
+| `maxDate` | `Date` | — | Maximum allowed date |
+| `allowFuture` | `boolean` | — | Allow future dates |
+| `allowPast` | `boolean` | — | Allow past dates |
 
-**Exemple :**
+**Example:**
 ```typescript
 import { dateInputValidator } from '@wlindabla/form_validator/validation/rules/text';
 
-dateInputValidator.validate('25/12/1990', 'birthdate', {
-  format: 'DD/MM/YYYY',
+dateInputValidator.validate('12/25/1990', 'birthdate', {
+  format: 'MM/DD/YYYY',
   allowFuture: false,
   minDate: new Date('1900-01-01')
 });
@@ -448,7 +448,7 @@ dateInputValidator.validate('25/12/1990', 'birthdate', {
 
 ### NumberInputValidator
 
-Valide les valeurs numériques avec contraintes min, max, step et regex.
+Validates numeric values with min, max, step, and regex constraints.
 
 ```typescript
 import { numberInputValidator } from '@wlindabla/form_validator/validation/rules/text';
@@ -468,21 +468,21 @@ numberInputValidator.validate('9.99', 'price', {
 
 ---
 
-## Validateurs de Choix
+## Choice Validators
 
 ### SelectValidator
 
-Valide que les valeurs sélectionnées appartiennent à l'ensemble d'options déclaré.
+Validates that selected values belong to the declared option set.
 
 ```typescript
 import { selectValidator } from '@wlindabla/form_validator/validation/rules/choice';
 
-// Sélection unique
-selectValidator.validate('fr', 'country', {
+// Single selection
+selectValidator.validate('en', 'country', {
   optionsChoices: ['fr', 'en', 'bj', 'de']
 });
 
-// Sélection multiple
+// Multiple selection
 selectValidator.validate(['react', 'vue'], 'frameworks', {
   optionsChoices: ['react', 'vue', 'angular', 'svelte']
 });
@@ -492,12 +492,12 @@ selectValidator.validate(['react', 'vue'], 'frameworks', {
 
 ### CheckBoxValidator
 
-Valide les groupes de cases à cocher : état requis, nombre min/max de sélections.
+Validates checkbox groups: required state, min/max number of selections.
 
 ```typescript
 import { checkboxValidator } from '@wlindabla/form_validator/validation/rules/choice';
 
-// 2 cases cochées sur 5
+// 2 checkboxes checked out of 5
 checkboxValidator.validate(2, 'interests', {
   required: true,
   minAllowed: 1,
@@ -511,27 +511,27 @@ checkboxValidator.validate(2, 'interests', {
 
 ### RadioValidator
 
-Valide qu'un groupe de boutons radio a une sélection quand requis.
+Validates that a radio button group has a selection when required.
 
 ```typescript
 import { radioValidator } from '@wlindabla/form_validator/validation/rules/choice';
 
 radioValidator.validate('male', 'gender', { required: true });
 radioValidator.validate(undefined, 'gender', { required: true });
-// → Erreur : "Please select an option in the 'gender' group."
+// → Error: "Please select an option in the 'gender' group."
 ```
 
 ---
 
-## Validateurs de Fichiers
+## File Validators
 
-Tous les validateurs de fichiers effectuent les vérifications dans cet ordre : **extension → taille → type MIME → signature binaire (magic bytes) → inspection approfondie du contenu/métadonnées**.
+All file validators perform checks in this order: **extension → size → MIME type → binary signature (magic bytes) → deep content/metadata inspection**.
 
 ### ImageValidator
 
-Valide les images : extension, taille, type MIME (chargement navigateur), magic bytes, et dimensions en pixels.
+Validates images: extension, size, MIME type (browser loading), magic bytes, and pixel dimensions.
 
-Formats supportés : `jpg`, `jpeg`, `png`, `gif`, `bmp`, `webp`, `svg`
+Supported formats: `jpg`, `jpeg`, `png`, `gif`, `bmp`, `webp`, `svg`
 
 ```typescript
 import { imageValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -558,9 +558,9 @@ if (!imageValidator.formErrorStore.isFieldValid('avatar')) {
 
 ### VideoValidator
 
-Valide les fichiers vidéo avec vérification de signature binaire, type MIME, et métadonnées (durée, largeur, hauteur) via un élément `<video>` caché.
+Validates video files with binary signature check, MIME type, and metadata (duration, width, height) via a hidden `<video>` element.
 
-Formats supportés : `mp4`, `webm`, `mkv`, `avi`, `mov`, `flv`, `wmv`, `3gp`, `ogv`, et plus.
+Supported formats: `mp4`, `webm`, `mkv`, `avi`, `mov`, `flv`, `wmv`, `3gp`, `ogv`, and more.
 
 ```typescript
 import { videoValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -581,13 +581,13 @@ await videoValidator.validate(file, 'presentation', {
 
 ### PdfValidator
 
-Valide les fichiers PDF : magic bytes (`%PDF` = `25504446`), type MIME, et nombre de pages via `pdfjs-dist`.
+Validates PDF files: magic bytes (`%PDF` = `25504446`), MIME type, and page count via `pdfjs-dist`.
 
-**Pipeline de validation :**
+**Validation pipeline:**
 1. Extension (`.pdf`)
-2. Type MIME (soft check)
-3. Signature binaire (`25504446`)
-4. Structure PDF via `pdfjs-dist` (nombre de pages > 0)
+2. MIME type (soft check)
+3. Binary signature (`25504446`)
+4. PDF structure via `pdfjs-dist` (page count > 0)
 
 ```typescript
 import { pdfValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -604,13 +604,13 @@ await pdfValidator.validate(file, 'contract', {
 
 ### ExcelValidator
 
-Valide les fichiers Excel (`.xls`/`.xlsx`) : magic bytes (OLE2 ou ZIP), type MIME (vérification douce multi-plateforme), structure du workbook via SheetJS, nombre de feuilles, colonnes requises.
+Validates Excel files (`.xls`/`.xlsx`): magic bytes (OLE2 or ZIP), MIME type (soft cross-platform check), workbook structure via SheetJS, sheet count, required columns.
 
-**Note multi-plateforme :** Windows peut rapporter `application/vnd.ms-excel` pour `.xls` ET `.xlsx`. Linux/macOS rapportent parfois `application/octet-stream` pour `.xls`. Les magic bytes sont donc la vérification de format faisant autorité.
+**Cross-platform note:** Windows may report `application/vnd.ms-excel` for both `.xls` AND `.xlsx`. Linux/macOS sometimes report `application/octet-stream` for `.xls`. Magic bytes are therefore the authoritative format check.
 
-**Magic bytes :**
-- `d0cf11e0` : OLE2 Compound Document (`.xls`)
-- `504b0304` : ZIP local file header (`.xlsx`)
+**Magic bytes:**
+- `d0cf11e0`: OLE2 Compound Document (`.xls`)
+- `504b0304`: ZIP local file header (`.xlsx`)
 
 ```typescript
 import { excelValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -627,25 +627,25 @@ await excelValidator.validate(file, 'importFile', {
 });
 ```
 
-**Options (`OptionsExcelFile`) :**
+**Options (`OptionsExcelFile`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `minSheets` | `number` | `1` | Nombre minimum de feuilles |
-| `maxSheets` | `number` | — | Nombre maximum de feuilles |
-| `requiredColumns` | `string[]` | `[]` | Colonnes obligatoires dans la feuille cible |
-| `rejectEmptySheet` | `boolean` | `true` | Rejeter une feuille sans données |
-| `sheetIndex` | `number` | `0` | Index de la feuille cible (0 = première) |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `minSheets` | `number` | `1` | Minimum number of sheets |
+| `maxSheets` | `number` | — | Maximum number of sheets |
+| `requiredColumns` | `string[]` | `[]` | Required columns in target sheet |
+| `rejectEmptySheet` | `boolean` | `true` | Reject sheet with no data |
+| `sheetIndex` | `number` | `0` | Target sheet index (0 = first) |
 
 ---
 
 ### CsvValidator
 
-Valide les fichiers CSV : pré-vérification binaire/BOM, parsing structurel via PapaParse, headers requis, nombre de lignes, validation de type par colonne.
+Validates CSV files: binary/BOM pre-check, structural parsing via PapaParse, required headers, row count, per-column type validation.
 
-**Types de colonnes supportés :** `'string'`, `'number'`, `'date'`, `'boolean'`, `'email'`
+**Supported column types:** `'string'`, `'number'`, `'date'`, `'boolean'`, `'email'`
 
-**Note multi-plateforme :** Windows rapporte `text/csv`, macOS `text/csv` ou `text/comma-separated-values`, Linux `text/plain` ou `application/csv`. Le MIME est traité comme un avertissement seulement.
+**Cross-platform note:** Windows reports `text/csv`, macOS reports `text/csv` or `text/comma-separated-values`, Linux reports `text/plain` or `application/csv`. MIME is treated as a warning only.
 
 ```typescript
 import { csvValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -667,41 +667,41 @@ await csvValidator.validate(file, 'dataImport', {
 });
 ```
 
-**Options (`OptionsCsvFile`) :**
+**Options (`OptionsCsvFile`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `requiredHeaders` | `string[]` | `[]` | En-têtes obligatoires |
-| `columnTypes` | `Record<string, CsvColumnType>` | `{}` | Types attendus par colonne |
-| `useFirstLineAsHeaders` | `boolean` | `true` | Première ligne = en-têtes |
-| `skipEmptyLines` | `boolean` | `true` | Ignorer les lignes vides |
-| `delimiter` | `string` | auto-détecté | Séparateur de colonnes |
-| `minRows` | `number` | `1` | Nombre minimum de lignes de données |
-| `maxRows` | `number` | — | Nombre maximum de lignes de données |
-| `maxRowErrors` | `number` | `2` | Arrêter après N erreurs de ligne |
-| `worker` | `boolean` | `false` | Utiliser un Web Worker PapaParse |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `requiredHeaders` | `string[]` | `[]` | Required headers |
+| `columnTypes` | `Record<string, CsvColumnType>` | `{}` | Expected type per column |
+| `useFirstLineAsHeaders` | `boolean` | `true` | First line = headers |
+| `skipEmptyLines` | `boolean` | `true` | Skip empty lines |
+| `delimiter` | `string` | auto-detected | Column separator |
+| `minRows` | `number` | `1` | Minimum number of data rows |
+| `maxRows` | `number` | — | Maximum number of data rows |
+| `maxRowErrors` | `number` | `2` | Stop after N row errors |
+| `worker` | `boolean` | `false` | Use PapaParse Web Worker |
 
 ---
 
 ### MicrosoftWordValidator
 
-Valide les fichiers `.docx` et `.doc` : magic bytes (OLE2/ZIP), structure OOXML (`[Content_Types].xml`, `word/document.xml`), règles de contenu (document vide, nombre de paragraphes, texte requis).
+Validates `.docx` and `.doc` files: magic bytes (OLE2/ZIP), OOXML structure (`[Content_Types].xml`, `word/document.xml`), content rules (empty document, paragraph count, required text).
 
-**Pipeline de validation :**
+**Validation pipeline:**
 
 ```
 1. Extension          .docx / .doc
-2. Taille de fichier
-3. Type MIME          (avertissement doux — peu fiable selon l'OS)
+2. File size
+3. MIME type          (soft warning — unreliable across OS)
 4. Magic bytes        OLE2 (d0cf11e0) | ZIP/PK (504b0304)
-5. .docx uniquement — Intégrité ZIP (JSZip)
-6. .docx uniquement — Structure OOXML ([Content_Types].xml présent)
-7. .docx uniquement — word/document.xml présent et parseable
-8. .docx uniquement — Règles de contenu (doc vide, minParagraphs, …)
-9. .docx uniquement — requiredTextFragments
+5. .docx only — ZIP integrity (JSZip)
+6. .docx only — OOXML structure ([Content_Types].xml present)
+7. .docx only — word/document.xml present and parseable
+8. .docx only — Content rules (empty doc, minParagraphs, …)
+9. .docx only — requiredTextFragments
 ```
 
-> **Note :** Les fichiers `.doc` s'arrêtent à l'étape 4. Le format OLE2 est un format binaire propriétaire qui ne peut pas être inspecté de manière fiable dans le navigateur.
+> **Note:** `.doc` files stop at step 4. The OLE2 format is a proprietary binary format that cannot be reliably inspected in the browser.
 
 ```typescript
 import { microsoftWordValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -713,53 +713,53 @@ await microsoftWordValidator.validate(file, 'report', {
   rejectEmptyDocument: true,
   minParagraphs: 3,
   allowLegacyDoc: true,
-  requiredTextFragments: ['TERMES ET CONDITIONS', 'Signature']
+  requiredTextFragments: ['TERMS AND CONDITIONS', 'Signature']
 });
 ```
 
-**Options (`OptionsWordFile`) :**
+**Options (`OptionsWordFile`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `rejectEmptyDocument` | `boolean` | `true` | Rejeter un document sans texte |
-| `minParagraphs` | `number` | — | Nombre minimum de paragraphes |
-| `allowLegacyDoc` | `boolean` | `true` | Autoriser les fichiers `.doc` (OLE2) |
-| `requiredTextFragments` | `string[]` | `[]` | Fragments de texte obligatoires dans le document |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `rejectEmptyDocument` | `boolean` | `true` | Reject document with no text |
+| `minParagraphs` | `number` | — | Minimum number of paragraphs |
+| `allowLegacyDoc` | `boolean` | `true` | Allow `.doc` (OLE2) files |
+| `requiredTextFragments` | `string[]` | `[]` | Required text fragments in document |
 
 ---
 
 ### OdtValidator
 
-Valide les fichiers OpenDocument Format (`.odt`, `.ods`, `.odp`, `.odg`, `.rtf`, etc.) : intégrité ZIP, entrée `mimetype` interne, `content.xml`, règles de contenu.
+Validates OpenDocument Format files (`.odt`, `.ods`, `.odp`, `.odg`, `.rtf`, etc.): ZIP integrity, internal `mimetype` entry, `content.xml`, content rules.
 
-**Formats supportés :**
+**Supported formats:**
 
 | Extension | Format |
 |-----------|--------|
 | `.odt` | OpenDocument Text (LibreOffice Writer) |
-| `.ott` | Modèle ODT |
+| `.ott` | ODT Template |
 | `.ods` | OpenDocument Spreadsheet (LibreOffice Calc) |
-| `.ots` | Modèle ODS |
+| `.ots` | ODS Template |
 | `.odp` | OpenDocument Presentation (LibreOffice Impress) |
-| `.otp` | Modèle ODP |
+| `.otp` | ODP Template |
 | `.odg` | OpenDocument Drawing (LibreOffice Draw) |
 | `.rtf` | Rich Text Format |
 
-**Pipeline de validation ODF :**
+**ODF validation pipeline:**
 
 ```
 1. Extension
-2. Taille de fichier
-3. Type MIME (avertissement doux)
-4. Magic bytes : ODF → 504b0304 (ZIP) | RTF → 7b5c7274 ({\rt)
-5. Intégrité ZIP (JSZip)
-6. Entrée "mimetype" interne — auto-identification ODF
-7. "mimetype" correspond à l'extension déclarée
-8. content.xml présent et XML valide
-9. Règles de contenu (doc vide, minParagraphs, requiredFragments)
+2. File size
+3. MIME type (soft warning)
+4. Magic bytes: ODF → 504b0304 (ZIP) | RTF → 7b5c7274 ({\rt)
+5. ZIP integrity (JSZip)
+6. Internal "mimetype" entry — ODF self-identification
+7. "mimetype" matches declared extension
+8. content.xml present and valid XML
+9. Content rules (empty doc, minParagraphs, requiredFragments)
 ```
 
-> **Insight clé :** Chaque fichier ODF stocke son type MIME exact comme entrée NON COMPRESSÉE nommée `mimetype` au début de l'archive ZIP. C'est l'identifiant de format le plus fiable — plus sûr que le `file.type` rapporté par l'OS ou même l'extension.
+> **Key insight:** Every ODF file stores its exact MIME type as an UNCOMPRESSED entry named `mimetype` at the beginning of the ZIP archive. This is the most reliable format identifier — more trustworthy than the OS-reported `file.type` or even the extension.
 
 ```typescript
 import { odtValidator } from '@wlindabla/form_validator/validation/rules/file';
@@ -775,25 +775,25 @@ await odtValidator.validate(file, 'document', {
 });
 ```
 
-**Options (`OptionsOdfFile`) :**
+**Options (`OptionsOdfFile`):**
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `rejectEmptyDocument` | `boolean` | `true` | Rejeter un document sans texte |
-| `minParagraphs` | `number` | — | Nombre minimum de paragraphes |
-| `allowRtf` | `boolean` | `true` | Autoriser les fichiers `.rtf` |
-| `requiredTextFragments` | `string[]` | `[]` | Fragments de texte obligatoires |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `rejectEmptyDocument` | `boolean` | `true` | Reject document with no text |
+| `minParagraphs` | `number` | — | Minimum number of paragraphs |
+| `allowRtf` | `boolean` | `true` | Allow `.rtf` files |
+| `requiredTextFragments` | `string[]` | `[]` | Required text fragments |
 
 ---
 
-## Routeur Central : FormInputValidator
+## Central Router: FormInputValidator
 
-`FormInputValidator` est la **façade** qui dispatche tout input vers le validateur spécialisé correct. Utilisez-le quand vous voulez gérer tous les types uniformément.
+`FormInputValidator` is the **façade** that dispatches any input to the correct specialized validator. Use it when you want to handle all types uniformly.
 
 ```typescript
 import { formInputValidator } from '@wlindabla/form_validator/validation/core/router';
 
-// Texte
+// Text
 await formInputValidator.allTypesValidator('Alice', 'username', 'text', {
   minLength: 3, maxLength: 30, requiredInput: true
 });
@@ -803,60 +803,60 @@ await formInputValidator.allTypesValidator('alice@example.com', 'email', 'email'
   requiredInput: true
 });
 
-// Mot de passe
+// Password
 await formInputValidator.allTypesValidator('Secur3P@ss!', 'password', 'password', {
   minLength: 10, upperCaseAllow: true, symbolAllow: true
 });
 
-// Fichier image
+// Image file
 await formInputValidator.allTypesValidator(file, 'photo', 'image', {
   maxsizeFile: 2, unityMaxSizeFile: 'MiB'
 });
 
-// Récupérer l'état
+// Get state
 const v = formInputValidator.getValidator('username');
 console.log(v?.formErrorStore.isFieldValid('username'));
 console.log(v?.formErrorStore.getFieldErrors('username'));
 ```
 
-**Valeurs `type_field` supportées :**
+**Supported `type_field` values:**
 
-| Type | Nature de l'input |
-|------|-------------------|
-| `'text'` | Champ texte |
-| `'email'` | Champ email |
-| `'password'` | Champ mot de passe |
-| `'tel'` | Numéro de téléphone |
-| `'url'` | Champ URL |
-| `'date'` | Champ date |
-| `'textarea'` | Zone de texte |
-| `'number'` | Champ numérique |
-| `'select'` | Liste déroulante |
-| `'checkbox'` | Groupe de cases à cocher |
-| `'radio'` | Groupe de boutons radio |
-| `'image'` | Fichier image |
-| `'video'` | Fichier vidéo |
-| `'pdf'` | Fichier PDF |
-| `'excel'` | Fichier Excel |
-| `'csv'` | Fichier CSV |
-| `'word'` | Document Word |
-| `'odf'` | Document ODF / RTF |
-| `'document'` | Document auto-détecté |
+| Type | Input nature |
+|------|--------------|
+| `'text'` | Text field |
+| `'email'` | Email field |
+| `'password'` | Password field |
+| `'tel'` | Phone number |
+| `'url'` | URL field |
+| `'date'` | Date field |
+| `'textarea'` | Text area |
+| `'number'` | Numeric field |
+| `'select'` | Dropdown list |
+| `'checkbox'` | Checkbox group |
+| `'radio'` | Radio button group |
+| `'image'` | Image file |
+| `'video'` | Video file |
+| `'pdf'` | PDF file |
+| `'excel'` | Excel file |
+| `'csv'` | CSV file |
+| `'word'` | Word document |
+| `'odf'` | ODF / RTF document |
+| `'document'` | Auto-detected document |
 
-> **Note sur le type `'document'` :** Quand vous utilisez le type `'document'` via `FieldInputController`, le système utilise `DocumentTypeResolver` pour détecter automatiquement le type réel de chaque fichier (pdf, excel, csv, word, odf) par son extension et applique le validateur approprié. Cela permet de gérer des champs acceptant plusieurs types de documents en un seul input.
+> **Note on the `'document'` type:** When using the `'document'` type via `FieldInputController`, the system uses `DocumentTypeResolver` to automatically detect the real type of each file (pdf, excel, csv, word, odf) by its extension and applies the appropriate validator. This allows handling fields that accept multiple document types in a single input.
 
 ---
 
-## Orchestrateur : FormValidateController
+## Orchestrator: FormValidateController
 
-`FormValidateController` encapsule un élément `<form>` entier et gère toutes les validations de champs, le groupement d'événements, et l'adaptateur de cache optionnel.
+`FormValidateController` encapsulates an entire `<form>` element and manages all field validations, event grouping, and an optional cache adapter.
 
-**Changements importants par rapport à la version précédente :**
-- Plus de dépendance à jQuery — utilise uniquement l'API DOM native.
-- Nouvelle méthode `isFormValid()` pour valider le formulaire entier en une fois.
-- La propriété `form` retourne maintenant un `HTMLFormElement` natif (non plus un objet jQuery).
-- `addErrorMessageChildrenForm` accepte maintenant un `HTMLElement` natif.
-- Les attributs d'événement sont maintenant `data-event-validate-blur`, `data-event-validate-input`, etc.
+**Important changes from the previous version:**
+- No more jQuery dependency — uses only the native DOM API.
+- New `isFormValid()` method to validate the entire form at once.
+- The `form` property now returns a native `HTMLFormElement` (no longer a jQuery object).
+- `addErrorMessageChildrenForm` now accepts a native `HTMLElement`.
+- Event attributes are now `data-event-validate-blur`, `data-event-validate-input`, etc.
 
 ```typescript
 import { FormValidateController } from '@wlindabla/form_validator';
@@ -864,92 +864,92 @@ import { LocalStorageCacheAdapter } from '@wlindabla/form_validator/cache';
 
 const controller = new FormValidateController(
   '.registration-form',
-  new LocalStorageCacheAdapter() // optionnel : cache des options de validation
+  new LocalStorageCacheAdapter() // optional: caches validation options
 );
 
-// IDs des champs groupés par événement déclencheur
+// Field IDs grouped by trigger event
 console.log(controller.idChildrenUsingEventBlur);      // data-event-validate-blur
 console.log(controller.idChildrenUsingEventInput);     // data-event-validate-input
 console.log(controller.idChildrenUsingEventChange);    // data-event-validate-change
 console.log(controller.idChildrenUsingEventDragenter); // data-event-validate-dragenter
 console.log(controller.idChildrenUsingEventFocus);     // data-event-validate-focus
 
-// Valider tous les champs (ex. au submit)
+// Validate all fields (e.g. on submit)
 const isValid = await controller.isFormValid();
 
-// Valider un seul champ
+// Validate a single field
 await controller.validateChildrenForm(inputElement);
 
-// Afficher les erreurs d'un champ
+// Display errors for a field
 controller.addErrorMessageChildrenForm(
   targetElement,
-  ['Message d\'erreur'],
-  'container-div-error-message' // className optionnel du conteneur d'erreur
+  ['Error message'],
+  'container-div-error-message' // optional error container className
 );
 
-// Effacer l'état d'erreur d'un champ
+// Clear error state for a field
 controller.clearErrorDataChildren(inputElement);
 ```
 
 ---
 
-## Store d'Erreurs : FormErrorStore
+## Error Store: FormErrorStore
 
-Le `FormErrorStore` est un **singleton** qui agit comme source unique de vérité pour tous les états de validation. Tous les validateurs y lisent et écrivent.
+The `FormErrorStore` is a **singleton** that acts as the single source of truth for all validation states. All validators read from and write to it.
 
 ```typescript
 import { formErrorStore } from '@wlindabla/form_validator/validation';
 
-// Vérifier la validité du formulaire
-formErrorStore.isFormValid(); // false si un champ a des erreurs
+// Check form validity
+formErrorStore.isFormValid(); // false if any field has errors
 
-// Vérifier un champ spécifique
+// Check a specific field
 formErrorStore.isFieldValid('email');
 
-// Obtenir les erreurs d'un champ
+// Get errors for a field
 formErrorStore.getFieldErrors('email'); // string[]
 
-// Définir manuellement un champ comme invalide
+// Manually set a field as invalid
 formErrorStore.setFieldValid('email', false);
-formErrorStore.addFieldError('email', 'Format invalide.');
+formErrorStore.addFieldError('email', 'Invalid format.');
 
-// Effacer l'état d'un champ
+// Clear state for a field
 formErrorStore.clearFieldState('email');
 
-// Supprimer une erreur spécifique
-formErrorStore.removeFieldError('email', 'Format invalide.');
+// Remove a specific error
+formErrorStore.removeFieldError('email', 'Invalid format.');
 ```
 
 ---
 
-## Événements de Validation
+## Validation Events
 
-`FieldInputController` déclenche deux événements personnalisés sur l'élément `<form>` parent après chaque validation de champ :
+`FieldInputController` dispatches two custom events on the parent `<form>` element after each field validation:
 
-| Nom d'événement | Quand déclenché |
-|-----------------|-----------------|
-| `field:validation:failed` | Validation échouée — `event.detail.message` contient le tableau d'erreurs |
-| `field:validation:success` | Validation réussie |
+| Event name | When triggered |
+|------------|----------------|
+| `field:validation:failed` | Validation failed — `event.detail.message` contains the error array |
+| `field:validation:success` | Validation succeeded |
 
-**Structure du détail d'événement (`FieldValidationEventData`) :**
+**Event detail structure (`FieldValidationEventData`):**
 
-| Propriété | Type | Description |
-|-----------|------|-------------|
-| `id` | `string` | Attribut `id` du champ |
-| `name` | `string` | Attribut `name` du champ |
-| `value` | `DataInput` | Valeur courante du champ |
-| `formParentName` | `string` | Attribut `name` du formulaire parent |
-| `message` | `string[]` | Messages d'erreur (en cas d'échec) |
-| `targetChildrenForm` | `HTMLElement` | L'élément champ du DOM |
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Field `id` attribute |
+| `name` | `string` | Field `name` attribute |
+| `value` | `DataInput` | Current field value |
+| `formParentName` | `string` | Parent form `name` attribute |
+| `message` | `string[]` | Error messages (on failure) |
+| `targetChildrenForm` | `HTMLElement` | The field DOM element |
 
-**Utilisation :**
+**Usage:**
 ```typescript
 const form = document.querySelector('form[name="registrationForm"]')!;
 
 form.addEventListener('field:validation:failed', (e: CustomEvent) => {
   const { name, message, targetChildrenForm } = e.detail;
 
-  // Afficher les erreurs via le contrôleur
+  // Display errors via the controller
   controller.addErrorMessageChildrenForm(
     targetChildrenForm,
     message,
@@ -970,7 +970,7 @@ form.addEventListener('field:validation:success', (e: CustomEvent) => {
 
 ## Cache Adapter
 
-Le `LocalStorageCacheAdapter` met en cache les options de validation résolues dans `localStorage`, indexées par nom de formulaire + nom de champ. Cela évite de recalculer les options à partir des attributs DOM à chaque appel de validation.
+The `LocalStorageCacheAdapter` caches resolved validation options in `localStorage`, indexed by form name + field name. This avoids recalculating options from DOM attributes on each validation call.
 
 ```typescript
 import { FormValidateController } from '@wlindabla/form_validator';
@@ -982,7 +982,7 @@ const controller = new FormValidateController(
 );
 ```
 
-Pour implémenter un adaptateur personnalisé (ex. IndexedDB, session storage) :
+To implement a custom adapter (e.g. IndexedDB, session storage):
 
 ```typescript
 import type { FieldOptionsValidateCacheAdapterInterface } from '@wlindabla/form_validator/validation/core/adapter';
@@ -1001,58 +1001,58 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
 
 ---
 
-## Validation par Attributs HTML
+## HTML Attribute-Based Validation
 
-`FieldInputController` peut inférer toutes les options de validation directement depuis les attributs HTML `data-*`, vous permettant de configurer la validation entièrement dans votre template sans écrire de JS.
+`FieldInputController` can infer all validation options directly from `data-*` HTML attributes, allowing you to configure validation entirely in your template without writing any JS.
 
-**Attributs principaux :**
+**Main attributes:**
 
-| Attribut | Rôle |
-|----------|------|
-| `type` | Type d'input (`text`, `email`, `password`, `url`, `date`, `tel`, `number`, `file`) |
-| `data-type` | Remplacement pour types personnalisés (`fqdn`, `textarea`) |
-| `data-media-type` | Pour `type="file"` : `image`, `video`, `document` |
-| `required` / `data-required` | Champ obligatoire |
-| `data-event-validate` | Événement déclenchant la validation (`blur`, `input`, `change`, `focus`) |
-| `data-event-validate-blur` | Enregistrer le champ dans le groupe blur |
-| `data-event-validate-input` | Enregistrer le champ dans le groupe input |
-| `data-event-validate-change` | Enregistrer le champ dans le groupe change |
-| `data-event-validate-dragenter` | Enregistrer le champ dans le groupe dragenter (fichiers) |
-| `data-event-clear-error` | Événement qui efface les erreurs (défaut : `change`) |
-| `data-error-message-input` | Message d'erreur personnalisé |
-| `data-min-length` / `data-max-length` | Contraintes de longueur |
-| `minLength` / `maxLength` | Contraintes de longueur natives HTML |
-| `pattern` / `data-flag-pattern` | Pattern regex + flags |
-| `data-match-regex` | `true`/`false` — correspondre ou rejeter le pattern |
-| `data-eg-await` | Exemple de valeur affiché dans l'erreur |
-| `data-escapestrip-html-and-php-tags` | Supprimer les tags avant validation |
-| `data-default-country` | Code pays pour validation téléphone (ex. `BJ`, `FR`) |
-| `data-format-date` | Format de date (ex. `DD/MM/YYYY`) |
-| `data-allow-future` / `data-allow-past` | Restriction de plage de date |
-| `data-min-date` / `data-max-date` | Limites de date min/max |
-| `data-extentions` | Extensions de fichier autorisées (séparées par virgule) |
-| `data-allowed-mime-type-accept` | Types MIME autorisés (séparés par virgule) |
-| `data-maxsize-file` | Taille max du fichier (numérique) |
-| `data-unity-max-size-file` | Unité de taille (`B`, `KiB`, `MiB`, `GiB`) |
-| `data-min-width` / `data-max-width` | Contraintes de dimensions image/vidéo |
-| `data-min-height` / `data-max-height` | Contraintes de dimensions image/vidéo |
-| `data-required-columns` | Colonnes requises pour Excel (séparées par virgule) |
-| `data-required-headers` | Headers requis pour CSV (séparés par virgule) |
-| `data-column-types` | JSON de types de colonnes CSV ex. `{"Age":"number","Email":"email"}` |
-| `data-reject-empty-sheet` | Rejeter feuille Excel vide (défaut: `true`) |
-| `data-min-sheets` | Nombre minimum de feuilles Excel |
-| `data-required-text-fragments` | Fragments de texte requis dans Word/ODF (JSON array ou CSV) |
-| `data-reject-empty-document` | Rejeter document Word/ODF vide (défaut: `true`) |
-| `data-min-paragraphs` | Nombre minimum de paragraphes Word/ODF |
-| `data-allow-rtf` | Autoriser les fichiers RTF dans OdtValidator (défaut: `true`) |
-| `data-allow-legacy-doc` | Autoriser les fichiers `.doc` dans MicrosoftWordValidator (défaut: `true`) |
+| Attribute | Role |
+|-----------|------|
+| `type` | Input type (`text`, `email`, `password`, `url`, `date`, `tel`, `number`, `file`) |
+| `data-type` | Override for custom types (`fqdn`, `textarea`) |
+| `data-media-type` | For `type="file"`: `image`, `video`, `document` |
+| `required` / `data-required` | Required field |
+| `data-event-validate` | Event triggering validation (`blur`, `input`, `change`, `focus`) |
+| `data-event-validate-blur` | Register field in blur group |
+| `data-event-validate-input` | Register field in input group |
+| `data-event-validate-change` | Register field in change group |
+| `data-event-validate-dragenter` | Register field in dragenter group (files) |
+| `data-event-clear-error` | Event that clears errors (default: `change`) |
+| `data-error-message-input` | Custom error message |
+| `data-min-length` / `data-max-length` | Length constraints |
+| `minLength` / `maxLength` | Native HTML length constraints |
+| `pattern` / `data-flag-pattern` | Regex pattern + flags |
+| `data-match-regex` | `true`/`false` — match or reject the pattern |
+| `data-eg-await` | Example value shown in the error |
+| `data-escapestrip-html-and-php-tags` | Strip tags before validation |
+| `data-default-country` | Country code for phone validation (e.g. `US`, `FR`) |
+| `data-format-date` | Date format (e.g. `MM/DD/YYYY`) |
+| `data-allow-future` / `data-allow-past` | Date range restriction |
+| `data-min-date` / `data-max-date` | Min/max date limits |
+| `data-extentions` | Allowed file extensions (comma-separated) |
+| `data-allowed-mime-type-accept` | Allowed MIME types (comma-separated) |
+| `data-maxsize-file` | Max file size (numeric) |
+| `data-unity-max-size-file` | Size unit (`B`, `KiB`, `MiB`, `GiB`) |
+| `data-min-width` / `data-max-width` | Image/video dimension constraints |
+| `data-min-height` / `data-max-height` | Image/video dimension constraints |
+| `data-required-columns` | Required columns for Excel (comma-separated) |
+| `data-required-headers` | Required headers for CSV (comma-separated) |
+| `data-column-types` | JSON of CSV column types e.g. `{"Age":"number","Email":"email"}` |
+| `data-reject-empty-sheet` | Reject empty Excel sheet (default: `true`) |
+| `data-min-sheets` | Minimum number of Excel sheets |
+| `data-required-text-fragments` | Required text fragments in Word/ODF (JSON array or CSV) |
+| `data-reject-empty-document` | Reject empty Word/ODF document (default: `true`) |
+| `data-min-paragraphs` | Minimum number of paragraphs in Word/ODF |
+| `data-allow-rtf` | Allow RTF files in OdtValidator (default: `true`) |
+| `data-allow-legacy-doc` | Allow `.doc` files in MicrosoftWordValidator (default: `true`) |
 
-**Exemple de formulaire HTML complet avec validation par attributs :**
+**Full HTML form example with attribute-based validation:**
 
 ```html
 <form name="contactForm" class="form-validate" novalidate>
 
-  <!-- Champ texte -->
+  <!-- Text field -->
   <input
     id="fullName"
     name="fullName"
@@ -1062,11 +1062,11 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     maxLength="100"
     data-event-validate="blur"
     data-event-validate-blur="blur"
-    data-error-message-input="Veuillez entrer votre nom complet."
-    data-eg-await="Jean Dupont"
+    data-error-message-input="Please enter your full name."
+    data-eg-await="John Doe"
   />
 
-  <!-- Champ email -->
+  <!-- Email field -->
   <input
     id="email"
     name="email"
@@ -1078,19 +1078,19 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-host-blacklist="tempmail.com,guerrillamail.com"
   />
 
-  <!-- Champ téléphone -->
+  <!-- Phone field -->
   <input
     id="phone"
     name="phone"
     type="tel"
     required
-    data-default-country="BJ"
-    data-eg-await="+229 01 67 25 18 86"
+    data-default-country="US"
+    data-eg-await="+1 555 123 4567"
     data-event-validate="blur"
     data-event-validate-blur="blur"
   />
 
-  <!-- Mot de passe -->
+  <!-- Password -->
   <input
     id="password"
     name="password"
@@ -1105,7 +1105,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-input="input"
   />
 
-  <!-- Upload image -->
+  <!-- Image upload -->
   <input
     id="avatar"
     name="avatar"
@@ -1121,7 +1121,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-dragenter="dragenter"
   />
 
-  <!-- Upload document (PDF, Word, Excel, CSV auto-détectés) -->
+  <!-- Document upload (PDF, Word, Excel, CSV auto-detected) -->
   <input
     id="document"
     name="document"
@@ -1134,7 +1134,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-change="change"
   />
 
-  <!-- Upload Excel avec options avancées -->
+  <!-- Excel upload with advanced options -->
   <input
     id="importFile"
     name="importFile"
@@ -1148,7 +1148,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-change="change"
   />
 
-  <!-- Upload CSV avec validation de colonnes -->
+  <!-- CSV upload with column validation -->
   <input
     id="csvData"
     name="csvData"
@@ -1163,13 +1163,13 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-change="change"
   />
 
-  <button type="submit">Envoyer</button>
+  <button type="submit">Submit</button>
 </form>
 ```
 
 ---
 
-## Intégration par Framework
+## Framework Integration
 
 ### Vanilla JS / TypeScript
 
@@ -1185,9 +1185,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!formExist) return;
 
   const controller = new FormValidateController('.form-validate');
-  const form = controller.form; // HTMLFormElement natif
+  const form = controller.form; // native HTMLFormElement
 
-  // Attacher les événements blur
+  // Attach blur events
   controller.idChildrenUsingEventBlur.forEach(id => {
     document.getElementById(id)?.addEventListener('blur', async (e) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -1197,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Attacher les événements input (nettoyage erreurs)
+  // Attach input events (clear errors)
   controller.idChildrenUsingEventInput.forEach(id => {
     document.getElementById(id)?.addEventListener('input', (e) => {
       const target = e.target as HTMLInputElement | HTMLTextAreaElement;
@@ -1207,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Attacher les événements change (fichiers, selects, checkboxes)
+  // Attach change events (files, selects, checkboxes)
   controller.idChildrenUsingEventChange.forEach(id => {
     document.getElementById(id)?.addEventListener('change', async (e) => {
       const target = e.target as HTMLInputElement;
@@ -1217,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Dragenter sur les fichiers (nettoyage erreurs)
+  // Dragenter on files (clear errors)
   controller.idChildrenUsingEventDragenter.forEach(id => {
     document.getElementById(id)?.addEventListener('dragenter', (e) => {
       const target = e.target as HTMLInputElement;
@@ -1227,7 +1227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Écouter les événements de validation
+  // Listen for validation events
   form.addEventListener(FieldValidationFailed, (e: Event) => {
     const { targetChildrenForm, message } = (e as CustomEvent).detail;
     controller.addErrorMessageChildrenForm(
@@ -1244,7 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     targetChildrenForm.classList.add('is-valid');
   });
 
-  // Soumission du formulaire
+  // Form submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const isValid = await controller.isFormValid();
@@ -1298,7 +1298,7 @@ export function LoginForm() {
       minLength: 8, upperCaseAllow: true
     });
     await validateField('phone', phone, 'tel', {
-      defaultCountry: 'BJ', requiredInput: true
+      defaultCountry: 'US', requiredInput: true
     });
 
     const allValid = ['email', 'password', 'phone'].every(f => {
@@ -1307,7 +1307,7 @@ export function LoginForm() {
     });
 
     if (allValid) {
-      console.log('Formulaire valide, envoi en cours...');
+      console.log('Form is valid, submitting...');
     }
   };
 
@@ -1331,7 +1331,7 @@ export function LoginForm() {
           ref={passwordRef}
           type="password"
           name="password"
-          placeholder="Mot de passe"
+          placeholder="Password"
           onInput={async (e) => {
             const val = (e.target as HTMLInputElement).value;
             await validateField('password', val, 'password', {
@@ -1347,23 +1347,23 @@ export function LoginForm() {
           ref={phoneRef}
           type="tel"
           name="phone"
-          placeholder="+229 01 67 25 18 86"
+          placeholder="+1 555 123 4567"
           onBlur={async (e) => {
             await validateField('phone', e.target.value, 'tel', {
-              defaultCountry: 'BJ', requiredInput: true
+              defaultCountry: 'US', requiredInput: true
             });
           }}
         />
         {errors.phone && <span className="error">{errors.phone}</span>}
       </div>
 
-      <button type="submit">Se connecter</button>
+      <button type="submit">Sign in</button>
     </form>
   );
 }
 ```
 
-**Upload de fichier en React :**
+**File upload in React:**
 ```tsx
 import { imageValidator } from '@wlindabla/form_validator/validation/rules/file';
 
@@ -1453,7 +1453,7 @@ import { FormValidationService } from './validation.service';
         />
         <span *ngIf="errors['password']" class="error">{{ errors['password'][0] }}</span>
       </div>
-      <button type="submit">S'inscrire</button>
+      <button type="submit">Register</button>
     </form>
   `
 })
@@ -1474,7 +1474,7 @@ export class RegisterComponent {
       minLength: 8, upperCaseAllow: true, symbolAllow: true
     });
     const valid = ['email', 'password'].every(f => !this.errors[f]?.length);
-    if (valid) console.log('Envoi en cours...');
+    if (valid) console.log('Submitting...');
   }
 }
 ```
@@ -1515,7 +1515,7 @@ export class RegisterComponent {
       <p v-if="errors.avatar" class="error">{{ errors.avatar }}</p>
     </div>
 
-    <button type="submit">Envoyer</button>
+    <button type="submit">Submit</button>
   </form>
 </template>
 
@@ -1550,7 +1550,7 @@ async function handleSubmit() {
   await validateField('password', form.password, 'password', { minLength: 8 });
 
   const isValid = ['email', 'password', 'avatar'].every(f => !errors[f]);
-  if (isValid) console.log('Envoi en cours...');
+  if (isValid) console.log('Submitting...');
 }
 </script>
 ```
@@ -1572,14 +1572,14 @@ window.addEventListener('DOMContentLoaded', () => {
   if (formExist === null) return;
 
   const form_validate = new FormValidateController('.form-validate');
-  const __form = $(form_validate.form); // Wrap le HTMLFormElement natif avec jQuery
+  const __form = $(form_validate.form); // Wrap native HTMLFormElement with jQuery
 
   const idsBlur = addHashToIds(form_validate.idChildrenUsingEventBlur).join(',');
   const idsInput = addHashToIds(form_validate.idChildrenUsingEventInput).join(',');
   const idsChange = addHashToIds(form_validate.idChildrenUsingEventChange).join(',');
   const idsDragenter = addHashToIds(form_validate.idChildrenUsingEventDragenter).join(',');
 
-  // Validation au blur (champs texte, email, tel, etc.)
+  // Blur validation (text, email, tel, etc.)
   __form.on('blur', idsBlur, async (event) => {
     const target = event.target;
     if (
@@ -1590,7 +1590,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Événement de validation échouée → afficher les erreurs
+  // Validation failed event → display errors
   __form.on(FieldValidationFailed, (event) => {
     const data = event.originalEvent.detail;
     form_validate.addErrorMessageChildrenForm(
@@ -1600,7 +1600,7 @@ window.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // Événement de validation réussie → nettoyer les erreurs
+  // Validation success event → clear errors
   __form.on(FieldValidationSuccess, (event) => {
     const data = event.originalEvent.detail;
     jQuery(data.targetChildrenForm)
@@ -1608,7 +1608,7 @@ window.addEventListener('DOMContentLoaded', () => {
       .addClass('is-valid');
   });
 
-  // Input → nettoyage des erreurs en temps réel
+  // Input → real-time error clearing
   __form.on('input', idsInput, (event) => {
     const target = event.target;
     if (
@@ -1619,7 +1619,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Change → validation des fichiers, selects, checkboxes
+  // Change → validate files, selects, checkboxes
   __form.on('change', idsChange, async (event) => {
     const target = event.target;
     if (target instanceof HTMLInputElement && target.type === 'file') {
@@ -1627,7 +1627,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Dragenter → nettoyage erreurs pour les fichiers
+  // Dragenter → clear errors for files
   __form.on('dragenter', idsDragenter, (event) => {
     const target = event.target;
     if (target instanceof HTMLInputElement && target.type === 'file') {
@@ -1635,7 +1635,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Soumission du formulaire
+  // Form submission
   __form.on('submit', async (e) => {
     e.preventDefault();
     const isValid = await form_validate.isFormValid();
@@ -1650,9 +1650,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 ### Symfony + Twig
 
-Utilisez les attributs HTML `data-*` pour configurer la validation, puis initialisez le contrôleur dans votre point d'entrée JS principal.
+Use `data-*` HTML attributes to configure validation, then initialize the controller in your main JS entry point.
 
-**Template Twig :**
+**Twig Template:**
 ```twig
 {# templates/registration/register.html.twig #}
 {{ form_start(registrationForm, {
@@ -1668,7 +1668,7 @@ Utilisez les attributs HTML `data-*` pour configurer la validation, puis initial
         'data-event-validate': 'blur',
         'data-event-validate-blur': 'blur',
         'data-host-blacklist': 'tempmail.com,guerrillamail.com',
-        'data-error-message-input': 'Veuillez entrer une adresse email valide.'
+        'data-error-message-input': 'Please enter a valid email address.'
     }
 }) }}
 
@@ -1709,11 +1709,11 @@ Utilisez les attributs HTML `data-*` pour configurer la validation, puis initial
     }
 }) }}
 
-<button type="submit" class="btn btn-primary">S'inscrire</button>
+<button type="submit" class="btn btn-primary">Register</button>
 {{ form_end(registrationForm) }}
 ```
 
-**assets/app.js :**
+**assets/app.js:**
 ```javascript
 import {
   FormValidateController,
@@ -1728,11 +1728,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const controller = new FormValidateController('.form-validate');
   const form = controller.form;
 
-  const idsBlur = addHashToIds(controller.idChildrenUsingEventBlur).join(',');
-  const idsInput = addHashToIds(controller.idChildrenUsingEventInput).join(',');
-  const idsChange = addHashToIds(controller.idChildrenUsingEventChange).join(',');
-  const idsDragenter = addHashToIds(controller.idChildrenUsingEventDragenter).join(',');
-
   // Blur validation
   controller.idChildrenUsingEventBlur.forEach(id => {
     document.getElementById(id)?.addEventListener('blur', async (e) => {
@@ -1746,7 +1741,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Input → nettoyage
+  // Input → clear errors
   controller.idChildrenUsingEventInput.forEach(id => {
     document.getElementById(id)?.addEventListener('input', (e) => {
       const target = e.target;
@@ -1759,7 +1754,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Change → fichiers
+  // Change → files
   controller.idChildrenUsingEventChange.forEach(id => {
     document.getElementById(id)?.addEventListener('change', async (e) => {
       const target = e.target;
@@ -1769,7 +1764,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Dragenter → nettoyage fichiers
+  // Dragenter → clear file errors
   controller.idChildrenUsingEventDragenter.forEach(id => {
     document.getElementById(id)?.addEventListener('dragenter', (e) => {
       const target = e.target;
@@ -1779,7 +1774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Validation failed → classes Bootstrap
+  // Validation failed → Bootstrap classes
   form.addEventListener(FieldValidationFailed, (e) => {
     const { targetChildrenForm, message } = e.detail;
     targetChildrenForm.classList.add('is-invalid');
@@ -1790,7 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   });
 
-  // Validation success → classes Bootstrap
+  // Validation success → Bootstrap classes
   form.addEventListener(FieldValidationSuccess, (e) => {
     const { targetChildrenForm } = e.detail;
     targetChildrenForm.classList.remove('is-invalid');
@@ -1809,12 +1804,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ---
 
-## Référence API
+## API Reference
 
-### Table des exports
+### Exports Table
 
-| Chemin d'import | Exports |
-|-----------------|---------|
+| Import path | Exports |
+|-------------|---------|
 | `@wlindabla/form_validator` | `FormValidateController`, `FieldValidationFailed`, `FieldValidationSuccess`, `addHashToIds` |
 | `@wlindabla/form_validator/validation/core/router` | `formInputValidator`, `FormInputValidator`, `OptionsValidate` |
 | `@wlindabla/form_validator/validation` | `formErrorStore`, `FormErrorStore` |
@@ -1824,37 +1819,37 @@ document.addEventListener('DOMContentLoaded', () => {
 | `@wlindabla/form_validator/validation/core/adapter` | `FieldOptionsValidateCacheAdapterInterface` |
 | `@wlindabla/form_validator/cache` | `LocalStorageCacheAdapter` |
 
-### Méthodes communes à tous les validateurs
+### Methods Common to All Validators
 
-| Méthode | Description |
-|---------|-------------|
-| `formErrorStore.isFieldValid(name)` | Retourne `true` si aucune erreur enregistrée |
-| `formErrorStore.getFieldErrors(name)` | Retourne `string[]` des messages d'erreur |
-| `formErrorStore.clearFieldState(name)` | Efface tout l'état d'un champ |
-| `formErrorStore.isFormValid()` | Retourne `true` si aucun champ n'est invalide |
-| `formErrorStore.setFieldValid(name, bool)` | Définit manuellement la validité d'un champ |
-| `formErrorStore.addFieldError(name, msg)` | Ajoute manuellement un message d'erreur |
-| `formErrorStore.removeFieldError(name, msg)` | Supprime un message d'erreur spécifique |
+| Method | Description |
+|--------|-------------|
+| `formErrorStore.isFieldValid(name)` | Returns `true` if no errors are recorded |
+| `formErrorStore.getFieldErrors(name)` | Returns `string[]` of error messages |
+| `formErrorStore.clearFieldState(name)` | Clears all state for a field |
+| `formErrorStore.isFormValid()` | Returns `true` if no field is invalid |
+| `formErrorStore.setFieldValid(name, bool)` | Manually sets field validity |
+| `formErrorStore.addFieldError(name, msg)` | Manually adds an error message |
+| `formErrorStore.removeFieldError(name, msg)` | Removes a specific error message |
 
-### FormValidateController — Méthodes publiques
+### FormValidateController — Public Methods
 
-| Méthode | Description |
-|---------|-------------|
-| `isFormValid(): Promise<boolean>` | Valide tous les champs et retourne `true` si le formulaire est valide |
-| `validateChildrenForm(target): Promise<void>` | Valide un seul champ |
-| `clearErrorDataChildren(target): void` | Efface l'état d'erreur d'un champ |
-| `addErrorMessageChildrenForm(el, messages, className?)` | Affiche les messages d'erreur dans le DOM |
-| `autoValidateAllFields(): Promise<void>` | Valide tous les champs sans vérification du résultat global |
-| `form` | `HTMLFormElement` natif (non plus jQuery) |
-| `childrens` | `HTMLFormChildrenElement[]` natif |
-| `idChildrenUsingEventBlur` | IDs des champs avec `data-event-validate-blur` |
-| `idChildrenUsingEventInput` | IDs des champs avec `data-event-validate-input` |
-| `idChildrenUsingEventChange` | IDs des champs avec `data-event-validate-change` |
-| `idChildrenUsingEventDragenter` | IDs des champs avec `data-event-validate-dragenter` |
-| `idChildrenUsingEventFocus` | IDs des champs avec `data-event-validate-focus` |
+| Method | Description |
+|--------|-------------|
+| `isFormValid(): Promise<boolean>` | Validates all fields and returns `true` if the form is valid |
+| `validateChildrenForm(target): Promise<void>` | Validates a single field |
+| `clearErrorDataChildren(target): void` | Clears error state for a field |
+| `addErrorMessageChildrenForm(el, messages, className?)` | Displays error messages in the DOM |
+| `autoValidateAllFields(): Promise<void>` | Validates all fields without checking the overall result |
+| `form` | Native `HTMLFormElement` (no longer jQuery) |
+| `childrens` | Native `HTMLFormChildrenElement[]` |
+| `idChildrenUsingEventBlur` | IDs of fields with `data-event-validate-blur` |
+| `idChildrenUsingEventInput` | IDs of fields with `data-event-validate-input` |
+| `idChildrenUsingEventChange` | IDs of fields with `data-event-validate-change` |
+| `idChildrenUsingEventDragenter` | IDs of fields with `data-event-validate-dragenter` |
+| `idChildrenUsingEventFocus` | IDs of fields with `data-event-validate-focus` |
 
 ---
 
-## Licence
+## License
 
 MIT © [AGBOKOUDJO Franck](https://github.com/Agbokoudjo) — INTERNATIONALES WEB APPS & SERVICES
