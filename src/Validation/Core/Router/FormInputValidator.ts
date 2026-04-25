@@ -51,7 +51,8 @@ import {
 	checkboxValidator,
 	radioValidator,
 	selectValidator,
-	odtValidator
+	odtValidator,
+	fqdnInputValidator
 } from "../../Rules";
 
 export type OptionsValidate = TextInputOptions
@@ -246,7 +247,9 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
 				radioValidator.validate(datainput as string | null | undefined, targetInputname, options_validator as OptionsRadio);
 				this.setValidator(targetInputname, radioValidator);
 				break;
-
+			case 'fqdn':
+				fqdnInputValidator.validate(datainput as string, targetInputname, options_validator as FQDNOptions);
+				break;
 			default:
 				console.error(`The validation function for ${type_field} is not implemented.`);
 				break;

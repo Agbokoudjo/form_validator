@@ -462,17 +462,6 @@ export function getAttr<T = unknown>(
     return value as T;
 }
 
-export function getValue(
-    element: HTMLElement | JQuery<HTMLElement>
-    ): string | number | string[] | undefined {
-
-    if (element instanceof HTMLElement) {
-        element = jQuery<HTMLElement>(element)
-    }
-
-    return element.val();
-}
-
 export function stringToRegex(regexString: string | null | undefined, flags: FlagRegExp = 'iu'): RegExp | undefined {
 
     if (!regexString) {
