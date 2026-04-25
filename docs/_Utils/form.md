@@ -1,197 +1,84 @@
-# Form Validator - Complete Documentation
+# 📋 `@wlindabla/form_validator` — DOM Error Handling & Form Utilities Module
 
-<div align="center">
-
-**A powerful, lightweight jQuery-based form validation library with comprehensive error handling and user-friendly feedback.**
-
-[Installation](#installation) • [Quick Start](#quick-start) • [API Reference](#api-reference) • [Examples](#examples)
-
-</div>
+> **Part of the `@wlindabla/form_validator` library** — A powerful JavaScript/TypeScript library for validating HTML form fields: `text`, `email`, `tel`, `password`, `image`, `PDF`, `Word`, `CSV`, `Excel`, and more.
 
 ---
 
-## Table of Contents
+## 📦 Installation
 
-- [Form Validator - Complete Documentation](#form-validator---complete-documentation)
-  - [Table of Contents](#table-of-contents)
+```bash
+# npm
+npm install @wlindabla/form_validator
+
+# yarn
+yarn add @wlindabla/form_validator
+
+# pnpm
+pnpm add @wlindabla/form_validator
+```
+
+---
+
+## 📖 Table of Contents
+
+- [📋 `@wlindabla/form_validator` — DOM Error Handling \& Form Utilities Module](#-wlindablaform_validator--dom-error-handling--form-utilities-module)
+  - [📦 Installation](#-installation)
+  - [📖 Table of Contents](#-table-of-contents)
   - [Overview](#overview)
-    - [Why Form Validator?](#why-form-validator)
-  - [Features](#features)
-  - [Installation](#installation)
-    - [Via NPM](#via-npm)
-    - [Via Yarn](#via-yarn)
-    - [Manual Installation](#manual-installation)
-    - [Requirements](#requirements)
-  - [Quick Start](#quick-start)
-    - [Basic Setup](#basic-setup)
-    - [React Integration](#react-integration)
   - [API Reference](#api-reference)
-    - [Error Message Functions](#error-message-functions)
-      - [`smallError()`](#smallerror)
-      - [`validatorErrorField()`](#validatorerrorfield)
-      - [`createSmallErrorMessage()`](#createsmallerrormessage)
-    - [DOM Management Functions](#dom-management-functions)
-      - [`addErrorMessageFieldDom()`](#adderrormessagefielddom)
-      - [`handleErrorsManyForm()`](#handleerrorsmanyform)
-      - [`clearErrorInput()`](#clearerrorinput)
-    - [Utility Functions](#utility-functions)
-      - [`getInputPatternRegex()`](#getinputpatternregex)
-      - [`getAttr()`](#getattr)
-      - [`stringToRegex()`](#stringtoregex)
-  - [Type Definitions](#type-definitions)
-    - [`ValidatorErrorFieldProps`](#validatorerrorfieldprops)
-    - [`FlagRegExp`](#flagregexp)
-    - [`MediaType`](#mediatype)
-    - [`FormInputType`](#forminputtype)
-    - [`HTMLFormChildrenElement`](#htmlformchildrenelement)
-    - [`DataInput`](#datainput)
-  - [Examples](#examples)
-    - [Example 1: Real-Time Form Validation](#example-1-real-time-form-validation)
-    - [Example 2: Server-Side Validation Response](#example-2-server-side-validation-response)
-    - [Example 3: React Component with Validation](#example-3-react-component-with-validation)
-    - [Example 4: Custom Error Styling](#example-4-custom-error-styling)
-  - [Best Practices](#best-practices)
-    - [✅ Do](#-do)
-    - [❌ Don't](#-dont)
-  - [Common Issues \& Solutions](#common-issues--solutions)
-    - [Issue: jQuery not found](#issue-jquery-not-found)
-    - [Issue: Errors not displaying](#issue-errors-not-displaying)
-    - [Issue: Multiple error messages duplicating](#issue-multiple-error-messages-duplicating)
-  - [Contributing](#contributing)
-  - [Support \& Contact](#support--contact)
-  - [License](#license)
-    - [Made with ❤️ for the developer community](#made-with-️-for-the-developer-community)
+    - [`smallError`](#smallerror)
+    - [`validatorErrorField`](#validatorerrorfield)
+    - [`createSmallErrorMessage`](#createsmallerrormessage)
+    - [`addErrorMessageFieldDom`](#adderrormessagefielddom)
+    - [`handleErrorsManyForm`](#handleerrorsmanyform)
+    - [`clearErrorInput`](#clearerrorinput)
+    - [`getInputPatternRegex`](#getinputpatternregex)
+    - [`getAttr`](#getattr)
+    - [`stringToRegex`](#stringtoregex)
+    - [`getFormAction`](#getformaction)
+    - [`cancelEvent`](#cancelevent)
+    - [`SubmitterHandle`](#submitterhandle)
+  - [Types \& Interfaces](#types--interfaces)
+  - [Integration Examples by Framework](#integration-examples-by-framework)
+    - [Vanilla JavaScript](#vanilla-javascript)
+    - [React / Next.js](#react--nextjs)
+    - [Vue.js / Nuxt](#vuejs--nuxt)
+    - [Angular](#angular)
+    - [Symfony + Twig](#symfony--twig)
+    - [Laravel + Blade](#laravel--blade)
+    - [Django + Jinja2](#django--jinja2)
+    - [PHP + HTML (No Framework)](#php--html-no-framework)
+    - [Java + Thymeleaf / JSP](#java--thymeleaf--jsp)
+    - [C++ + HTML (WebAssembly / Emscripten)](#c--html-webassembly--emscripten)
+  - [🔑 Field ID Convention](#-field-id-convention)
+  - [🛡️ Accessibility](#️-accessibility)
+  - [📄 License](#-license)
 
 ---
 
 ## Overview
 
-Form Validator is a comprehensive validation library designed to simplify form error handling in web applications. Built with jQuery compatibility, it seamlessly integrates with modern frameworks like React and provides Bootstrap-compatible styling out of the box.
+This module provides a complete **DOM-side error management system** for HTML forms. It handles:
 
-Whether you're building traditional multi-page forms or single-page applications with client-side validation, Form Validator provides the tools you need to deliver professional, user-friendly error feedback.
+- Generating accessible, styled error message HTML elements
+- Appending, updating, and clearing validation errors in the DOM
+- Managing submit button states during form submission
+- Extracting and compiling `pattern` attributes from inputs into `RegExp` objects
+- Handling server-side or client-side validation error objects for complex, multi-field forms
 
-### Why Form Validator?
-
-- ✅ **Simple API**: Intuitive functions that handle complex validation scenarios
-- ✅ **Framework Agnostic**: Works with vanilla JavaScript, jQuery, React, and Vue
-- ✅ **Bootstrap Ready**: Default Bootstrap 5 styling with full customization support
-- ✅ **Type Safe**: Full TypeScript support with comprehensive type definitions
-- ✅ **Lightweight**: Minimal dependencies (jQuery only)
-- ✅ **Production Ready**: Battle-tested error handling and edge case management
-
----
-
-## Features
-
-- 🎯 Single and multiple error messages per field
-- 🎨 Customizable error container styling
-- 🔄 Real-time error clearing and updating
-- 📝 Regex pattern extraction and validation
-- 🛡️ Type-safe with full TypeScript support
-- 🔗 Nested field error handling (dot notation)
-- 📦 Automatic DOM element generation
-- 🎪 Bootstrap validation feedback integration
-
----
-
-## Installation
-
-### Via NPM
-
-```bash
-npm install form_validator
-```
-
-### Via Yarn
-
-```bash
-yarn add form_validator
-```
-
-### Manual Installation
-
-```html
-<script src="path/to/@wlindabla/form_validator/index.js"></script>
-```
-
-### Requirements
-
-- **jQuery** 3.0 or higher
-- **Bootstrap** 5.x (optional, for default styling)
-
----
-
-## Quick Start
-
-### Basic Setup
-
-```javascript
-import {
-  addErrorMessageFieldDom,
-  handleErrorsManyForm,
-  clearErrorInput
-} from 'form-validator';
-
-// Display error for a single field
-const emailInput = $('#user_email');
-addErrorMessageFieldDom(emailInput, [
-  'This field is required.',
-  'Must be a valid email address.'
-]);
-
-// Clear errors
-clearErrorInput(emailInput);
-
-// Handle multiple form errors at once
-handleErrorsManyForm('user', 'user_form', {
-  email: ['Invalid email format'],
-  password: ['Password too short'],
-  'address.city': ['City is required']
-});
-```
-
-### React Integration
-
-```jsx
-import React, { useRef } from 'react';
-import { addErrorMessageFieldDom, clearErrorInput } from 'form-validator';
-
-export function LoginForm() {
-  const emailRef = useRef(null);
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!emailRef.current?.value) {
-      addErrorMessageFieldDom(jQuery(emailRef.current), [
-        'Email is required'
-      ]);
-    } else {
-      clearErrorInput(jQuery(emailRef.current));
-    }
-  };
-  
-  return (
-    <form onSubmit={handleSubmit}>
-      <input ref={emailRef} id="user_email" type="email" />
-      <button type="submit">Login</button>
-    </form>
-  );
-}
-```
+All utilities are **framework-agnostic** and work anywhere JavaScript runs in a browser.
 
 ---
 
 ## API Reference
 
-### Error Message Functions
+---
 
-#### `smallError()`
+### `smallError`
 
-Generates a semantic HTML `<small>` tag for displaying individual error messages.
+Generates a single `<small>` HTML tag for displaying an error message.
 
-**Signature:**
-```typescript
+```ts
 function smallError(
   message_error: string,
   className: string,
@@ -200,175 +87,189 @@ function smallError(
 ): string
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `message_error` | `string` | The error message text to display |
-| `className` | `string` | Space-separated CSS classes to apply |
-| `id` | `string` | Unique identifier for the element |
-| `key` | `number?` | Optional numeric key for data attribute |
+| Parameter       | Type     | Required | Description                                      |
+|-----------------|----------|----------|--------------------------------------------------|
+| `message_error` | `string` | ✅        | The error text to display.                        |
+| `className`     | `string` | ✅        | CSS class(es) to apply to the element.            |
+| `id`            | `string` | ✅        | Unique DOM id for the element.                    |
+| `key`           | `number` | ❌        | Optional numeric key, added as `data-key` attr.   |
 
-**Returns:** HTML string representing the `<small>` element
-
-**Example:**
-```javascript
-const errorHtml = smallError(
-  'Email format is invalid',
-  'text-danger fw-bold',
-  'error-email-1',
-  1
-);
-// Output: <small id="error-email-1" class="text-danger fw-bold" data-key="1">
-//           Email format is invalid
-//         </small>
+**Returns:** `string` — An HTML string like:
+```html
+<small id="error-email" class="fw-bold text-danger" data-key="0">This field is required.</small>
 ```
 
-**Use Cases:**
-- Creating individual error message elements
-- Building custom error containers
-- Generating semantic HTML for accessibility
+**Example:**
+
+```ts
+import { smallError } from '@wlindabla/form_validator';
+
+const html = smallError('This field is required.', 'fw-bold text-danger', 'error-email', 0);
+document.getElementById('email-wrapper')!.innerHTML = html;
+```
 
 ---
 
-#### `validatorErrorField()`
+### `validatorErrorField`
 
-Generates a complete block of formatted error messages with optional separators.
+Generates a complete HTML block of one or more `<small>` error messages, joined by a configurable separator.
 
-**Signature:**
-```typescript
-function validatorErrorField(
-  validate_error_field: ValidatorErrorFieldProps = {
-    messageerror: ' ',
-    classnameerror: ["fw-bold", "text-danger", "mt-2"],
-    id: `error-field-${Date.now()}`,
-    separator_join: "<br/><hr/>"
-  }
-): string
+```ts
+function validatorErrorField(validate_error_field?: {
+  messageerror: string | string[];
+  classnameerror?: string[];
+  id: string;
+  separator_join: string;
+}): string
 ```
 
-**Parameters (ValidatorErrorFieldProps):**
-| Property | Type | Description |
-|----------|------|-------------|
-| `messageerror` | `string \| string[]` | Single or multiple error messages |
-| `classnameerror` | `string[]?` | Array of CSS classes |
-| `id` | `string` | Base ID for elements |
-| `separator_join` | `string` | HTML to join multiple messages |
+| Parameter          | Type               | Default                              | Description                                            |
+|--------------------|--------------------|--------------------------------------|--------------------------------------------------------|
+| `messageerror`     | `string\|string[]` | `' '`                                | One error message or an array of messages.             |
+| `classnameerror`   | `string[]`         | `['fw-bold', 'text-danger', 'mt-2']` | Additional CSS classes (merged with `error-message`).  |
+| `id`               | `string`           | Auto-generated from `Date.now()`     | Base ID for generated elements.                        |
+| `separator_join`   | `string`           | `'<br/><hr/>'`                       | HTML string used to join multiple error messages.      |
 
-**Returns:** HTML string with all error messages
+**Returns:** `string` — Full HTML containing all error `<small>` elements.
 
-**Example:**
-```javascript
-const errors = validatorErrorField({
-  messageerror: [
-    'Field is required',
-    'Must be at least 8 characters',
-    'Must contain uppercase letter'
-  ],
-  classnameerror: ['text-danger', 'small', 'fw-bold'],
-  id: 'password-errors',
+**Example — Single error:**
+
+```ts
+import { validatorErrorField } from '@wlindabla/form_validator';
+
+const html = validatorErrorField({
+  messageerror: 'Please enter a valid email.',
+  classnameerror: ['text-danger', 'fw-bold'],
+  id: 'error-email',
   separator_join: '<br/>'
+});
+
+document.querySelector('#email-container')!.innerHTML = html;
+```
+
+**Example — Multiple errors:**
+
+```ts
+const html = validatorErrorField({
+  messageerror: [
+    'This field is required.',
+    'Must be a valid email address.',
+    'Maximum 255 characters allowed.'
+  ],
+  classnameerror: ['invalid-feedback', 'd-block'],
+  id: 'error-email',
+  separator_join: '<br/><hr/>'
 });
 ```
 
-**Use Cases:**
-- Grouping multiple errors for a field
-- Custom error formatting and styling
-- Building error collections
-
 ---
 
-#### `createSmallErrorMessage()`
+### `createSmallErrorMessage`
 
-Creates or retrieves an error message element with automatic DOM detection and element reuse.
+Creates or retrieves a `<small>` error DOM element for a specific input field. If an element with the generated ID already exists in the DOM, it returns the existing one to avoid duplicates.
 
-**Signature:**
-```typescript
+```ts
 function createSmallErrorMessage(
   fieldInputID: string,
   errorMessage: string,
   keyError: number | string
-): JQuery<HTMLElement>
+): HTMLElement
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `fieldInputID` | `string` | ID of the form field |
-| `errorMessage` | `string` | The error message text |
-| `keyError` | `number \| string` | Unique key for this specific error |
+| Parameter      | Type               | Description                                            |
+|----------------|--------------------|--------------------------------------------------------|
+| `fieldInputID` | `string`           | The `id` attribute of the target input element.        |
+| `errorMessage` | `string`           | The error text to display.                             |
+| `keyError`     | `number \| string` | Unique key for this specific error instance.           |
 
-**Returns:** jQuery object of the error message element
+**Returns:** `HTMLElement` — A native DOM element ready to be inserted.
+
+**Generated element ID format:** `error-item-{fieldInputID}-{keyError}`
 
 **Example:**
-```javascript
-const errorElement = createSmallErrorMessage(
-  'user_password',
-  'Password must contain uppercase letter',
-  0
-);
 
-// Append to DOM
-jQuery('#password-container').append(errorElement);
+```ts
+import { createSmallErrorMessage } from '@wlindabla/form_validator';
+
+const emailInput = document.getElementById('user_email')!;
+const errorEl = createSmallErrorMessage('user_email', 'Invalid email format.', 0);
+
+emailInput.insertAdjacentElement('afterend', errorEl);
 ```
-
-**Features:**
-- Automatic element reuse if already exists
-- Unique ID generation
-- Data attributes for easy targeting
 
 ---
 
-### DOM Management Functions
+### `addErrorMessageFieldDom`
 
-#### `addErrorMessageFieldDom()`
+The **main function** for displaying validation errors on a form field. It appends or updates error messages directly after the field in the DOM, and toggles Bootstrap's `is-invalid` class.
 
-Appends or updates validation error messages for a form field in the DOM with automatic styling.
+- Creates a unique error **container div** per field (ID: `container-div-error-message-{fieldId}`)
+- Clears and re-renders errors on each call
+- Passing an empty array `[]` clears all errors for that field
 
-**Signature:**
-```typescript
+```ts
 function addErrorMessageFieldDom(
-  elmtfield: JQuery<HTMLElement>,
+  elmtfield: HTMLElement,
   errormessagefield?: string[],
-  className_container_ErrorMessage: string = "border border-3 border-light"
+  className_container_ErrorMessage?: string
 ): void
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `elmtfield` | `JQuery<HTMLElement>` | jQuery reference to the form field |
-| `errormessagefield` | `string[]?` | Array of error messages (empty array clears errors) |
-| `className_container_ErrorMessage` | `string` | CSS classes for error container |
+| Parameter                        | Type          | Default                          | Description                                                     |
+|----------------------------------|---------------|----------------------------------|-----------------------------------------------------------------|
+| `elmtfield`                      | `HTMLElement` | —                                | The target input, select, or textarea element. **Must have `id`**. |
+| `errormessagefield`              | `string[]`    | `undefined`                      | Array of error messages. Empty array or omitted → clears errors. |
+| `className_container_ErrorMessage` | `string`   | `'border border-3 border-light'` | CSS classes for the error container `<div>`.                    |
 
-**Returns:** `void`
+**Example — Display errors:**
 
-**Example:**
-```javascript
-// Display errors
-const emailField = jQuery('#user_email');
-addErrorMessageFieldDom(emailField, [
+```ts
+import { addErrorMessageFieldDom } from '@wlindabla/form_validator';
+
+const emailInput = document.getElementById('user_email') as HTMLElement;
+
+addErrorMessageFieldDom(emailInput, [
   'This field is required.',
   'Must be a valid email address.'
 ]);
-
-// Clear errors
-addErrorMessageFieldDom(emailField, []);
 ```
 
-**Behavior:**
-- Adds `is-invalid` class to field
-- Creates container div below the field
-- Removes errors when passed empty array
-- Handles multiple messages with separators
+**Example — Clear errors:**
+
+```ts
+addErrorMessageFieldDom(emailInput, []);
+// or simply:
+addErrorMessageFieldDom(emailInput);
+```
+
+**DOM output produced:**
+
+```html
+<input id="user_email" type="email" class="form-control is-invalid" />
+<div id="container-div-error-message-user_email" class="border border-3 border-light">
+  <small id="error-item-user_email-0" class="error-message error-for-user_email invalid-feedback d-block">
+    This field is required.
+  </small>
+  <small id="error-item-user_email-1" class="error-message error-for-user_email invalid-feedback d-block">
+    Must be a valid email address.
+  </small>
+</div>
+```
 
 ---
 
-#### `handleErrorsManyForm()`
+### `handleErrorsManyForm`
 
-Manages validation errors for an entire form, supporting nested field names.
+Processes an **entire form's validation error object** at once — ideal for handling backend API responses or comprehensive client-side validation results.
 
-**Signature:**
-```typescript
+It:
+1. Clears all existing errors and `is-invalid` classes in the form scope
+2. Iterates the errors object and maps each key to a field ID
+3. Calls `addErrorMessageFieldDom` for each field found in the DOM
+
+Field IDs are expected to follow the convention: `{formName}_{fieldKey}` (Symfony-compatible, dot-notation keys like `address.city` are converted to `address_city`).
+
+```ts
 function handleErrorsManyForm(
   formName: string,
   formId: string,
@@ -376,700 +277,1340 @@ function handleErrorsManyForm(
 ): void
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `formName` | `string` | Prefix used in field IDs (e.g., "user") |
-| `formId` | `string` | DOM ID of the form element |
-| `errors` | `Record<string, string[]>` | Object with field names as keys, error arrays as values |
+| Parameter  | Type                       | Description                                                              |
+|------------|----------------------------|--------------------------------------------------------------------------|
+| `formName` | `string`                   | The form's name/alias used as a prefix for field IDs.                    |
+| `formId`   | `string`                   | The DOM `id` of the `<form>` element (used for scoping).                 |
+| `errors`   | `Record<string, string[]>` | Key-value map of field names → arrays of error messages.                 |
 
-**Returns:** `void`
+**Example — Apply backend errors:**
 
-**Example:**
-```javascript
-// Display multiple form errors
-handleErrorsManyForm('user', 'user_form', {
-  email: ['Email is required', 'Invalid format'],
-  password: ['Password too short'],
-  'address.city': ['City is required'],
-  'address.country': ['Country is required']
-});
+```ts
+import { handleErrorsManyForm } from '@wlindabla/form_validator';
 
-// Clear all errors (pass empty object)
-handleErrorsManyForm('user', 'user_form', {});
+// Server returned this error object:
+const serverErrors = {
+  "email": ["This email is already in use.", "Must be a valid email."],
+  "address.city": ["City is required."],
+  "password": ["Password must be at least 8 characters."]
+};
+
+// Form HTML uses IDs: user_email, user_address_city, user_password
+handleErrorsManyForm('user', 'user_registration_form', serverErrors);
 ```
 
-**Field Naming Convention:**
-```
-Form field ID: user_email           → Error key: email
-Form field ID: user_address_city    → Error key: address.city
-Form field ID: user_phone_country   → Error key: phone.country
-```
+**Example — Clear all form errors:**
 
-**Use Cases:**
-- Server-side form validation responses
-- Multi-step form validation
-- Comprehensive error clearing
+```ts
+handleErrorsManyForm('user', 'user_registration_form', {});
+```
 
 ---
 
-#### `clearErrorInput()`
+### `clearErrorInput`
 
-Removes all error messages and validation styling from a specific form field.
+Clears the error state of a **single input field**: removes the `is-invalid` class and deletes its error container from the DOM.
 
-**Signature:**
-```typescript
-function clearErrorInput(
-  inputFieldJQuery: JQuery<HTMLElement>
-): void
+```ts
+function clearErrorInput(inputField: HTMLElement): void
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `inputFieldJQuery` | `JQuery<HTMLElement>` | jQuery reference to the form field |
-
-**Returns:** `void`
+| Parameter    | Type          | Description                          |
+|--------------|---------------|--------------------------------------|
+| `inputField` | `HTMLElement` | The input element to clear. Must have an `id`. |
 
 **Example:**
-```javascript
-// Clear errors for email field
-clearErrorInput(jQuery('#user_email'));
 
-// Clear errors on input event
-jQuery('#user_email').on('input', function() {
-  clearErrorInput(jQuery(this));
+```ts
+import { clearErrorInput } from '@wlindabla/form_validator';
+
+const emailInput = document.getElementById('user_email') as HTMLElement;
+
+emailInput.addEventListener('input', () => {
+  clearErrorInput(emailInput);
 });
 ```
 
-**Operations:**
-- Removes `is-invalid` class
-- Deletes error container from DOM
-- Handles edge cases (missing IDs, etc.)
-
 ---
 
-### Utility Functions
+### `getInputPatternRegex`
 
-#### `getInputPatternRegex()`
+Extracts the `pattern` (or `data-pattern`) attribute from an input element and returns it as a compiled `RegExp` object with the specified flags.
 
-Extracts and converts the `pattern` attribute from an input element to a JavaScript RegExp object.
-
-**Signature:**
-```typescript
+```ts
 function getInputPatternRegex(
-  children: HTMLElement | JQuery<HTMLElement>,
+  children: HTMLElement,
   formParentName: string,
-  flag: string = 'i'
+  flag?: string
 ): RegExp | undefined
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `children` | `HTMLElement \| JQuery<HTMLElement>` | The input or textarea element |
-| `formParentName` | `string` | Form name for logging context |
-| `flag` | `string` | Regex flags: `g`, `i`, `m`, `u`, `y`, `s` |
+| Parameter        | Type          | Default | Description                                              |
+|------------------|---------------|---------|----------------------------------------------------------|
+| `children`       | `HTMLElement` | —       | The input or textarea element to read `pattern` from.    |
+| `formParentName` | `string`      | —       | Descriptive form name for error logging context.         |
+| `flag`           | `string`      | `'i'`   | RegExp flags: any combination of `g`, `i`, `m`, `u`, `y`, `s`. |
 
-**Returns:** RegExp object or undefined if pattern not found
+**Returns:** `RegExp | undefined`
 
 **Example:**
-```javascript
-// HTML
-// <input id="email" name="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">
 
-const input = document.querySelector('#email');
-const regex = getInputPatternRegex(input, 'LoginForm', 'i');
+```ts
+import { getInputPatternRegex } from '@wlindabla/form_validator';
 
-if (regex?.test('user@example.com')) {
-  console.log('✅ Valid email!');
-} else {
-  console.log('❌ Invalid email!');
-}
-```
+const usernameInput = document.querySelector('#user_username') as HTMLInputElement;
+// HTML: <input id="user_username" pattern="^[a-zA-Z0-9_]{4,12}$" />
 
-**React Integration:**
-```jsx
-import React, { useRef } from 'react';
-import { getInputPatternRegex } from 'form-validator';
+const regex = getInputPatternRegex(usernameInput, 'RegistrationForm', 'i');
 
-export function EmailValidator() {
-  const inputRef = useRef(null);
-
-  const validate = () => {
-    if (inputRef.current) {
-      const regex = getInputPatternRegex(inputRef.current, 'MyForm', 'i');
-      const isValid = regex?.test(inputRef.current.value);
-      console.log(isValid ? '✅ Valid' : '❌ Invalid');
-    }
-  };
-
-  return (
-    <>
-      <input
-        ref={inputRef}
-        type="email"
-        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
-      />
-      <button onClick={validate}>Validate</button>
-    </>
-  );
+if (regex && !regex.test(usernameInput.value)) {
+  console.warn('Invalid username format!');
 }
 ```
 
 ---
 
-#### `getAttr()`
+### `getAttr`
 
-Safely retrieves and optionally parses attribute values from DOM elements.
+A safe, typed helper to read an attribute value from a DOM element, with optional JSON parsing and a fallback default.
 
-**Signature:**
-```typescript
+```ts
 function getAttr<T = unknown>(
-  element: HTMLElement | null | undefined | JQuery<HTMLElement>,
+  element: HTMLElement | null | undefined,
   name: string,
-  defaults: unknown = null,
-  toJson: boolean = false
+  defaults?: unknown,
+  toJson?: boolean
 ): T
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `element` | `HTMLElement \| JQuery<HTMLElement>?` | DOM element to query |
-| `name` | `string` | Attribute name to retrieve |
-| `defaults` | `unknown` | Default value if not found |
-| `toJson` | `boolean` | Parse JSON if true |
+| Parameter  | Type                            | Default | Description                                    |
+|------------|---------------------------------|---------|------------------------------------------------|
+| `element`  | `HTMLElement \| null \| undefined` | —    | The DOM element to read from.                  |
+| `name`     | `string`                        | —       | Attribute name to retrieve.                    |
+| `defaults` | `unknown`                       | `null`  | Value returned if the attribute is missing.    |
+| `toJson`   | `boolean`                       | `false` | If `true`, parse the attribute value as JSON.  |
 
-**Returns:** Attribute value or default
+**Returns:** `T` — The attribute value cast to the specified type, or the default.
 
 **Example:**
-```javascript
-// Simple attribute
-const placeholder = getAttr(
-  jQuery('#email'),
-  'placeholder',
-  'Enter email'
-);
 
-// JSON attribute
-const config = getAttr(
-  jQuery('#form'),
-  'data-config',
-  { theme: 'light' },
-  true
-);
-// HTML: <form id="form" data-config='{"theme":"dark"}'>
-// Result: { theme: "dark" }
+```ts
+import { getAttr } from '@wlindabla/form_validator';
+
+const form = document.getElementById('user_form') as HTMLFormElement;
+
+const action = getAttr<string>(form, 'action', '/default-url');
+const maxItems = getAttr<number>(form, 'data-max-items', 10, false);
+const config = getAttr<{ limit: number }>(form, 'data-config', {}, true);
 ```
-
-**Use Cases:**
-- Reading data attributes
-- Parsing JSON configurations
-- Safe attribute access with fallbacks
 
 ---
 
-#### `stringToRegex()`
+### `stringToRegex`
 
-Converts a string representation into a RegExp object with optional flags.
+Converts a regex pattern string into a `RegExp` object with specified flags.
 
-**Signature:**
-```typescript
+```ts
 function stringToRegex(
   regexString: string | null | undefined,
-  flags: FlagRegExp = 'iu'
+  flags?: FlagRegExp
 ): RegExp | undefined
 ```
 
-**Parameters:**
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `regexString` | `string?` | String representation of regex pattern |
-| `flags` | `FlagRegExp` | Regex flags (default: 'iu') |
+| Parameter     | Type                       | Default | Description                              |
+|---------------|----------------------------|---------|------------------------------------------|
+| `regexString` | `string \| null \| undefined` | —    | The regex pattern as a string.           |
+| `flags`       | `FlagRegExp`               | `'iu'`  | RegExp flags to apply.                   |
 
-**Returns:** RegExp object or undefined
+**Returns:** `RegExp | undefined`
 
 **Example:**
-```javascript
-// Basic usage
-const regex = stringToRegex('^[a-z0-9]+@[a-z0-9]+\\.[a-z]{2,}$', 'gi');
 
-if (regex?.test('USER@EXAMPLE.COM')) {
-  console.log('Valid email format');
+```ts
+import { stringToRegex } from '@wlindabla/form_validator';
+
+const pattern = '^[a-zA-Z]{2,50}$';
+const regex = stringToRegex(pattern, 'gi');
+
+if (regex) {
+  console.log(regex.test('Hello')); // true
 }
-
-// With fallback
-const pattern = getUserPattern() || '^[a-zA-Z]+$';
-const userRegex = stringToRegex(pattern, 'i');
 ```
 
 ---
 
-## Type Definitions
+### `getFormAction`
 
-### `ValidatorErrorFieldProps`
+Resolves the submission URL of a form by checking the `action` attribute on the `<form>` element first, then the `formaction` attribute on the submitter button.
 
-```typescript
-interface ValidatorErrorFieldProps {
-  messageerror: string | string[];
-  classnameerror?: string[];
-  id: string;
-  separator_join: string;
+```ts
+function getFormAction(
+  formElement: HTMLFormElement,
+  submitter: HTMLButtonElement | HTMLInputElement
+): string
+```
+
+**Example:**
+
+```ts
+import { getFormAction } from '@wlindabla/form_validator';
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const submitter = e.submitter as HTMLButtonElement;
+  const action = getFormAction(form, submitter);
+  // Use action as the fetch URL
+  fetch(action, { method: 'POST', body: new FormData(form) });
+});
+```
+
+---
+
+### `cancelEvent`
+
+Cancels both the default behavior and immediate propagation of a DOM event.
+
+```ts
+function cancelEvent(event: Event): void
+```
+
+**Example:**
+
+```ts
+import { cancelEvent } from '@wlindabla/form_validator';
+
+submitButton.addEventListener('click', cancelEvent, { capture: true });
+```
+
+---
+
+### `SubmitterHandle`
+
+An **abstract base class** for managing submit button states during form submission. Inspired by Symfony's `AbstractController` pattern.
+
+Extend this class to:
+- Automatically find the submit button for a form
+- Set a loading text (from `data-submits-with` attribute) while submitting
+- Re-enable the button and restore original text on completion
+
+```ts
+abstract class SubmitterHandle {
+  protected constructor(formElement: HTMLFormElement)
+
+  // Public methods:
+  getSubmitterForm(formElement: HTMLFormElement): HTMLSubmitterElement
+  getSubmitsWith(): string
+  resetSubmitterText(): void
+
+  // Protected static helpers:
+  protected static beforeSubmit(submitter: HTMLSubmitterElement): void
+  protected static afterSubmit(submitter: HTMLSubmitterElement): void
 }
 ```
 
-### `FlagRegExp`
+**HTML setup:**
 
-```typescript
-type FlagRegExp = 
-  | 'g' | 'i' | 'm' | 'u' | 'y' | 's'
-  | 'gi' | 'iu' | 'gim'
-  | [other flag combinations];
+```html
+<form id="contact_form" name="contact" action="/submit">
+  <!-- ... form fields ... -->
+  <button type="submit" data-submits-with="Sending... ⏳">
+    Send Message
+  </button>
+</form>
 ```
 
-### `MediaType`
+**Example — Extending SubmitterHandle:**
 
-```typescript
+```ts
+import { SubmitterHandle } from '@wlindabla/form_validator/form-submit';
+
+class ContactFormHandler extends SubmitterHandle {
+  constructor(formElement: HTMLFormElement) {
+    super(formElement);
+  }
+
+  async submit(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+
+    // Disable button and show loading text
+    SubmitterHandle.beforeSubmit(this.submitter);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        body: new FormData(event.target as HTMLFormElement)
+      });
+
+      if (!response.ok) {
+        const errors = await response.json();
+        handleErrorsManyForm('contact', 'contact_form', errors);
+      }
+    } finally {
+      // Re-enable button and restore original text
+      SubmitterHandle.afterSubmit(this.submitter);
+      this.resetSubmitterText();
+    }
+  }
+}
+
+const form = document.getElementById('contact_form') as HTMLFormElement;
+const handler = new ContactFormHandler(form);
+form.addEventListener('submit', (e) => handler.submit(e as SubmitEvent));
+```
+
+**Button lookup order:**
+
+The `getSubmitterForm()` method searches in this order:
+1. Inside the `<form>` element itself
+2. In the form's parent container
+3. Anywhere in the document matching `[type="submit"][form="{formId}"]`
+4. Anywhere in the document matching `[type="submit"][form="{formName}"]`
+
+---
+
+## Types & Interfaces
+
+```ts
+// Supported media types for file validation
 type MediaType = "video" | "document" | "image";
-```
 
-### `FormInputType`
+// Required document subtypes
+type MediaRequiredType = "pdf" | "excel" | "word" | "odf" | "csv";
 
-```typescript
-type FormInputType = 
+// Supported form input types
+type FormInputType =
   | "fqdn" | "file" | "radio" | "checkbox" | "number"
   | "text" | "email" | "password" | "url" | "select"
   | "textarea" | "date" | "tel";
-```
 
-### `HTMLFormChildrenElement`
+// Union of HTML form child elements
+type HTMLFormChildrenElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
-```typescript
-type HTMLFormChildrenElement = 
-  | HTMLInputElement 
-  | HTMLTextAreaElement 
-  | HTMLSelectElement;
-```
+// Supported data input types
+type DataInput = string | string[] | number | null | undefined | File | FileList | Date;
 
-### `DataInput`
+// Valid RegExp flag combinations
+type FlagRegExp = 'g' | 'i' | 'm' | 'u' | 'y' | 's' | 'gi' | 'iu' | 'gim' | /* ... */;
 
-```typescript
-type DataInput = 
-  | string 
-  | string[] 
-  | number 
-  | null 
-  | undefined 
-  | File 
-  | FileList 
-  | Date;
+// Submit element types
+type HTMLSubmitterElement = HTMLButtonElement | HTMLInputElement;
 ```
 
 ---
 
-## Examples
+## Integration Examples by Framework
 
-### Example 1: Real-Time Form Validation
+---
 
-```javascript
-import { 
-  addErrorMessageFieldDom, 
-  clearErrorInput,
-  getInputPatternRegex 
-} from 'form-validator';
+### Vanilla JavaScript
 
-const emailInput = jQuery('#email');
-const passwordInput = jQuery('#password');
+No build tools required. Use the ESM bundle from a CDN or local `dist/`.
 
-// Real-time email validation
-emailInput.on('blur', function() {
-  const value = jQuery(this).val();
-  const errors = [];
-  
-  if (!value) {
-    errors.push('Email is required');
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-    errors.push('Invalid email format');
-  }
-  
-  if (errors.length > 0) {
-    addErrorMessageFieldDom(emailInput, errors);
-  } else {
-    clearErrorInput(emailInput);
-  }
-});
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Form Validator - Vanilla JS</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+</head>
+<body>
+<div class="container mt-4">
+  <form id="registration_form" name="registration" action="/register" method="POST">
+    <div class="mb-3">
+      <label for="registration_email">Email</label>
+      <input
+        id="registration_email"
+        name="email"
+        type="email"
+        class="form-control"
+        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+        data-pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+      />
+    </div>
+    <div class="mb-3">
+      <label for="registration_password">Password</label>
+      <input id="registration_password" name="password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+      Register
+    </button>
+  </form>
+</div>
 
-// Real-time password validation
-passwordInput.on('input', function() {
-  const value = jQuery(this).val();
-  const errors = [];
-  
-  if (value.length < 8) {
-    errors.push('At least 8 characters required');
-  }
-  if (!/[A-Z]/.test(value)) {
-    errors.push('Must contain uppercase letter');
-  }
-  if (!/[0-9]/.test(value)) {
-    errors.push('Must contain number');
-  }
-  
-  if (errors.length > 0) {
-    addErrorMessageFieldDom(passwordInput, errors);
-  } else {
-    clearErrorInput(passwordInput);
-  }
-});
-```
+<script type="module">
+  import {
+    addErrorMessageFieldDom,
+    clearErrorInput,
+    handleErrorsManyForm,
+    getInputPatternRegex
+  } from './dist/esm/index.js';
 
-### Example 2: Server-Side Validation Response
+  const form = document.getElementById('registration_form');
+  const emailInput = document.getElementById('registration_email');
 
-```javascript
-import { handleErrorsManyForm } from 'form-validator';
+  // Clear errors on input
+  emailInput.addEventListener('input', () => clearErrorInput(emailInput));
 
-// Simulating API response
-fetch('/api/register', {
-  method: 'POST',
-  body: JSON.stringify(formData)
-})
-.then(res => res.json())
-.then(data => {
-  if (data.errors) {
-    // Handle validation errors from server
-    handleErrorsManyForm('registration', 'registration_form', {
-      username: data.errors.username || [],
-      email: data.errors.email || [],
-      password: data.errors.password || [],
-      'profile.bio': data.errors.profile_bio || []
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Client-side pattern check
+    const emailRegex = getInputPatternRegex(emailInput, 'RegistrationForm', 'i');
+    if (emailRegex && !emailRegex.test(emailInput.value)) {
+      addErrorMessageFieldDom(emailInput, ['Please enter a valid email address.']);
+      return;
+    }
+
+    // Submit to server
+    const response = await fetch('/register', {
+      method: 'POST',
+      body: new FormData(form)
     });
-  } else {
-    // Clear all errors on success
-    handleErrorsManyForm('registration', 'registration_form', {});
-    console.log('Form submitted successfully!');
-  }
-});
+
+    if (!response.ok) {
+      const errors = await response.json();
+      handleErrorsManyForm('registration', 'registration_form', errors);
+    }
+  });
+</script>
+</body>
+</html>
 ```
 
-### Example 3: React Component with Validation
+---
 
-```jsx
-import React, { useState, useRef } from 'react';
-import { 
-  addErrorMessageFieldDom, 
+### React / Next.js
+
+```tsx
+// components/RegistrationForm.tsx
+import React, { useRef, useEffect } from 'react';
+import {
+  addErrorMessageFieldDom,
   clearErrorInput,
-  getInputPatternRegex 
+  handleErrorsManyForm,
+  getInputPatternRegex
 } from '@wlindabla/form_validator';
 
-export function RegistrationForm() {
-  const [loading, setLoading] = useState(false);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-  const confirmRef = useRef(null);
+export default function RegistrationForm() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
-  const validateField = (ref, validations) => {
-    const errors = [];
-    const value = ref.current?.value;
-
-    for (const validation of validations) {
-      if (!validation.rule(value)) {
-        errors.push(validation.message);
-      }
-    }
-
-    const $field = jQuery(ref.current);
-    if (errors.length > 0) {
-      addErrorMessageFieldDom($field, errors);
-      return false;
-    } else {
-      clearErrorInput($field);
-      return true;
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    const isEmailValid = validateField(emailRef, [
-      {
-        rule: (v) => !!v,
-        message: 'Email is required'
-      },
-      {
-        rule: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
-        message: 'Invalid email format'
-      }
-    ]);
+    if (!formRef.current || !emailRef.current) return;
 
-    const isPasswordValid = validateField(passwordRef, [
-      {
-        rule: (v) => v?.length >= 8,
-        message: 'At least 8 characters required'
-      },
-      {
-        rule: (v) => /[A-Z]/.test(v),
-        message: 'Must contain uppercase letter'
-      },
-      {
-        rule: (v) => /[0-9]/.test(v),
-        message: 'Must contain number'
-      }
-    ]);
-
-    const doPasswordsMatch = validateField(confirmRef, [
-      {
-        rule: (v) => v === passwordRef.current?.value,
-        message: 'Passwords do not match'
-      }
-    ]);
-
-    if (isEmailValid && isPasswordValid && doPasswordsMatch) {
-      try {
-        const response = await fetch('/api/register', {
-          method: 'POST',
-          body: JSON.stringify({
-            email: emailRef.current?.value,
-            password: passwordRef.current?.value
-          })
-        });
-        
-        if (response.ok) {
-          console.log('✅ Registration successful!');
-        }
-      } catch (error) {
-        console.error('Registration failed:', error);
-      }
+    // Client-side validation
+    const emailRegex = getInputPatternRegex(emailRef.current, 'RegistrationForm', 'i');
+    if (emailRegex && !emailRegex.test(emailRef.current.value)) {
+      addErrorMessageFieldDom(emailRef.current, ['Please enter a valid email address.']);
+      return;
     }
 
-    setLoading(false);
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      body: new FormData(formRef.current)
+    });
+
+    if (!response.ok) {
+      const errors: Record<string, string[]> = await response.json();
+      // Maps 'email' → #registration_email, 'password' → #registration_password, etc.
+      handleErrorsManyForm('registration', 'registration_form', errors);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} id="registration_form">
-      <div className="form-group mb-3">
-        <label htmlFor="email">Email:</label>
+    <form
+      id="registration_form"
+      name="registration"
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <div className="mb-3">
+        <label htmlFor="registration_email">Email</label>
         <input
-          ref={emailRef}
-          id="email"
+          id="registration_email"
+          name="email"
           type="email"
+          ref={emailRef}
           className="form-control"
-          placeholder="Enter your email"
+          pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+          onChange={() => clearErrorInput(emailRef.current!)}
         />
       </div>
 
-      <div className="form-group mb-3">
-        <label htmlFor="password">Password:</label>
+      <div className="mb-3">
+        <label htmlFor="registration_password">Password</label>
         <input
+          id="registration_password"
+          name="password"
+          type="password"
           ref={passwordRef}
-          id="password"
-          type="password"
           className="form-control"
-          placeholder="Enter password"
+          onChange={() => clearErrorInput(passwordRef.current!)}
         />
       </div>
 
-      <div className="form-group mb-3">
-        <label htmlFor="confirm">Confirm Password:</label>
-        <input
-          ref={confirmRef}
-          id="confirm"
-          type="password"
-          className="form-control"
-          placeholder="Confirm password"
-        />
-      </div>
-
-      <button type="submit" disabled={loading} className="btn btn-primary">
-        {loading ? 'Registering...' : 'Register'}
+      <button type="submit" className="btn btn-primary" data-submits-with="Registering... ⏳">
+        Register
       </button>
     </form>
   );
 }
 ```
 
-### Example 4: Custom Error Styling
+---
 
-```javascript
-import { addErrorMessageFieldDom } from '@wlindabla/form_validator';
+### Vue.js / Nuxt
 
-const field = jQuery('#username');
+```vue
+<!-- components/RegistrationForm.vue -->
+<template>
+  <form
+    id="registration_form"
+    name="registration"
+    ref="formRef"
+    @submit.prevent="handleSubmit"
+    novalidate
+  >
+    <div class="mb-3">
+      <label for="registration_email">Email</label>
+      <input
+        id="registration_email"
+        name="email"
+        type="email"
+        ref="emailRef"
+        class="form-control"
+        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+        @input="clearErrorInput(emailRef)"
+      />
+    </div>
 
-// Use custom styling
-addErrorMessageFieldDom(
-  field,
-  ['Username is already taken', 'Minimum 4 characters required'],
-  'bg-light-danger border border-2 border-danger rounded p-3'
-);
+    <div class="mb-3">
+      <label for="registration_password">Password</label>
+      <input
+        id="registration_password"
+        name="password"
+        type="password"
+        ref="passwordRef"
+        class="form-control"
+        @input="clearErrorInput(passwordRef)"
+      />
+    </div>
 
-// Custom classes example (with Bootstrap utilities)
-addErrorMessageFieldDom(
-  field,
-  ['Username too short'],
-  'alert alert-danger alert-dismissible fade show'
-);
+    <button
+      type="submit"
+      class="btn btn-primary"
+      data-submits-with="Registering... ⏳"
+    >
+      Register
+    </button>
+  </form>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import {
+  addErrorMessageFieldDom,
+  clearErrorInput,
+  handleErrorsManyForm,
+  getInputPatternRegex
+} from '@wlindabla/form_validator';
+
+const formRef = ref<HTMLFormElement | null>(null);
+const emailRef = ref<HTMLInputElement | null>(null);
+const passwordRef = ref<HTMLInputElement | null>(null);
+
+async function handleSubmit() {
+  if (!formRef.value || !emailRef.value) return;
+
+  const emailRegex = getInputPatternRegex(emailRef.value, 'RegistrationForm', 'i');
+  if (emailRegex && !emailRegex.test(emailRef.value.value)) {
+    addErrorMessageFieldDom(emailRef.value, ['Please enter a valid email address.']);
+    return;
+  }
+
+  const response = await fetch('/api/register', {
+    method: 'POST',
+    body: new FormData(formRef.value)
+  });
+
+  if (!response.ok) {
+    const errors: Record<string, string[]> = await response.json();
+    handleErrorsManyForm('registration', 'registration_form', errors);
+  }
+}
+</script>
 ```
 
 ---
 
-## Best Practices
+### Angular
 
-### ✅ Do
+```ts
+// registration-form.component.ts
+import { Component, ElementRef, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import {
+  addErrorMessageFieldDom,
+  clearErrorInput,
+  handleErrorsManyForm
+} from '@wlindabla/form_validator';
 
-- **Clear errors on focus**: Remove error messages when user starts typing
-```javascript
-field.on('focus', () => clearErrorInput(jQuery(this)));
-```
+@Component({
+  selector: 'app-registration-form',
+  template: `
+    <form id="registration_form" name="registration" (ngSubmit)="onSubmit()" #formRef novalidate>
+      <div class="mb-3">
+        <label for="registration_email">Email</label>
+        <input
+          id="registration_email"
+          name="email"
+          type="email"
+          class="form-control"
+          #emailRef
+          (input)="onInputChange(emailRef)"
+        />
+      </div>
+      <div class="mb-3">
+        <label for="registration_password">Password</label>
+        <input
+          id="registration_password"
+          name="password"
+          type="password"
+          class="form-control"
+          #passwordRef
+          (input)="onInputChange(passwordRef)"
+        />
+      </div>
+      <button type="submit" class="btn btn-primary" data-submits-with="Registering...">
+        Register
+      </button>
+    </form>
+  `
+})
+export class RegistrationFormComponent {
+  @ViewChild('formRef') formRef!: ElementRef<HTMLFormElement>;
+  @ViewChild('emailRef') emailRef!: ElementRef<HTMLInputElement>;
 
-- **Validate on blur**: Perform validation when user leaves the field
-```javascript
-field.on('blur', () => validateAndShowErrors(jQuery(this)));
-```
+  constructor(private http: HttpClient) {}
 
-- **Use semantic HTML**: Always provide ID attributes to form fields
-```html
-<input id="user_email" type="email" required>
-```
+  onInputChange(input: HTMLInputElement): void {
+    clearErrorInput(input);
+  }
 
-- **Combine multiple validators**: Stack validations for comprehensive checks
-```javascript
-const errors = [];
-if (!value) errors.push('Required');
-if (value.length < 8) errors.push('Too short');
-if (!hasNumber) errors.push('Need number');
-addErrorMessageFieldDom(field, errors);
-```
+  onSubmit(): void {
+    const formData = new FormData(this.formRef.nativeElement);
 
-- **Handle edge cases**: Always check for null/undefined
-```javascript
-const value = field.val() || '';
-if (!value.trim()) {
-  // Handle empty field
+    this.http.post('/api/register', formData).subscribe({
+      error: (err) => {
+        const errors: Record<string, string[]> = err.error;
+        handleErrorsManyForm('registration', 'registration_form', errors);
+      }
+    });
+  }
 }
 ```
 
-### ❌ Don't
+---
 
-- **Don't forget field IDs**: All fields must have unique IDs
-```javascript
-// ❌ Bad
-<input type="email">
+### Symfony + Twig
 
-// ✅ Good
-<input id="user_email" type="email">
+The library pairs seamlessly with Symfony's form naming convention (`formName_fieldName`).
+
+**Twig template:**
+
+```twig
+{# templates/registration/index.html.twig #}
+{{ form_start(registrationForm, {
+    'attr': {
+        'id': 'registration_form',
+        'name': 'registration',
+        'novalidate': 'novalidate'
+    }
+}) }}
+
+<div class="mb-3">
+  {{ form_label(registrationForm.email) }}
+  {{ form_widget(registrationForm.email, {
+    'attr': {
+      'class': 'form-control',
+      'pattern': '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
+      'data-pattern': '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
+    }
+  }) }}
+</div>
+
+<div class="mb-3">
+  {{ form_label(registrationForm.password.first) }}
+  {{ form_widget(registrationForm.password.first, {'attr': {'class': 'form-control'}}) }}
+</div>
+
+<button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+  Register
+</button>
+
+{{ form_end(registrationForm) }}
+
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput,
+  getInputPatternRegex,
+  addErrorMessageFieldDom
+} from '/assets/form_validator/dist/esm/index.js';
+
+const form = document.getElementById('registration_form');
+const emailInput = document.getElementById('registration_email');
+
+emailInput?.addEventListener('input', () => clearErrorInput(emailInput));
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const emailRegex = getInputPatternRegex(emailInput, 'RegistrationForm', 'i');
+  if (emailRegex && !emailRegex.test(emailInput.value)) {
+    addErrorMessageFieldDom(emailInput, ['Please enter a valid email address.']);
+    return;
+  }
+
+  const response = await fetch(form.action, {
+    method: 'POST',
+    body: new FormData(form),
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    // data.errors: { "email": ["Already in use."], "password.first": ["Too short."] }
+    // Dot notation is automatically converted: password.first → registration_password_first
+    handleErrorsManyForm('registration', 'registration_form', data.errors);
+  }
+});
+</script>
 ```
 
-- **Don't mix validation approaches**: Use Form Validator consistently
-```javascript
-// ❌ Inconsistent
-addErrorMessageFieldDom(field1, errors);
-field2.classList.add('error'); // Don't mix approaches
+**Symfony controller:**
 
-// ✅ Consistent
-addErrorMessageFieldDom(field1, errors);
-addErrorMessageFieldDom(field2, errors);
-```
+```php
+// src/Controller/RegistrationController.php
+#[Route('/register', name: 'app_register', methods: ['POST'])]
+public function register(Request $request): JsonResponse
+{
+    $form = $this->createForm(RegistrationFormType::class);
+    $form->handleRequest($request);
 
-- **Don't ignore TypeScript warnings**: Use proper types
-```typescript
-// ❌ Loose typing
-const result: any = getAttr(element, 'data-config');
+    if ($form->isSubmitted() && !$form->isValid()) {
+        $errors = [];
+        foreach ($form->getErrors(true, true) as $error) {
+            $fieldName = $error->getOrigin()->getName();
+            $errors[$fieldName][] = $error->getMessage();
+        }
+        return $this->json(['errors' => $errors], 422);
+    }
 
-// ✅ Type safe
-const result: Record<string, unknown> = getAttr(
-  element, 
-  'data-config', 
-  {},
-  true
-);
+    // ... handle valid form
+    return $this->json(['success' => true]);
+}
 ```
 
 ---
 
-## Common Issues & Solutions
+### Laravel + Blade
 
-### Issue: jQuery not found
+```blade
+{{-- resources/views/auth/register.blade.php --}}
+<form
+  id="registration_form"
+  name="registration"
+  action="{{ route('register') }}"
+  method="POST"
+  novalidate
+>
+  @csrf
 
-**Problem:**
+  <div class="mb-3">
+    <label for="registration_email">Email</label>
+    <input
+      id="registration_email"
+      name="email"
+      type="email"
+      class="form-control"
+      pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+      value="{{ old('email') }}"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label for="registration_password">Password</label>
+    <input
+      id="registration_password"
+      name="password"
+      type="password"
+      class="form-control"
+    />
+  </div>
+
+  <button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+    Register
+  </button>
+</form>
+
+@push('scripts')
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput,
+  addErrorMessageFieldDom,
+  getInputPatternRegex
+} from '/js/form_validator/dist/esm/index.js';
+
+const form = document.getElementById('registration_form');
+const emailInput = document.getElementById('registration_email');
+
+emailInput?.addEventListener('input', () => clearErrorInput(emailInput));
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const emailRegex = getInputPatternRegex(emailInput, 'RegistrationForm', 'i');
+  if (emailRegex && !emailRegex.test(emailInput.value)) {
+    addErrorMessageFieldDom(emailInput, ['Please enter a valid email address.']);
+    return;
+  }
+
+  const response = await fetch('{{ route("register") }}', {
+    method: 'POST',
+    body: new FormData(form),
+    headers: {
+      'X-CSRF-TOKEN': '{{ csrf_token() }}',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  });
+
+  if (response.status === 422) {
+    const data = await response.json();
+    // Laravel validation: { errors: { email: ["..."], password: ["..."] } }
+    handleErrorsManyForm('registration', 'registration_form', data.errors);
+  }
+});
+</script>
+@endpush
 ```
-Uncaught ReferenceError: jQuery is not defined
+
+**Laravel controller:**
+
+```php
+// app/Http/Controllers/Auth/RegisterController.php
+public function store(Request $request): JsonResponse
+{
+    $validated = $request->validate([
+        'email'    => ['required', 'email', 'unique:users'],
+        'password' => ['required', 'min:8', 'confirmed'],
+    ]);
+
+    // create user...
+
+    return response()->json(['success' => true]);
+}
 ```
 
-**Solution:**
-Ensure jQuery is loaded before Form Validator:
+> Laravel's validation JSON response is already in the format `{ errors: { field: [messages] } }` — compatible out of the box with `handleErrorsManyForm`.
+
+---
+
+### Django + Jinja2
+
 ```html
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="form-validator.js"></script>
+<!-- templates/registration/register.html -->
+{% extends "base.html" %}
+{% block content %}
+
+<form
+  id="registration_form"
+  name="registration"
+  action="{% url 'register' %}"
+  method="POST"
+  novalidate
+>
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label for="registration_email">Email</label>
+    <input
+      id="registration_email"
+      name="email"
+      type="email"
+      class="form-control"
+      pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    />
+  </div>
+
+  <div class="mb-3">
+    <label for="registration_password">Password</label>
+    <input
+      id="registration_password"
+      name="password"
+      type="password"
+      class="form-control"
+    />
+  </div>
+
+  <button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+    Register
+  </button>
+</form>
+
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput,
+  addErrorMessageFieldDom
+} from '/static/js/form_validator/dist/esm/index.js';
+
+const form = document.getElementById('registration_form');
+const emailInput = document.getElementById('registration_email');
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+emailInput?.addEventListener('input', () => clearErrorInput(emailInput));
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const response = await fetch('{% url "register" %}', {
+    method: 'POST',
+    body: new FormData(form),
+    headers: { 'X-CSRFToken': csrfToken }
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    // Django returns: { "email": ["Enter a valid email address."] }
+    handleErrorsManyForm('registration', 'registration_form', data);
+  }
+});
+</script>
+
+{% endblock %}
 ```
 
-### Issue: Errors not displaying
+**Django view:**
 
-**Problem:** Error container created but not visible
+```python
+# views.py
+import json
+from django.http import JsonResponse
+from django.views import View
+from .forms import RegistrationForm
 
-**Solution:** Check field ID exists and is unique:
-```javascript
-console.log(jQuery('#field_id').attr('id')); // Should print the ID
+class RegisterView(View):
+    def post(self, request):
+        form = RegistrationForm(request.POST)
+        if not form.is_valid():
+            # Convert Django errors to { field: [messages] } format
+            errors = {
+                field: list(messages)
+                for field, messages in form.errors.items()
+                if field != '__all__'
+            }
+            return JsonResponse(errors, status=422)
+
+        form.save()
+        return JsonResponse({'success': True})
 ```
-
-### Issue: Multiple error messages duplicating
-
-**Problem:** Old errors not cleared before adding new ones
-
-**Solution:** Clear errors first:
-```javascript
-// ❌ May duplicate
-addErrorMessageFieldDom(field, newErrors);
-
-// ✅ Correct approach
-clearErrorInput(field);
-addErrorMessageFieldDom(field, newErrors);
-```
-
-
-
-## Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ---
 
-## Support & Contact
+### PHP + HTML (No Framework)
 
-<div align="center">
+```php
+<?php
+// register.php
+header('Content-Type: text/html; charset=UTF-8');
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Registration</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container mt-4">
+  <form
+    id="registration_form"
+    name="registration"
+    action="register_handler.php"
+    method="POST"
+    novalidate
+  >
+    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? '' ?>" />
 
-**Created by:** AGBOKOUDJO Franck
+    <div class="mb-3">
+      <label for="registration_email">Email</label>
+      <input
+        id="registration_email"
+        name="email"
+        type="email"
+        class="form-control"
+        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+        data-pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+      />
+    </div>
 
-📧 **Email:** [internationaleswebservices@gmail.com](mailto:internationaleswebservices@gmail.com)
+    <div class="mb-3">
+      <label for="registration_password">Password</label>
+      <input
+        id="registration_password"
+        name="password"
+        type="password"
+        class="form-control"
+      />
+    </div>
 
-📱 **Phone:** +229 0167 25 18 86
-
-🔗 **LinkedIn:** [INTERNATIONALES WEB APPS & SERVICES](https://www.linkedin.com/in/internationales-web-services-120520193/)
-
-🐙 **GitHub:** [@Agbokoudjo](https://github.com/Agbokoudjo/form_validator)
-
-🏢 **Company:** INTERNATIONALES WEB APPS & SERVICES
-
+    <button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+      Register
+    </button>
+  </form>
 </div>
 
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput,
+  addErrorMessageFieldDom,
+  getInputPatternRegex
+} from './assets/form_validator/dist/esm/index.js';
+
+const form = document.getElementById('registration_form');
+const emailInput = document.getElementById('registration_email');
+
+emailInput?.addEventListener('input', () => clearErrorInput(emailInput));
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const emailRegex = getInputPatternRegex(emailInput, 'RegistrationForm', 'i');
+  if (emailRegex && !emailRegex.test(emailInput.value)) {
+    addErrorMessageFieldDom(emailInput, ['Please enter a valid email address.']);
+    return;
+  }
+
+  const response = await fetch('register_handler.php', {
+    method: 'POST',
+    body: new FormData(form)
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    handleErrorsManyForm('registration', 'registration_form', data.errors);
+  }
+});
+</script>
+</body>
+</html>
+```
+
+```php
+<?php
+// register_handler.php
+header('Content-Type: application/json');
+
+$errors = [];
+
+$email = trim($_POST['email'] ?? '');
+$password = $_POST['password'] ?? '';
+
+if (empty($email)) {
+    $errors['email'][] = 'Email is required.';
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors['email'][] = 'Please enter a valid email address.';
+}
+
+if (strlen($password) < 8) {
+    $errors['password'][] = 'Password must be at least 8 characters.';
+}
+
+if (!empty($errors)) {
+    http_response_code(422);
+    echo json_encode(['errors' => $errors]);
+    exit;
+}
+
+// ... process registration
+echo json_encode(['success' => true]);
+```
+
 ---
 
-<div align="center">
+### Java + Thymeleaf / JSP
 
-## License
+**Thymeleaf template:**
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```html
+<!-- src/main/resources/templates/registration.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Registration</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container mt-4">
+  <form
+    id="registration_form"
+    name="registration"
+    th:action="@{/register}"
+    method="POST"
+    novalidate
+  >
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-### Made with ❤️ for the developer community
+    <div class="mb-3">
+      <label for="registration_email">Email</label>
+      <input
+        id="registration_email"
+        name="email"
+        type="email"
+        class="form-control"
+        pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+      />
+    </div>
 
+    <div class="mb-3">
+      <label for="registration_password">Password</label>
+      <input
+        id="registration_password"
+        name="password"
+        type="password"
+        class="form-control"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-primary" data-submits-with="Registering... ⏳">
+      Register
+    </button>
+  </form>
 </div>
 
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput,
+  addErrorMessageFieldDom
+} from '/js/form_validator/dist/esm/index.js';
+
+const form = document.getElementById('registration_form');
+const emailInput = document.getElementById('registration_email');
+const csrfToken = document.querySelector('[name="_csrf"]').value;
+
+emailInput?.addEventListener('input', () => clearErrorInput(emailInput));
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const response = await fetch('/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-TOKEN': csrfToken
+    },
+    body: JSON.stringify({
+      email: emailInput.value,
+      password: document.getElementById('registration_password').value
+    })
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    // Spring Boot BindingResult errors mapped to { field: [messages] }
+    handleErrorsManyForm('registration', 'registration_form', data.errors);
+  }
+});
+</script>
+</body>
+</html>
+```
+
+**Spring Boot controller:**
+
+```java
+// RegistrationController.java
+@RestController
+@RequestMapping("/register")
+public class RegistrationController {
+
+    @PostMapping
+    public ResponseEntity<?> register(
+        @Valid @RequestBody RegistrationRequest request,
+        BindingResult bindingResult
+    ) {
+        if (bindingResult.hasErrors()) {
+            Map<String, List<String>> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error ->
+                errors.computeIfAbsent(error.getField(), k -> new ArrayList<>())
+                      .add(error.getDefaultMessage())
+            );
+            return ResponseEntity.unprocessableEntity().body(Map.of("errors", errors));
+        }
+        // ... create user
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+}
+```
+
 ---
 
-**Last Updated:** November 2025
-**Version:** 2.3.0
+### C++ + HTML (WebAssembly / Emscripten)
+
+When building C++ applications compiled to **WebAssembly** with Emscripten, you can use this library in the JavaScript glue layer to handle form errors reported by your C++ validation logic.
+
+**C++ validation (compiled to WASM):**
+
+```cpp
+// validation.cpp
+#include <emscripten/bind.h>
+#include <string>
+#include <map>
+#include <vector>
+#include <regex>
+
+using namespace emscripten;
+
+struct ValidationResult {
+    bool valid;
+    std::map<std::string, std::vector<std::string>> errors;
+};
+
+ValidationResult validateRegistration(const std::string& email, const std::string& password) {
+    ValidationResult result;
+    result.valid = true;
+
+    std::regex emailRegex(R"(^[^\s@]+@[^\s@]+\.[^\s@]+$)");
+    if (!std::regex_match(email, emailRegex)) {
+        result.errors["email"].push_back("Please enter a valid email address.");
+        result.valid = false;
+    }
+
+    if (password.length() < 8) {
+        result.errors["password"].push_back("Password must be at least 8 characters.");
+        result.valid = false;
+    }
+
+    return result;
+}
+
+// Export to JavaScript via Emscripten
+EMSCRIPTEN_BINDINGS(validator) {
+    emscripten::function("validateRegistration", &validateRegistration);
+}
+```
+
+**JavaScript / HTML integration:**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>WASM + Form Validator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container mt-4">
+  <form id="registration_form" name="registration" novalidate>
+    <div class="mb-3">
+      <label for="registration_email">Email</label>
+      <input id="registration_email" name="email" type="email" class="form-control" />
+    </div>
+    <div class="mb-3">
+      <label for="registration_password">Password</label>
+      <input id="registration_password" name="password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary" data-submits-with="Validating... ⏳">
+      Register
+    </button>
+  </form>
+</div>
+
+<script src="validation.js"></script>  <!-- Emscripten-generated glue -->
+<script type="module">
+import {
+  handleErrorsManyForm,
+  clearErrorInput
+} from '/js/form_validator/dist/esm/index.js';
+
+// Wait for WASM module to load
+Module.onRuntimeInitialized = () => {
+  const form = document.getElementById('registration_form');
+  const emailInput = document.getElementById('registration_email');
+  const passwordInput = document.getElementById('registration_password');
+
+  emailInput.addEventListener('input', () => clearErrorInput(emailInput));
+  passwordInput.addEventListener('input', () => clearErrorInput(passwordInput));
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Call C++ validation via WASM
+    const result = Module.validateRegistration(
+      emailInput.value,
+      passwordInput.value
+    );
+
+    if (!result.valid) {
+      // Convert WASM result errors to JS object
+      const errors = {};
+      for (const [field, messages] of Object.entries(result.errors)) {
+        errors[field] = messages;
+      }
+      handleErrorsManyForm('registration', 'registration_form', errors);
+    } else {
+      // Proceed with form submission
+      fetch('/register', { method: 'POST', body: new FormData(form) });
+    }
+  });
+};
+</script>
+</body>
+</html>
+```
+
+---
+
+## 🔑 Field ID Convention
+
+All DOM functions rely on the following ID convention for fields:
+
+```
+{formName}_{fieldKey}
+```
+
+| Form name       | Field key         | Expected DOM ID                      |
+|-----------------|-------------------|--------------------------------------|
+| `registration`  | `email`           | `registration_email`                 |
+| `registration`  | `address.city`    | `registration_address_city`          |
+| `user`          | `profile.phone`   | `user_profile_phone`                 |
+
+> Dot notation (e.g., `address.city`) is automatically converted to underscores (`address_city`) by `handleErrorsManyForm`.
+
+---
+
+## 🛡️ Accessibility
+
+- Error containers are inserted directly after the invalid field using `insertAdjacentElement('afterend', ...)`, keeping them adjacent in the DOM tab order.
+- The `is-invalid` class follows Bootstrap's convention, which works alongside native `aria-invalid` attributes you may add.
+- Error `<small>` elements use the `invalid-feedback d-block` classes to ensure they are always visible, not just on focus.
+
+---
+
+## 📄 License
+
+MIT © [AGBOKOUDJO Franck](mailto:internationaleswebservices@gmail.com) — [INTERNATIONALES WEB APPS & SERVICES](https://www.linkedin.com/in/internationales-web-services-120520193/)
+
+> GitHub: [https://github.com/Agbokoudjo/form_validator](https://github.com/Agbokoudjo/form_validator)

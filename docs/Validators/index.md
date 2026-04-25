@@ -828,6 +828,7 @@ console.log(v?.formErrorStore.getFieldErrors('username'));
 | `'password'` | Password field |
 | `'tel'` | Phone number |
 | `'url'` | URL field |
+| `'fqdn'` | FQDN field |
 | `'date'` | Date field |
 | `'textarea'` | Text area |
 | `'number'` | Numeric field |
@@ -958,6 +959,17 @@ form.addEventListener('field:validation:failed', (e: CustomEvent) => {
 
   targetChildrenForm.classList.add('is-invalid');
 });
+
+form.addEventListener('input', (event) => {
+        const target = event.target;
+        if ((target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement)
+             && target.type !== "file") {
+
+            controller.clearErrorDataChildren(target);
+           
+        }
+    });
 
 form.addEventListener('field:validation:success', (e: CustomEvent) => {
   const { targetChildrenForm } = e.detail;
@@ -1594,7 +1606,7 @@ window.addEventListener('DOMContentLoaded', () => {
   __form.on(FieldValidationFailed, (event) => {
     const data = event.originalEvent.detail;
     form_validate.addErrorMessageChildrenForm(
-      jQuery(data.targetChildrenForm),
+      data.targetChildrenForm,
       data.message,
       'container-div-error-message'
     );
