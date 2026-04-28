@@ -19,7 +19,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "keywords": [
     "jquery",
     "typescript",
@@ -59,116 +59,265 @@
   ],
   "exports": {
     ".": {
-      "import": { "types": "./dist/index.d.ts", "default": "./dist/esm/index.js" },
-      "require": { "types": "./dist/index.d.ts", "default": "./dist/cjs/index.js" }
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
     },
     "./cache": {
-      "import": { "types": "./dist/cache/index.d.ts", "default": "./dist/esm/cache/index.js" },
-      "require": { "types": "./dist/cache/index.d.ts", "default": "./dist/cjs/cache/index.js" }
+      "import": {
+        "types": "./dist/cache/index.d.ts",
+        "default": "./dist/esm/cache/index.js"
+      },
+      "require": {
+        "types": "./dist/cache/index.d.ts",
+        "default": "./dist/cjs/cache/index.js"
+      }
     },
     "./collection": {
-      "import": { "types": "./dist/collection/index.d.ts", "default": "./dist/esm/collection/index.js" },
-      "require": { "types": "./dist/collection/index.d.ts", "default": "./dist/cjs/collection/index.js" }
+      "import": {
+        "types": "./dist/collection/index.d.ts",
+        "default": "./dist/esm/collection/index.js"
+      },
+      "require": {
+        "types": "./dist/collection/index.d.ts",
+        "default": "./dist/cjs/collection/index.js"
+      }
     },
     "./formatting": {
-      "import": { "types": "./dist/formatting/index.d.ts", "default": "./dist/esm/formatting/index.js" },
-      "require": { "types": "./dist/formatting/index.d.ts", "default": "./dist/cjs/formatting/index.js" }
+      "import": {
+        "types": "./dist/formatting/index.d.ts",
+        "default": "./dist/esm/formatting/index.js"
+      },
+      "require": {
+        "types": "./dist/formatting/index.d.ts",
+        "default": "./dist/cjs/formatting/index.js"
+      }
     },
     "./form-submit": {
-      "import": { "types": "./dist/form-submit/index.d.ts", "default": "./dist/esm/form-submit/index.js" },
-      "require": { "types": "./dist/form-submit/index.d.ts", "default": "./dist/cjs/form-submit/index.js" }
+      "import": {
+        "types": "./dist/form-submit/index.d.ts",
+        "default": "./dist/esm/form-submit/index.js"
+      },
+      "require": {
+        "types": "./dist/form-submit/index.d.ts",
+        "default": "./dist/cjs/form-submit/index.js"
+      }
     },
     "./form-submit/contracts": {
-      "import": { "types": "./dist/form-submit/contracts/index.d.ts", "default": "./dist/esm/form-submit/contracts/index.js" },
-      "require": { "types": "./dist/form-submit/contracts/index.d.ts", "default": "./dist/cjs/form-submit/contracts/index.js" }
+      "import": {
+        "types": "./dist/form-submit/contracts/index.d.ts",
+        "default": "./dist/esm/form-submit/contracts/index.js"
+      },
+      "require": {
+        "types": "./dist/form-submit/contracts/index.d.ts",
+        "default": "./dist/cjs/form-submit/contracts/index.js"
+      }
     },
     "./form-submit/events": {
-      "import": { "types": "./dist/form-submit/events/index.d.ts", "default": "./dist/esm/form-submit/events/index.js" },
-      "require": { "types": "./dist/form-submit/events/index.d.ts", "default": "./dist/cjs/form-submit/events/index.js" }
+      "import": {
+        "types": "./dist/form-submit/events/index.d.ts",
+        "default": "./dist/esm/form-submit/events/index.js"
+      },
+      "require": {
+        "types": "./dist/form-submit/events/index.d.ts",
+        "default": "./dist/cjs/form-submit/events/index.js"
+      }
     },
     "./subscriber": {
-      "import": { "types": "./dist/subscriber/index.d.ts", "default": "./dist/esm/subscriber/index.js" },
-      "require": { "types": "./dist/subscriber/index.d.ts", "default": "./dist/cjs/subscriber/index.js" }
+      "import": {
+        "types": "./dist/subscriber/index.d.ts",
+        "default": "./dist/esm/subscriber/index.js"
+      },
+      "require": {
+        "types": "./dist/subscriber/index.d.ts",
+        "default": "./dist/cjs/subscriber/index.js"
+      }
     },
     "./translation": {
-      "import": { "types": "./dist/translation/index.d.ts", "default": "./dist/esm/translation/index.js" },
-      "require": { "types": "./dist/translation/index.d.ts", "default": "./dist/cjs/translation/index.js" }
+      "import": {
+        "types": "./dist/translation/index.d.ts",
+        "default": "./dist/esm/translation/index.js"
+      },
+      "require": {
+        "types": "./dist/translation/index.d.ts",
+        "default": "./dist/cjs/translation/index.js"
+      }
     },
     "./user": {
-      "import": { "types": "./dist/user/index.d.ts", "default": "./dist/esm/user/index.js" },
-      "require": { "types": "./dist/user/index.d.ts", "default": "./dist/cjs/user/index.js" }
+      "import": {
+        "types": "./dist/user/index.d.ts",
+        "default": "./dist/esm/user/index.js"
+      },
+      "require": {
+        "types": "./dist/user/index.d.ts",
+        "default": "./dist/cjs/user/index.js"
+      }
     },
     "./utils": {
-      "import": { "types": "./dist/utils/index.d.ts", "default": "./dist/esm/utils/index.js" },
-      "require": { "types": "./dist/utils/index.d.ts", "default": "./dist/cjs/utils/index.js" }
+      "import": {
+        "types": "./dist/utils/index.d.ts",
+        "default": "./dist/esm/utils/index.js"
+      },
+      "require": {
+        "types": "./dist/utils/index.d.ts",
+        "default": "./dist/cjs/utils/index.js"
+      }
     },
     "./validation": {
-      "import": { "types": "./dist/validation/index.d.ts", "default": "./dist/esm/validation/index.js" },
-      "require": { "types": "./dist/validation/index.d.ts", "default": "./dist/cjs/validation/index.js" }
+      "import": {
+        "types": "./dist/validation/index.d.ts",
+        "default": "./dist/esm/validation/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/index.d.ts",
+        "default": "./dist/cjs/validation/index.js"
+      }
     },
     "./validation/core": {
-      "import": { "types": "./dist/validation/core/index.d.ts", "default": "./dist/esm/validation/core/index.js" },
-      "require": { "types": "./dist/validation/core/index.d.ts", "default": "./dist/cjs/validation/core/index.js" }
+      "import": {
+        "types": "./dist/validation/core/index.d.ts",
+        "default": "./dist/esm/validation/core/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/core/index.d.ts",
+        "default": "./dist/cjs/validation/core/index.js"
+      }
     },
     "./validation/core/router": {
-      "import": { "types": "./dist/validation/core/router/index.d.ts", "default": "./dist/esm/validation/core/router/index.js" },
-      "require": { "types": "./dist/validation/core/router/index.d.ts", "default": "./dist/cjs/validation/core/router/index.js" }
+      "import": {
+        "types": "./dist/validation/core/router/index.d.ts",
+        "default": "./dist/esm/validation/core/router/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/core/router/index.d.ts",
+        "default": "./dist/cjs/validation/core/router/index.js"
+      }
     },
     "./validation/core/adapter": {
-      "import": { "types": "./dist/validation/core/adapter/index.d.ts", "default": "./dist/esm/validation/core/adapter/index.js" },
-      "require": { "types": "./dist/validation/core/adapter/index.d.ts", "default": "./dist/cjs/validation/core/adapter/index.js" }
+      "import": {
+        "types": "./dist/validation/core/adapter/index.d.ts",
+        "default": "./dist/esm/validation/core/adapter/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/core/adapter/index.d.ts",
+        "default": "./dist/cjs/validation/core/adapter/index.js"
+      }
     },
     "./validation/rules": {
-      "import": { "types": "./dist/validation/rules/index.d.ts", "default": "./dist/esm/validation/rules/index.js" },
-      "require": { "types": "./dist/validation/rules/index.d.ts", "default": "./dist/cjs/validation/rules/index.js" }
+      "import": {
+        "types": "./dist/validation/rules/index.d.ts",
+        "default": "./dist/esm/validation/rules/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/rules/index.d.ts",
+        "default": "./dist/cjs/validation/rules/index.js"
+      }
     },
     "./validation/rules/choice": {
-      "import": { "types": "./dist/validation/rules/choice/index.d.ts", "default": "./dist/esm/validation/rules/choice/index.js" },
-      "require": { "types": "./dist/validation/rules/choice/index.d.ts", "default": "./dist/cjs/validation/rules/choice/index.js" }
+      "import": {
+        "types": "./dist/validation/rules/choice/index.d.ts",
+        "default": "./dist/esm/validation/rules/choice/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/rules/choice/index.d.ts",
+        "default": "./dist/cjs/validation/rules/choice/index.js"
+      }
     },
     "./validation/rules/file": {
-      "import": { "types": "./dist/validation/rules/file/index.d.ts", "default": "./dist/esm/validation/rules/file/index.js" },
-      "require": { "types": "./dist/validation/rules/file/index.d.ts", "default": "./dist/cjs/validation/rules/file/index.js" }
+      "import": {
+        "types": "./dist/validation/rules/file/index.d.ts",
+        "default": "./dist/esm/validation/rules/file/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/rules/file/index.d.ts",
+        "default": "./dist/cjs/validation/rules/file/index.js"
+      }
     },
     "./validation/rules/text": {
-      "import": { "types": "./dist/validation/rules/text/index.d.ts", "default": "./dist/esm/validation/rules/text/index.js" },
-      "require": { "types": "./dist/validation/rules/text/index.d.ts", "default": "./dist/cjs/validation/rules/text/index.js" }
+      "import": {
+        "types": "./dist/validation/rules/text/index.d.ts",
+        "default": "./dist/esm/validation/rules/text/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/rules/text/index.d.ts",
+        "default": "./dist/cjs/validation/rules/text/index.js"
+      }
     }
   },
-
   "typesVersions": {
     "*": {
-      "cache":                    ["./dist/cache/index.d.ts"],
-      "collection":               ["./dist/collection/index.d.ts"],
-      "formatting":               ["./dist/formatting/index.d.ts"],
-      "form-submit":              ["./dist/form-submit/index.d.ts"],
-      "form-submit/contracts":    ["./dist/form-submit/contracts/index.d.ts"],
-      "form-submit/events":       ["./dist/form-submit/events/index.d.ts"],
-      "subscriber":               ["./dist/subscriber/index.d.ts"],
-      "translation":              ["./dist/translation/index.d.ts"],
-      "user":                     ["./dist/user/index.d.ts"],
-      "utils":                    ["./dist/utils/index.d.ts"],
-      "validation":               ["./dist/validation/index.d.ts"],
-      "validation/core":          ["./dist/validation/core/index.d.ts"],
-      "validation/core/router":   ["./dist/validation/core/router/index.d.ts"],
-      "validation/core/adapter":  ["./dist/validation/core/adapter/index.d.ts"],
-      "validation/rules/index":   ["./dist/validation/rules/index.d.ts"],
-      "validation/rules/choice":  ["./dist/validation/rules/choice/index.d.ts"],
-      "validation/rules/file":    ["./dist/validation/rules/file/index.d.ts"],
-      "validation/rules/text":    ["./dist/validation/rules/text/index.d.ts"]
+      "cache": [
+        "./dist/cache/index.d.ts"
+      ],
+      "collection": [
+        "./dist/collection/index.d.ts"
+      ],
+      "formatting": [
+        "./dist/formatting/index.d.ts"
+      ],
+      "form-submit": [
+        "./dist/form-submit/index.d.ts"
+      ],
+      "form-submit/contracts": [
+        "./dist/form-submit/contracts/index.d.ts"
+      ],
+      "form-submit/events": [
+        "./dist/form-submit/events/index.d.ts"
+      ],
+      "subscriber": [
+        "./dist/subscriber/index.d.ts"
+      ],
+      "translation": [
+        "./dist/translation/index.d.ts"
+      ],
+      "user": [
+        "./dist/user/index.d.ts"
+      ],
+      "utils": [
+        "./dist/utils/index.d.ts"
+      ],
+      "validation": [
+        "./dist/validation/index.d.ts"
+      ],
+      "validation/core": [
+        "./dist/validation/core/index.d.ts"
+      ],
+      "validation/core/router": [
+        "./dist/validation/core/router/index.d.ts"
+      ],
+      "validation/core/adapter": [
+        "./dist/validation/core/adapter/index.d.ts"
+      ],
+      "validation/rules/index": [
+        "./dist/validation/rules/index.d.ts"
+      ],
+      "validation/rules/choice": [
+        "./dist/validation/rules/choice/index.d.ts"
+      ],
+      "validation/rules/file": [
+        "./dist/validation/rules/file/index.d.ts"
+      ],
+      "validation/rules/text": [
+        "./dist/validation/rules/text/index.d.ts"
+      ]
     }
   },
   "scripts": {
     "dev": "vite",
     "prepare": "yarn build",
     "build:types": "tsc --build",
-    "build:js":    "tsup",
-    "build":       "yarn clean && yarn build:js && yarn build:types",
+    "build:js": "tsup",
+    "build": "yarn clean && yarn build:js && yarn build:types",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "prepublishOnly": "yarn clean && yarn build && yarn lint",
     "lint": "eslint .",
-    "type-check":  "tsc --noEmit"
+    "type-check": "tsc --noEmit"
   },
   "files": [
     "dist",
@@ -185,19 +334,19 @@
     "@types/xlsx": "^0.0.36",
     "jquery": "^4.0.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "vite": "^8.0.1"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.10"
   },
   "dependencies": {
-    "@vitejs/plugin-legacy": "^8.0.0",
-    "@wlindabla/event_dispatcher": "^1.1.0",
-    "@wlindabla/http_client": "^1.1.1",
+    "@vitejs/plugin-legacy": "^8.0.1",
+    "@wlindabla/event_dispatcher": "^1.1.4",
+    "@wlindabla/http_client": "^1.1.3",
     "animate.css": "^4.1.1",
     "jszip": "^3.10.1",
-    "libphonenumber-js": "^1.12.40",
+    "libphonenumber-js": "^1.12.42",
     "lodash.debounce": "^4.0.8",
     "papaparse": "^5.5.3",
-    "pdfjs-dist": "^5.5.207",
+    "pdfjs-dist": "^5.7.284",
     "sweetalert2": "^11.26.24",
     "xlsx": "^0.18.5"
   },

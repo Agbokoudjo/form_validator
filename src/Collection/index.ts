@@ -53,7 +53,7 @@ export class SymfonyFieldCollectionManager implements FieldCollectionInterface {
         return SymfonyFieldCollectionManager.m_instance_Manager;
     }
 
-    /**
+    /** 
      * Initializes event listeners using event delegation.
      * * @param class_btn The CSS selector for the "Add" button.
      * @param subject The DOM context to attach listeners to (Default: document).

@@ -74,7 +74,7 @@ import {
   deepMergeAllExtended,
   type MergeArrayStrategy,
   type MergeObjects
-} from 'deep-merge-utils';
+} from '@wlindabla/form_validator/utils';
 ```
 
 ---

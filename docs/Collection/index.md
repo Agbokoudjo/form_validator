@@ -1,54 +1,640 @@
-::: {#wlindabla-field-collection-manager .section}
-## 📌 WlindablaFieldCollectionManager
+# `SymfonyFieldCollectionManager` — Documentation
 
-This class helps dynamically add and remove fields in a form collection
-using jQuery. It's ideal for Symfony forms using `CollectionType`.
+> Part of the [`@wlindabla/form_validator`](https://www.npmjs.com/package/@wlindabla/form_validator) library  
+> Author: **AGBOKOUDJO Franck** — [internationaleswebservices@gmail.com](mailto:internationaleswebservices@gmail.com)  
+> Company: **INTERNATIONALES WEB APPS & SERVICES**  
+> License: MIT
 
-### Key Features
+---
 
--   Singleton instance pattern
--   Handles dynamic collection forms
--   Custom event triggers after add/remove
--   Flexible integration via prototype system
+## Table of Contents
 
-### Events to Listen
+- [`SymfonyFieldCollectionManager` — Documentation](#symfonyfieldcollectionmanager--documentation)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Symfony Side Setup](#symfony-side-setup)
+    - [1. Define your collection in your `FormType`](#1-define-your-collection-in-your-formtype)
+    - [2. Render the collection in Twig](#2-render-the-collection-in-twig)
+  - [HTML Structure](#html-structure)
+  - [JavaScript / TypeScript Usage](#javascript--typescript-usage)
+    - [Basic Initialization](#basic-initialization)
+    - [Custom CSS Selector](#custom-css-selector)
+    - [Scoped Context](#scoped-context)
+  - [API Reference](#api-reference)
+    - [`getInstance()`](#getinstance)
+    - [`init(class_btn?, subject?)`](#initclass_btn-subject)
+    - [`addFieldToCollection(target)`](#addfieldtocollectiontarget)
+    - [`addRemoveButtonToField(containerRow)`](#addremovebuttontofieldcontainerrow)
+    - [`removeFieldFromCollection(target_remove)`](#removefieldfromcollectiontarget_remove)
+    - [`getCollectionCounters(container_id)`](#getcollectioncounterscontainer_id)
+  - [Custom Events](#custom-events)
+    - [Listening to Events](#listening-to-events)
+  - [Integration with Third-Party Widgets](#integration-with-third-party-widgets)
+    - [Select2](#select2)
+    - [Flatpickr](#flatpickr)
+    - [TomSelect](#tomselect)
+  - [Edit Forms — Avoiding Index Collisions](#edit-forms--avoiding-index-collisions)
+  - [Styling Guide](#styling-guide)
+    - [Example Custom Styles](#example-custom-styles)
+  - [Full Working Example](#full-working-example)
+    - [Symfony FormType](#symfony-formtype)
+    - [Twig Template](#twig-template)
+    - [JavaScript Entry Point](#javascript-entry-point)
+  - [Extending the Class](#extending-the-class)
+  - [FAQ](#faq)
+  - [Changelog](#changelog)
+    - [v3.2.0](#v320)
+    - [v3.1.x](#v31x)
+    - [v3.0.x](#v30x)
+  - [Related Packages](#related-packages)
+  - [License](#license)
 
-  Event Name                                       Description
-  ------------------------------------------------ ---------------------------------------------------------
-  `wlindabla-collection-item-added`                Fired after a new field is added
-  `wlindabla-admin-append-form-element`            Triggered when the new element is inserted into the DOM
-  `wlindabla-collection-item-deleted`              Fired before a field is removed
-  `wlindabla-collection-item-deleted-successful`   Fired after field is successfully removed
+---
 
-### Example Usage
+## Overview
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const manager = WlindablaFieldCollectionManager.getInstance();
-      manager.init('.wlindabla-collection-add', document);
+`SymfonyFieldCollectionManager` is a TypeScript/JavaScript class that **automates the management of dynamic form field collections** in Symfony applications.
 
-      document.addEventListener('wlindabla-collection-item-added', (e) => {
-        console.log('Item added:', e.target);
-      });
+It is specifically designed to work with [Symfony's `CollectionType`](https://symfony.com/doc/current/reference/forms/types/collection.html) form field, which exposes an HTML `data-prototype` attribute to allow JavaScript to clone and inject new form rows dynamically.
+
+**Key features:**
+
+- Zero jQuery dependency — pure Vanilla JS
+- Event delegation (one listener for unlimited rows)
+- Singleton pattern — safe to use across multiple files
+- Prototype cloning with correct `id` and `name` attribute replacement
+- Fade-out animation on row removal
+- Built-in index collision prevention on Edit forms
+- Custom DOM events for integration with Select2, Flatpickr, TomSelect, etc.
+- TypeScript types included
+
+---
+
+## Installation
+
+```bash
+# npm
+npm install @wlindabla/form_validator
+
+# yarn
+yarn add @wlindabla/form_validator
+
+# pnpm
+pnpm add @wlindabla/form_validator
+```
+
+---
+
+## Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Symfony | 5.x / 6.x / 7.x |
+| Node.js | >= 16 |
+| TypeScript (optional) | >= 4.x |
+| Browser support | All modern browsers (Chrome, Firefox, Safari, Edge) |
+
+> ⚠️ **This library is designed exclusively for Symfony PHP applications.** It relies on the `data-prototype` and `data-prototype-name` attributes generated by Symfony's `CollectionType`.
+
+---
+
+## Symfony Side Setup
+
+### 1. Define your collection in your `FormType`
+
+```php
+// src/Form/ArticleFormType.php
+
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+
+$builder->add('tags', CollectionType::class, [
+    'entry_type'    => TextType::class,
+    'allow_add'     => true,
+    'allow_delete'  => true,
+    'by_reference'  => false,
+    'attr'          => [
+        'class'                => 'wlindabla-collection-container',
+        'data-prototype-name'  => '__name__', // optional, this is the default
+    ],
+]);
+```
+
+### 2. Render the collection in Twig
+
+```twig
+{# templates/article/new.html.twig #}
+
+{{ form_start(form) }}
+
+<div
+    id="{{ form.tags.vars.id }}"
+    data-prototype="{{ form_widget(form.tags.vars.prototype)|e('html_attr') }}"
+    data-prototype-name="__name__"
+>
+    {# Render existing rows (important for Edit forms) #}
+    {% for tag in form.tags %}
+        <div class="wlindabla-collection-row row">
+            {{ form_row(tag) }}
+        </div>
+    {% endfor %}
+
+    {# Add button wrapper #}
+    <div>
+        <button
+            type="button"
+            class="btn btn-primary wlindabla-collection-add"
+            data-collection-id="{{ form.tags.vars.id }}"
+        >
+            <i class="fas fa-plus"></i> Add Tag
+        </button>
+    </div>
+</div>
+
+{{ form_end(form) }}
+```
+
+---
+
+## HTML Structure
+
+The manager expects the following DOM structure:
+
+```
+[data-prototype]          ← The collection container (must have this attribute)
+  ├── .wlindabla-collection-row   ← Each existing or dynamically added row
+  │     └── (form fields)
+  └── <div>
+        └── button.wlindabla-collection-add   ← The "Add" trigger button
+```
+
+The **Add** button must be a **descendant** of the `[data-prototype]` container so that `target.closest('[data-prototype]')` can locate the container.
+
+---
+
+## JavaScript / TypeScript Usage
+
+### Basic Initialization
+
+Import the singleton instance and call `init()` once — typically at `DOMContentLoaded`.
+
+```typescript
+import { collectionManager } from '@wlindabla/form_validator/collection';
+
+document.addEventListener('DOMContentLoaded', () => {
+    collectionManager.init();
+});
+```
+
+Or use the class directly:
+
+```typescript
+import { SymfonyFieldCollectionManager } from '@wlindabla/form_validator/collection';
+
+const manager = SymfonyFieldCollectionManager.getInstance();
+
+document.addEventListener('DOMContentLoaded', () => {
+    manager.init();
+});
+```
+
+### Custom CSS Selector
+
+If your "Add" button uses a custom class:
+
+```typescript
+collectionManager.init('.my-custom-add-btn');
+```
+
+### Scoped Context
+
+You can restrict event delegation to a specific DOM subtree (useful inside modals or tabs):
+
+```typescript
+const modalContainer = document.getElementById('my-modal') as HTMLElement;
+collectionManager.init('.wlindabla-collection-add', modalContainer);
+```
+
+You can also pass `window` as the subject:
+
+```typescript
+collectionManager.init('.wlindabla-collection-add', window);
+```
+
+---
+
+## API Reference
+
+### `getInstance()`
+
+```typescript
+static getInstance(): SymfonyFieldCollectionManager
+```
+
+Returns the singleton instance of the manager. Always use this method instead of `new`.
+
+```typescript
+const manager = SymfonyFieldCollectionManager.getInstance();
+```
+
+---
+
+### `init(class_btn?, subject?)`
+
+```typescript
+public init(
+    class_btn: string = '.wlindabla-collection-add',
+    subject: Window | Document | HTMLElement = document
+): void
+```
+
+Attaches delegated event listeners to `subject` for both add and delete actions.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `class_btn` | `string` | `'.wlindabla-collection-add'` | CSS selector for the "Add" button |
+| `subject` | `Window \| Document \| HTMLElement` | `document` | The DOM node to attach the listener to |
+
+> ✅ Call `init()` **once** per page. Thanks to event delegation, it handles all current and future collection rows automatically.
+
+---
+
+### `addFieldToCollection(target)`
+
+```typescript
+public addFieldToCollection(target: HTMLElement): void
+```
+
+Clones the Symfony prototype HTML, replaces the `__name__` placeholder with the current index, and inserts the new row into the DOM.
+
+This method is called automatically when the Add button is clicked. You can also call it manually (e.g., for programmatic row insertion):
+
+```typescript
+const addBtn = document.querySelector('.wlindabla-collection-add') as HTMLElement;
+collectionManager.addFieldToCollection(addBtn);
+```
+
+**What it does internally:**
+1. Finds the nearest `[data-prototype]` ancestor from the button
+2. Reads and increments the index counter for that container
+3. Replaces `id` placeholders: `form_tags___name__` → `form_tags_0`
+4. Replaces `name` placeholders: `tags[__name__]` → `tags[0]`
+5. Creates the DOM element and adds CSS classes
+6. Appends a delete button via `addRemoveButtonToField()`
+7. Inserts the row before the button's parent wrapper
+8. Fires `wlindabla-admin-append-form-element` and `wlindabla-collection-item-added` events
+
+---
+
+### `addRemoveButtonToField(containerRow)`
+
+```typescript
+public addRemoveButtonToField(containerRow: HTMLElement): void
+```
+
+Injects a styled delete button at the top of a collection row.
+
+```typescript
+// Called automatically by addFieldToCollection.
+// You can call it manually on pre-existing rows if needed:
+document.querySelectorAll<HTMLElement>('.wlindabla-collection-row').forEach(row => {
+    collectionManager.addRemoveButtonToField(row);
+});
+```
+
+Generated HTML structure:
+
+```html
+<div class="panel-footer text-end mt-2">
+    <button type="button" class="btn my-2 btn-danger wlindabla-collection-delete">
+        <i class="fas fa-trash" aria-hidden="true"></i> delete
+    </button>
+</div>
+```
+
+> ⚠️ Requires **Font Awesome** for the trash icon. If you do not use FA, override the button's `innerHTML` after calling the method, or extend the class (see below).
+
+---
+
+### `removeFieldFromCollection(target_remove)`
+
+```typescript
+public removeFieldFromCollection(target_remove: HTMLElement): void
+```
+
+Finds the closest `.wlindabla-collection-row` ancestor of the clicked button, applies a fade-out CSS transition, and removes the element from the DOM after 400ms.
+
+Called automatically when a `.wlindabla-collection-delete` button is clicked.
+
+**Transition applied:**
+
+```css
+transition: opacity 0.4s ease, transform 0.4s ease;
+opacity: 0;
+transform: scale(0.95);
+```
+
+---
+
+### `getCollectionCounters(container_id)`
+
+```typescript
+public getCollectionCounters(container_id: string): number
+```
+
+Returns the current index counter for a specific collection container. Returns `-1` if no counter has been set yet.
+
+```typescript
+const count = collectionManager.getCollectionCounters('article_form_tags');
+console.log(count); // e.g., 2
+```
+
+---
+
+## Custom Events
+
+The manager dispatches the following custom DOM events, allowing you to hook into the collection lifecycle:
+
+| Event Name | Dispatched On | Bubbles | Description |
+|------------|--------------|---------|-------------|
+| `wlindabla-admin-append-form-element` | New row element | ✅ | Fired after a new row is inserted. Use this to reinitialize plugins (Select2, Flatpickr, etc.) |
+| `wlindabla-collection-item-added` | Add button | ✅ | Fired after the row insertion is complete |
+| `wlindabla-collection-item-deleted` | Row element (before removal) | ✅ | Fired just before the fade-out animation starts |
+| `wlindabla-collection-item-deleted-successful` | `document` | ✅ | Fired after the row is fully removed from the DOM |
+
+### Listening to Events
+
+```typescript
+// Re-initialize Select2 when a new row is added
+document.addEventListener('wlindabla-admin-append-form-element', (event: Event) => {
+    const newRow = event.target as HTMLElement;
+    $(newRow).find('select').select2();
+});
+
+// Track successful deletions
+document.addEventListener('wlindabla-collection-item-deleted-successful', () => {
+    console.log('A collection item was removed.');
+});
+```
+
+---
+
+## Integration with Third-Party Widgets
+
+### Select2
+
+```typescript
+document.addEventListener('wlindabla-admin-append-form-element', (event: Event) => {
+    const row = event.target as HTMLElement;
+    $(row).find('select').select2({
+        placeholder: 'Select an option',
+        allowClear: true
     });
-      
+});
+```
 
-### Requirements
+### Flatpickr
 
--   jQuery must be loaded on the page
--   Your collection container must have a `data-prototype` attribute
--   Fields must be added within a container using class
-    `.wlindabla-collection-row`
+```typescript
+document.addEventListener('wlindabla-admin-append-form-element', (event: Event) => {
+    const row = event.target as HTMLElement;
+    row.querySelectorAll<HTMLInputElement>('.datepicker').forEach(input => {
+        flatpickr(input, { dateFormat: 'Y-m-d' });
+    });
+});
+```
 
-### Author Info
+### TomSelect
 
-**Author:** AGBOKOUDJO Franck\
-**Email:** franckagbokoudjo301@gmail.com\
-**LinkedIn:** [LinkedIn
-Profile](https://www.linkedin.com/in/internationales-web-services-120520193/){target="_blank"}\
-**Company:** INTERNATIONALES WEB SERVICES
-:::
+```typescript
+document.addEventListener('wlindabla-admin-append-form-element', (event: Event) => {
+    const row = event.target as HTMLElement;
+    row.querySelectorAll<HTMLSelectElement>('.tom-select').forEach(el => {
+        new TomSelect(el, {});
+    });
+});
+```
 
-::: footer
-© 2025 - Documentation powered by Wlindabla \|
-www.internationaleswebservices.com
-:::
+---
+
+## Edit Forms — Avoiding Index Collisions
+
+When editing an existing entity that already has collection items, the manager automatically counts existing `.wlindabla-collection-row` elements in the DOM to initialize the counter correctly.
+
+```typescript
+// Called internally in setCollectionCounters():
+const existingRows = document.querySelectorAll(`#${container_id} .wlindabla-collection-row`);
+this.collectionCounters[container_id] = existingRows.length;
+```
+
+**What you must do on the Twig side:** wrap each existing row with the `.wlindabla-collection-row` class:
+
+```twig
+{% for tag in form.tags %}
+    <div class="wlindabla-collection-row row">
+        {{ form_row(tag) }}
+    </div>
+{% endfor %}
+```
+
+This ensures the counter starts at the correct index and avoids duplicate `id`/`name` attributes.
+
+---
+
+## Styling Guide
+
+The manager adds these CSS classes automatically. You can customize them freely:
+
+| Class | Applied To | Purpose |
+|-------|-----------|---------|
+| `.wlindabla-collection-row` | Each row wrapper | Identifies a collection item; required for delete logic |
+| `.row` | Each row wrapper | Bootstrap grid row |
+| `.wlindabla-collection-delete` | Delete button | Event delegation target for removal |
+| `.panel-footer` | Delete button wrapper | Layout container |
+
+### Example Custom Styles
+
+```css
+.wlindabla-collection-row {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #fafafa;
+}
+
+.wlindabla-collection-delete {
+    margin-top: 8px;
+}
+```
+
+---
+
+## Full Working Example
+
+### Symfony FormType
+
+```php
+// src/Form/InvoiceType.php
+$builder->add('items', CollectionType::class, [
+    'entry_type'   => InvoiceItemType::class,
+    'allow_add'    => true,
+    'allow_delete' => true,
+    'by_reference' => false,
+    'label'        => false,
+]);
+```
+
+### Twig Template
+
+```twig
+{# templates/invoice/new.html.twig #}
+<div
+    id="{{ form.items.vars.id }}"
+    data-prototype="{{ form_widget(form.items.vars.prototype)|e('html_attr') }}"
+    data-prototype-name="__name__"
+>
+    {% for item in form.items %}
+        <div class="wlindabla-collection-row row">
+            {{ form_row(item) }}
+        </div>
+    {% endfor %}
+
+    <div class="mt-3">
+        <button
+            type="button"
+            class="btn btn-success wlindabla-collection-add"
+        >
+            <i class="fas fa-plus"></i> Add Item
+        </button>
+    </div>
+</div>
+```
+
+### JavaScript Entry Point
+
+```typescript
+// assets/app.ts
+import { collectionManager } from '@wlindabla/form_validator/collection';
+
+document.addEventListener('DOMContentLoaded', () => {
+    collectionManager.init();
+
+    // Optional: reinitialize plugins on new rows
+    document.addEventListener('wlindabla-admin-append-form-element', (e: Event) => {
+        const row = e.target as HTMLElement;
+        $(row).find('select').select2();
+    });
+});
+```
+
+---
+
+## Extending the Class
+
+You can extend `SymfonyFieldCollectionManager` to customize behavior, such as changing the delete button markup:
+
+```typescript
+import { SymfonyFieldCollectionManager } from '@wlindabla/form_validator/collection';
+
+class MyCollectionManager extends SymfonyFieldCollectionManager {
+    public addRemoveButtonToField(containerRow: HTMLElement): void {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'text-end mt-2';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-sm btn-outline-danger wlindabla-collection-delete';
+        btn.textContent = '✕ Remove';
+
+        wrapper.appendChild(btn);
+        containerRow.prepend(wrapper);
+    }
+
+    // Override the static getInstance to use your subclass
+    public static getInstance(): MyCollectionManager {
+        // manage your own singleton here
+        return new MyCollectionManager();
+    }
+}
+```
+
+---
+
+## FAQ
+
+**Q: Can I have multiple independent collections on the same page?**  
+A: Yes. The manager maintains a separate counter per `container_id`, so multiple `[data-prototype]` containers are handled independently.
+
+---
+
+**Q: Do I need jQuery?**  
+A: No. The library is pure Vanilla JS/TypeScript. jQuery is only needed if you use it yourself for third-party plugins like Select2.
+
+---
+
+**Q: What happens if `data-prototype` is missing?**  
+A: `addFieldToCollection()` will return early without any error and no row will be added. Make sure your Twig template includes `data-prototype="{{ form_widget(form.xxx.vars.prototype)|e('html_attr') }}"`.
+
+---
+
+**Q: How do I add the delete button to rows that already exist on page load (Edit form)?**  
+A: Loop through existing rows and call `addRemoveButtonToField()` manually:
+
+```typescript
+document.addEventListener('DOMContentLoaded', () => {
+    collectionManager.init();
+
+    document.querySelectorAll<HTMLElement>('.wlindabla-collection-row').forEach(row => {
+        collectionManager.addRemoveButtonToField(row);
+    });
+});
+```
+
+---
+
+**Q: Does it work inside Sonata Admin?**  
+A: Yes. It was designed with Sonata Admin compatibility in mind. The `wlindabla-admin-append-form-element` event mirrors the event used in Sonata Admin's collection behavior, allowing a seamless drop-in replacement or co-existence.
+
+---
+
+**Q: What is the `data-prototype-name` attribute for?**  
+A: It is the placeholder string inside your prototype HTML that Symfony uses to denote the index. Its default value is `__name__`. It can be customized via the `prototype_name` option in your Symfony `CollectionType` definition.
+
+---
+
+## Changelog
+
+### v3.2.0
+- Added `wlindabla-collection-item-deleted-successful` event dispatched on `document`
+- Improved index collision prevention for Edit forms
+- Fade-out animation on row removal
+
+### v3.1.x
+- Event delegation replaces per-button listeners
+- Scoped `subject` parameter added to `init()`
+
+### v3.0.x
+- Full rewrite in TypeScript
+- Singleton pattern introduced
+- Removed jQuery dependency
+
+---
+
+## Related Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@wlindabla/http_client`](https://www.npmjs.com/package/@wlindabla/http_client) | HTTP client for async form submissions |
+| [`@wlindabla/event-dispatcher`](https://www.npmjs.com/package/@wlindabla/event-dispatcher) | Event dispatcher used internally |
+| [`@wlindabla/file_uploader`](https://www.npmjs.com/package/@wlindabla/file_uploader) | File upload handler with validation |
+
+---
+
+## License
+
+MIT © [AGBOKOUDJO Franck](https://github.com/Agbokoudjo) — INTERNATIONALES WEB APPS & SERVICES
+
+> Issues & contributions: [github.com/Agbokoudjo/form_validator/issues](https://github.com/Agbokoudjo/form_validator/issues)

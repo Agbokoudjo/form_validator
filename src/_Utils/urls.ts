@@ -14,9 +14,9 @@ import { isRegExp } from "./regex";
   /\.example\.org$/,
 ];
 
-console.log(checkHost('admin.noldfinance.com', matches)); // ✅ true
-console.log(checkHost('shop.example.org', matches));      // ✅ true (regex match)
-console.log(checkHost('google.com', matches));            // ❌ false
+console.log(checkHost('admin.noldfinance.com', matches)); // true
+console.log(checkHost('shop.example.org', matches));      // true (regex match)
+console.log(checkHost('google.com', matches));            // false
 
  */
 export function checkHost(
@@ -339,9 +339,15 @@ export class CustomURL {
                 is_ip = true;
             }
             if (!is_ip) {
-                const [hostname, port] = url.split(':');
-                this.__hostname = hostname;
-                this.__port = port || '';
+                const lastColon = url.lastIndexOf(':');
+                // On vérifie si le colon est bien un port (pas au milieu d'un nom de domaine étrange)
+                if (lastColon !== -1 && lastColon > url.lastIndexOf(']')) {
+                    this.__hostname = url.slice(0, lastColon);
+                    this.__port = url.slice(lastColon + 1);
+                } else {
+                    this.__hostname = url;
+                    this.__port = '';
+                }
 
             }
             this.__isValid = true

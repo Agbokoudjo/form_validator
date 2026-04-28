@@ -97,7 +97,7 @@ export class FQDNInputValidator extends AbstractFieldValidator implements FQDNIn
 
         const __fqdnqoptions = this.mergeOptions(fqdnOptions, ignoreMergeWithDefaultOptions);
 
-        input = escapeHtmlBalise(input) as string;
+        input = escapeHtmlBalise(this.getRawStringValue(input)) as string;
 
         if (__fqdnqoptions.allowTrailingDot && input.endsWith('.')) { input = input.slice(0, -1); }
 

@@ -94,7 +94,9 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
     }
 
     public validate = async (urlData: string, targetInputname: string, url_options: URLOptions): Promise<this> => {
-
+        this.formErrorStore.clearFieldState(targetInputname);
+        urlData = this.getRawStringValue(urlData)
+        
         if (!urlData || /[\s<>]/.test(urlData) || urlData.startsWith('mailto:') === true) {
 
             return this.setValidationState(false, `The value "${urlData}" is not a valid URL format.`, targetInputname);
@@ -142,7 +144,7 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
         const hostname = parsedURL.hostname;
 
         await fqdnInputValidator.validate(hostname, targetInputname, {
-            requireTLD: __UrlOptions.requirePort,
+            requireTLD: __UrlOptions.requireTLD ?? true,
             ignoreMaxLength: __UrlOptions.ignoreMaxLength,
             allowTrailingDot: __UrlOptions.allowTrailingDot,
             allowedUnderscores: __UrlOptions.allowedUnderscores,
@@ -201,13 +203,19 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
             return this.setValidationState(false, `Authentication credentials in URLs are not allowed.`, targetInputname);
         }
         // Host blacklist
-        if (__UrlOptions.hostBlacklist && checkHost(hostname, __UrlOptions.hostBlacklist)) {
-            return this.setValidationState(false, `The hostname "${hostname}" is blacklisted.`, targetInputname);
+        if (__UrlOptions.hostBlacklist && __UrlOptions.hostBlacklist.length > 0) {
+            if (checkHost(hostname, __UrlOptions.hostBlacklist)) {
+                return this.setValidationState(false, `The hostname "${hostname}" is blacklisted.`, targetInputname);
+            }
         }
+
         // Host whitelist
-        if (__UrlOptions.hostWhitelist && !checkHost(hostname, __UrlOptions.hostWhitelist)) {
-            return this.setValidationState(false, `The hostname "${hostname}" is not in the allowed list.`, targetInputname);
+        if (__UrlOptions.hostWhitelist && __UrlOptions.hostWhitelist.length > 0) {
+            if (!checkHost(hostname, __UrlOptions.hostWhitelist)) {
+                return this.setValidationState(false, `The hostname "${hostname}" is not in the allowed list.`, targetInputname);
+            }
         }
+        
         return this;
     }
 
@@ -217,18 +225,19 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
             allowIP: false,
             allowHash: true,
             allowQueryParams: true,
+            requireTLD: true,
             requirePort: false,
             requireHost: true,
             maxAllowedLength: 2048,
             validateLength: true,
-            regexValidator: /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i,
+            regexValidator: undefined,
             allowProtocolRelativeUrls: false,
             requireValidProtocol: true,
             requireProtocol: false,
             allowedProtocols: ['http', 'https', 'file', 'blob', 'url', 'data'],
             disallowAuth: false,
-            hostBlacklist: [],
-            hostWhitelist: []
+            hostBlacklist: undefined,
+            hostWhitelist: undefined
         }
     }
 }

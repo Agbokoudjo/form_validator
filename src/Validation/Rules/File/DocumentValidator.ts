@@ -12,8 +12,6 @@
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import * as pdfjsLib from 'pdfjs-dist';
 import { OptionsFile, MediaValidatorInterface} from './InterfaceMedia';
- 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
@@ -24,7 +22,11 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
 
     private static instance: PdfValidator;
 
-    private constructor() { super(); }
+    private constructor() {
+         super(); 
+         pdfjsLib.GlobalWorkerOptions.workerSrc = 
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
+    }
 
     public static getInstance(): PdfValidator {
         if (!PdfValidator.instance) {

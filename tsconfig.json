@@ -5,8 +5,10 @@
     "module":"ESNext",
     "lib": ["DOM", "DOM.Iterable","esnext"],
     "skipLibCheck": true,
-   "outDir": "dist",
+    "outDir": "dist",
     "rootDir": "src",  
+    "declarationDir": "dist",        //les .d.ts vont dans dist/ à la racine
+    "emitDeclarationOnly": true,     // tsc génère UNIQUEMENT les .d.ts, pas les .js
     "allowImportingTsExtensions":false,
     "declarationMap": true,
     "isolatedModules":false,

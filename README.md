@@ -50,7 +50,9 @@ yarn add @wlindabla/form_validator
 ```
 
   ## Collection
-  - [index](./docs/Collection/index.md)
+`SymfonyFieldCollectionManager` is a TypeScript/JavaScript class that **automates the management of dynamic form field collections** in Symfony applications.
+It is specifically designed to work with [Symfony's `CollectionType`](https://symfony.com/doc/current/reference/forms/types/collection.html) form field, which exposes an HTML `data-prototype` attribute to allow JavaScript to clone and inject new form rows dynamically.
+  - [Collection](./docs/Collection/index.md)
 
   ## @wlindabla/form_validator - FormFormattingEvent API Documentation
 
@@ -61,9 +63,16 @@ yarn add @wlindabla/form_validator
   - [api](./docs/_Utils/api.md)
   - [Exception](./docs/_Utils/Exception.md)
   
-  ## Form
-  **A powerful, lightweight jQuery-based form validation library with comprehensive error handling and user-friendly feedback.**
-  - [form](./docs/_Utils/form.md)
+  ## DOM Error Handling & Form Utilities Module
+This module provides a complete **DOM-side error management system** for HTML forms. It handles:
+- Generating accessible, styled error message HTML elements
+- Appending, updating, and clearing validation errors in the DOM
+- Managing submit button states during form submission
+- Extracting and compiling `pattern` attributes from inputs into `RegExp` objects
+- Handling server-side or client-side validation error objects for complex, multi-field forms
+All utilities are **framework-agnostic** and work anywhere JavaScript runs in a browser.
+**Part of the `@wlindabla/form_validator` library** — A powerful JavaScript/TypeScript library for validating HTML form fields: `text`, `email`, `tel`, `password`, `image`, `PDF`, `Word`, `CSV`, `Excel`, and more.
+  - [DOM-side error management system](./docs/_Utils/form.md)
   
   ## FormSubmission
   `FormSubmission` is a powerful module included in `@wlindabla/form_validator` that handles the **complete lifecycle of an HTML form submission** via the Fetch API.
@@ -110,6 +119,11 @@ yarn add @wlindabla/form_validator
   **A Comprehensive Utility Library for String Validation and Text Manipulation**
 
   Professional-grade string validation, formatting, and analysis tools designed for modern frontend applications.
+  `@wlindabla/form_validator` is a production-ready utility library designed to handle common frontend validation and string manipulation tasks. It provides robust tools for:
+- **Security**: HTML escaping and XSS prevention
+- **Formatting**: Professional string capitalization and username formatting
+- **Analysis**: Character-level analysis and word complexity scoring
+- **Validation**: Byte-length validation, type checking, and content analysis
   - [string](./docs/_Utils/string.md)
   
   ## getMetaContent - Meta Tag Utility Library

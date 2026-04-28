@@ -129,7 +129,7 @@ export function showLoadingDialog(
         icon: "info",
         allowOutsideClick: false,
         showConfirmButton: false,
-        timer: 50000,
+        timer: config.timer || 50000,
         timerProgressBar: true,
         background: config.background || "#00427E",
         color: config.color || "#fff",
@@ -199,11 +199,13 @@ export function showLoadingDialog(
  * });
  * ```
  */
-export function showSuccessDialog(
+export async function showSuccessDialog(
     options: ShowSuccessDialogOptions
 ): Promise<SweetAlertResult> {
     const { title, message, config = {} } = options;
 
+    Swal.close();
+    
     const finalConfig: SweetAlertOptions = {
         animation: true,
         allowEscapeKey: false,
@@ -250,14 +252,15 @@ export function showSuccessDialog(
  * });
  * ```
  */
-export function showErrorDialog(
+export async function showErrorDialog(
     options: ShowErrorDialogOptions
 ): Promise<SweetAlertResult> {
     const { title, message, config = {} } = options;
 
+    Swal.close();
     const finalConfig: SweetAlertOptions = {
         icon: "error",
-        timer: 30000,
+        timer: config.timer || 50000,
         showConfirmButton: true,
         confirmButtonText: "OK",
         showCloseButton: true,

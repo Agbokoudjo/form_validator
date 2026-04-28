@@ -9,7 +9,6 @@
  * For more information, please feel free to contact the author.
  */
 export * from "./media";
-export * from "./jQueryExtension";
 export * from "./dom";
 export * from "./logger";
 export * from "./Exception";
