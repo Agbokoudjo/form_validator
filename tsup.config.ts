@@ -36,10 +36,10 @@ export default defineConfig([
     {
         entry: entries,
         format: ['esm'],
-        dts: false,
+        dts: true,
         sourcemap: true,
         clean: true,
-        bundle: true,      // INDISPENSABLE pour inclure InterfaceMedia.ts dans le point d'entrée
+        bundle: true,      
         splitting: true,   // INDISPENSABLE pour éviter la duplication de code
         treeshake: true,
         minify: false,
@@ -55,7 +55,7 @@ export default defineConfig([
     {
         entry: entries,
         format: ['cjs'],
-        dts: false,
+        dts: true,
         splitting: false,
         sourcemap: true,
         clean: false,          //false ici pour ne pas effacer dist/esm déjà généré

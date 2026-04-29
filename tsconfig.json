@@ -15,6 +15,7 @@
     "moduleDetection": "force",
     "esModuleInterop": true,
      "noEmit": false, 
+     "ignoreDeprecations": "6.0",
     "strict": true,
     "moduleResolution": "bundler",   
     "declaration": true,     
