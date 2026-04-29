@@ -2260,15 +2260,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wlindabla/event_dispatcher@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@wlindabla/event_dispatcher@npm:1.2.0"
+"@wlindabla/event_dispatcher@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "@wlindabla/event_dispatcher@npm:1.2.1"
   peerDependencies:
     "@types/node": ">=18.0.0"
   peerDependenciesMeta:
     "@types/node":
       optional: true
-  checksum: 10c0/b8b51027b59a51d6ac14b07f117e04d55351d3f96369ca157c9bff18dde57f44830d43d6d32a829d54d292e014af2a8d15f909e15196bd6a46f9e3c372bcbbed
+  checksum: 10c0/b8cc5a0c67f2247e0d6cc2c59c20b7a47cda9130c6aa321f051062679c982fe13a6361199dcc5cce280322beaabbbec921c5efa95bf147049c4186b89b2ef7ac
   languageName: node
   linkType: hard
 
@@ -2282,8 +2282,8 @@ __metadata:
     "@types/pdfjs-dist": "npm:^2.10.378"
     "@types/xlsx": "npm:^0.0.36"
     "@vitejs/plugin-legacy": "npm:^8.0.1"
-    "@wlindabla/event_dispatcher": "npm:^1.2.0"
-    "@wlindabla/http_client": "npm:^1.1.4"
+    "@wlindabla/event_dispatcher": "npm:^1.2.1"
+    "@wlindabla/http_client": "npm:^1.1.5"
     animate.css: "npm:^4.1.1"
     jquery: "npm:^4.0.0"
     jszip: "npm:^3.10.1"
@@ -2299,12 +2299,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wlindabla/http_client@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "@wlindabla/http_client@npm:1.1.4"
+"@wlindabla/http_client@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "@wlindabla/http_client@npm:1.1.5"
   dependencies:
-    "@wlindabla/event_dispatcher": "npm:^1.2.0"
-  checksum: 10c0/bd8280e68d851de41395f56b7cf6a5947d0313d4622fecfb7eaa9577e717868959f1b6c4a684365685cfe0b8d2a00d0d306d69cfaf36ac92e3b9335f8a0dae05
+    "@wlindabla/event_dispatcher": "npm:^1.2.1"
+  checksum: 10c0/4a87eb424cea7e127adedc3f73597d9a37056cf7f816f0161dd17e3e5e590b43936b709d485aab935948132f5d8020e6f026ed9c6c0ec0a0ed93c991a7bfc44c
   languageName: node
   linkType: hard
 
