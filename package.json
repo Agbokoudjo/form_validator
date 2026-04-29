@@ -339,8 +339,8 @@
   },
   "dependencies": {
     "@vitejs/plugin-legacy": "^8.0.1",
-    "@wlindabla/event_dispatcher": "^1.1.4",
-    "@wlindabla/http_client": "^1.1.3",
+    "@wlindabla/event_dispatcher": "^1.2.0",
+    "@wlindabla/http_client": "^1.1.4",
     "animate.css": "^4.1.1",
     "jszip": "^3.10.1",
     "libphonenumber-js": "^1.12.42",
