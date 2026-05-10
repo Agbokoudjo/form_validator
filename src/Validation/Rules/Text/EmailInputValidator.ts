@@ -10,41 +10,13 @@
  * For more information, please feel free to contact the author.
  */
 
-import { isIP, checkHost, isByteLength,deepMergeAll } from "../../../_Utils";
+import { isIP, checkHost, isByteLength, deepMergeAll } from "../../../_Utils";
+import type { EmailInputValidatorInterface } from "../../contracts";
 import { AbstractFieldValidator } from "../FieldValidator";
-import { FQDNOptions, fqdnInputValidator } from "./FQDNInputValidator";
-import { TextInputOptions, textInputValidator } from "./TextInputValidator";
+import { fqdnInputValidator } from "./FQDNInputValidator";
+import { textInputValidator } from "./TextInputValidator";
+import type { EmailInputOptions} from "../../types";
 
-export interface EmailInputOptions extends FQDNOptions, TextInputOptions {
-    allowUtf8LocalPart?: boolean;
-    allowIpDomain?: boolean;
-    allowQuotedLocal?: boolean;
-    ignoreMaxLength?: boolean;
-    hostBlacklist?: Array<string | RegExp>;
-    hostWhitelist?: Array<string | RegExp>;
-    blacklistedChars?: string;
-    requireDisplayName?: boolean,
-    allowDisplayName?: boolean,
-}
-interface EmailInputValidatorInterface {
-    /**  
-     * Validates an email input field.  
-     * Checks if the entered value adheres to a specific format, minimum and maximum length, and if the field is required.  
-     * Updates the state and error messages associated with the field in case of validation failure.  
-     *  
-     * @param datainputemail (string) : The input value to validate.  
-     * @param targetInputnameemail (string) : The identifier or key associated with the input field in the form.  
-     * @param optionsinputemail (OptionsInputText) : Object containing validation options.  
-     * - errorMessageInput (string) : Custom error message if validation fails.  
-     * - regexValidator (RegExp) : Custom regular expression to validate the email format.  
-     * - minLength (number) : Minimum allowed length for the input.  
-     * - maxLength (number) : Maximum allowed length for the input.  
-     * - requiredInput (boolean) : Indicates if the field is mandatory.  
-     * @returns this : The current class instance, allowing method chaining.  
-     *  
-     */
-    validate: (datainput: string, targetInputname: string, optionsinputemail: EmailInputOptions) => Promise<this>;
-}
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

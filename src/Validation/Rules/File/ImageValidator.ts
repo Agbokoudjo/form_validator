@@ -10,8 +10,8 @@
  */
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import { MediaValidatorInterface, OptionsImage } from './InterfaceMedia';
-
+import type { OptionsImage } from '../../types';
+import type {MediaValidatorInterface} from '../../contracts';
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * @package <https://github.com/Agbokoudjo/form_validator>
@@ -226,7 +226,7 @@ export class ImageValidator extends AbstractMediaValidator implements MediaValid
             const img = new Image();
             img.onload = () => {
                 URL.revokeObjectURL(objectUrl);
-                resolve({ width: img.width, height: img.height });
+                resolve({ width: img.naturalWidth, height: img.naturalHeight });
             };
             img.onerror = (err) => {
                 URL.revokeObjectURL(objectUrl);

@@ -10,9 +10,8 @@
  */
 
 import {
-    FieldValidationEventDataInterface,
     FieldValidationEventData
-} from "../FieldValidationEvent";
+} from "./FieldValidationEvent";
 
 import {
     AttributeException,
@@ -26,23 +25,18 @@ import {
     MediaTypeArray,
     escapeHtmlBalise,
     MediaRequiredType
-} from "../../../../_Utils";
+} from "../../../_Utils";
 
-import { FieldValidatorInterface, OdtValidator } from "../../../Rules";
+import { OdtValidator } from "../../Rules";
+import {
+    FieldValidationEventDataInterface,
+    FieldValidationFailed,
+    FieldValidationSuccess,
+    FormChildrenValidateEvent,
+    EventValidate
+} from "../../types";
 
-/**
- * @event Validate
- * Custom event names for field validation result.
- */
-export const FieldValidationFailed = 'field:validation:failed';
-
-export const FieldValidationSuccess = 'field:validation:success';
-
-export type FormChildrenValidateEvent =
-    | typeof FieldValidationFailed
-    | typeof FieldValidationSuccess;
-
-export type EventValidate = 'change' | 'blur' | 'input' | 'focus';
+import type { FieldValidatorInterface } from "../../contracts";
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -128,7 +122,7 @@ export abstract class AbstractFieldController {
         if (type === "file") {
 
             type = this.getAttrChildren('data-media-type');
-            
+
             if (!type) {
 
                 throw new AttributeException('data-media-type', this.name, this.getAttrFormParent('name') ?? 'form');
@@ -439,7 +433,7 @@ export abstract class AbstractFieldController {
 
     protected get matchRegex(): boolean | undefined {
 
-        const match=this.getAttrChildren('data-match-regex')
+        const match = this.getAttrChildren('data-match-regex')
             ?? this.getAttrChildren('data-match')
             ?? this.getAttrChildren('match')
             ;
@@ -477,7 +471,7 @@ export abstract class AbstractFieldController {
         return delimiters ? delimiters.split(',') : ['/', '-'];
     }
 
-    protected get dataHostWhitelist(): (string | RegExp)[] | undefined{
+    protected get dataHostWhitelist(): (string | RegExp)[] | undefined {
         return this.getAttrChildren('data-host-whitelist')
             ?.split(',')
             .map(v => v.trim())

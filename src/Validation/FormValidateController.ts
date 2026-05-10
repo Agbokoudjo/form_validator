@@ -17,12 +17,17 @@ import {
 } from "../_Utils";
 
 import {
-    FieldInputController,
-    FormChildrenValidateInterface,
-    FieldOptionsValidateCacheAdapterInterface,
-    OptionsValidate
-} from "./Core";
+    FieldInputController
+} from "./Core/Adapter/FieldInputController";
 
+import type { OptionsValidate } from "./types";
+
+import type {
+    FieldOptionsValidateCacheAdapterInterface,
+    FormChildrenValidateInterface
+} from "./contracts";
+
+import { SessionStorageCacheAdapter } from "./Cache";
 
 /**
 ---
@@ -42,7 +47,9 @@ This class manages the validation of form fields inside a given HTML form using 
 ## Constructor
 
 ```ts
-constructor(formCssSelector: string = ".form-validate")
+constructor(
+formCssSelector: string = ".form-validate",
+optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface)
 ```
 
 * **`formCssSelector`**: Optional CSS selector suffix to target a specific form on the page. Defaults to `"form"`, meaning it selects all `<form>` elements.
@@ -195,10 +202,10 @@ export class FormValidateController {
     private readonly _excludedTypes = ["hidden", "submit", "datetime", "datetime-local", "time", "month"];
 
     private _eventGroups: Map<string, string[]> = new Map();
-
+    private readonly optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface;
     constructor(
         formCssSelector: string = ".form-validate",
-        private readonly optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface) {
+        _optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface) {
         
         const formElement = document.querySelector<HTMLFormElement>(`form${formCssSelector}`);
 
@@ -208,7 +215,7 @@ export class FormValidateController {
 
         this._form = formElement;
         this._formChildrenValidate = new Map<string, FormChildrenValidateInterface>();
-
+        this.optionsValidatorCacheAdapter = _optionsValidatorCacheAdapter ?? new SessionStorageCacheAdapter();
         this.init();
     }
 
@@ -221,10 +228,12 @@ export class FormValidateController {
             .map(el => el.id)
             .filter(id => id !== undefined && id !== "");
 
-        // 2. Indexing Events (Replacing .each() and .attr())
+        // Indexing Events (Replacing .each() and .attr())
         allChildren.forEach(el => {
-            ['blur', 'input', 'change', 'dragenter', 'focus'].forEach(evt => {
-                if (el.hasAttribute(`data-event-validate-${evt}`)) {
+            ['blur', 'input', 'change', 
+             'dragenter', 'focus',
+             'dragleave', 'dragover','drop'].forEach(evt => {
+                if(el.hasAttribute(`data-event-validate-${evt}`)) {
                     const current = this._eventGroups.get(evt) || [];
                     current.push(el.id);
                     this._eventGroups.set(evt, current);
@@ -334,6 +343,19 @@ export class FormValidateController {
     public get idChildrenUsingEventDragenter(): string[] {
         return this._eventGroups.get('dragenter') || [];
     }
+
+    public get idChildrenUsingEventDrop(): string[] {
+        return this._eventGroups.get('drop') || [];
+    } 
+
+    public get idChildrenUsingEventDragover(): string[] {
+        return this._eventGroups.get('dragover') || [];
+    }
+   
+    public get idChildrenUsingEventDragleave(): string[] {
+        return this._eventGroups.get('dragleave') || [];
+    }
+
 
     public get idChildrenUsingEventFocus(): string[] {
         return this._eventGroups.get('focus') || [];

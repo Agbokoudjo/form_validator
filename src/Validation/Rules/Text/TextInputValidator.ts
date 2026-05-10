@@ -10,22 +10,8 @@
  */
 
 import { AbstractFieldValidator } from "../FieldValidator";
-import { FormInputType, escapeHtmlBalise, deepMerge } from "../../../_Utils";
-
-export interface BaseInputOptions {
-    requiredInput?: boolean;
-    minLength?: number;
-    maxLength?: number;
-    escapestripHtmlAndPhpTags?: boolean;
-    errorMessageInput?: string;
-    typeInput?: FormInputType;
-    regexValidator?: RegExp;
-    match?: boolean;
-}
-
-export interface TextInputOptions extends BaseInputOptions {
-    egAwait?: string;
-}
+import { escapeHtmlBalise, deepMerge } from "../../../_Utils";
+import type { TextInputOptions } from "../../types";
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -139,7 +125,7 @@ export class TextInputValidator extends AbstractFieldValidator {
         return this;
     }
 
-    private get defaultOptionsValidate(): BaseInputOptions {
+    private get defaultOptionsValidate(): TextInputOptions {
         return {
             requiredInput: true,
             minLength: 1,
@@ -177,3 +163,44 @@ export class TextInputValidator extends AbstractFieldValidator {
 }
 
 export const textInputValidator = TextInputValidator.getInstance();
+
+/**
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * 
+ * @class TextareaValidator
+ * @extends AbstractFieldValidator
+ */
+export class TextareaValidator extends AbstractFieldValidator {
+
+    private static instance: TextareaValidator;
+
+    private constructor() { super(); }
+
+    public static getInstance(): TextareaValidator {
+        if (!TextareaValidator.instance) {
+            TextareaValidator.instance = new TextareaValidator();
+        }
+
+        return TextareaValidator.instance;
+    }
+
+    public validate = (
+        value: string | undefined,
+        targetInputname: string,
+        optionsinputtext: TextInputOptions,
+        ignoreMergeWithDefaultOptions: boolean = true
+    ): this => {
+
+        textInputValidator.validate(
+            value,
+            targetInputname,
+            optionsinputtext,
+            ignoreMergeWithDefaultOptions);
+
+        return this;
+    }
+
+}
+
+export const textareaInputValidator = TextareaValidator.getInstance();

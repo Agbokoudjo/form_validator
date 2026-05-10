@@ -9,13 +9,11 @@
  * For more information, please feel free to contact the author.
  */
 
-import { TextInputOptions, textInputValidator } from "./TextInputValidator";
+import { textInputValidator } from "./TextInputValidator";
 import { AbstractFieldValidator } from "../FieldValidator";
-import { parsePhoneNumberWithError, ParseError, CountryCode } from "libphonenumber-js";
+import { parsePhoneNumberWithError, ParseError} from "libphonenumber-js";
+import type { TelInputOptions } from "../../types";
 
-export interface TelInputOptions extends TextInputOptions {
-    defaultCountry: CountryCode;
-}
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

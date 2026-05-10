@@ -11,7 +11,8 @@
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import * as pdfjsLib from 'pdfjs-dist';
-import { OptionsFile, MediaValidatorInterface} from './InterfaceMedia';
+import type { OptionsFile} from '../../types';
+import type { MediaValidatorInterface } from '../../contracts';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
@@ -97,7 +98,7 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
 export const pdfValidator = PdfValidator.getInstance();
 
 import * as XLSX from 'xlsx';
-import { OptionsExcelFile } from "./InterfaceMedia"
+import type { OptionsExcelFile } from "../../types"
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
@@ -382,7 +383,7 @@ export class ExcelValidator extends AbstractMediaValidator implements MediaValid
 export const excelValidator = ExcelValidator.getInstance();
 
 import * as Papa from 'papaparse';
-import { OptionsCsvFile, CsvColumnType } from './InterfaceMedia';
+import type { OptionsCsvFile, CsvColumnType } from '../../types';
 
 /**
  * Per-row validation error returned by the CSV validator.
@@ -844,26 +845,7 @@ export class CsvValidator extends AbstractMediaValidator implements MediaValidat
 export const csvValidator = CsvValidator.getInstance();
 
 import JSZip from 'jszip';
-import { OptionsWordFile } from './InterfaceMedia';
-
-/**
- * Result of the Word document content inspection.
- * Only available for .docx files (ZIP-based format).
- */
-export interface WordDocumentInfo {
-    /** Number of paragraphs found in the document body. */
-    paragraphCount: number;
-    /** Number of tables found in the document body. */
-    tableCount: number;
-    /** Number of images embedded in the document. */
-    imageCount: number;
-    /** Extracted plain text (first 500 chars, for preview / content rules). */
-    textPreview: string;
-    /** Whether the document body contains any non-empty text. */
-    hasContent: boolean;
-    /** Word/Office application version string found in app.xml, if any. */
-    appVersion?: string;
-}
+import type { OptionsWordFile,WordDocumentInfo } from '../../types';
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -1289,7 +1271,7 @@ export class MicrosoftWordValidator extends AbstractMediaValidator implements Me
 
 export const microsoftWordValidator = MicrosoftWordValidator.getInstance();
 
-import { OptionsOdfFile } from './InterfaceMedia';
+import type { OptionsOdfFile,OdfDocumentInfo  } from '../../types';
 
 /**
  * Official IANA MIME types for OpenDocument Format (ODF) files.
@@ -1319,27 +1301,6 @@ const OS_REPORTED_MIME_TYPES: string[] = [
     'application/zip',                  // ODF is a ZIP — sometimes reported as such
     'application/x-zip-compressed',     // Windows ZIP alias
 ];
-
-/**
- * Structural information extracted from an ODF document's content.xml.
- * Available after a successful deep inspection.
- */
-export interface OdfDocumentInfo {
-    /** Detected ODF MIME type from the in-archive "mimetype" entry. */
-    detectedMimeType: string;
-    /** Number of text paragraphs (<text:p> elements). */
-    paragraphCount: number;
-    /** Number of tables (<table:table> elements). */
-    tableCount: number;
-    /** Number of embedded images (<draw:image> elements). */
-    imageCount: number;
-    /** Extracted plain text preview (first 500 chars). */
-    textPreview: string;
-    /** Whether the document contains any non-empty text. */
-    hasContent: boolean;
-    /** LibreOffice / app version string from meta.xml, if present. */
-    appVersion?: string;
-}
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

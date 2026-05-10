@@ -83,48 +83,45 @@ pnpm add @wlindabla/form_validator
 ```
 @wlindabla/form_validator
 src/Validation/
+├── Cache
+│   └── index.ts
+├── contracts
+│   └── index.ts
 ├── Core
-│   ├── Adapter
-│   │   ├── Dom
-│   │   │   ├── AbstractFieldController.ts
-│   │   │   ├── Cache
-│   │   │   │   ├── index.ts
-│   │   │   │   └── LocalStorageCacheAdapter.ts
-│   │   │   ├── FieldInputController.ts
-│   │   │   └── index.ts
-│   │   ├── FieldOptionsValidateCacheAdapter.ts
-│   │   ├── FieldValidationEvent.ts
-│   │   └── index.ts
-│   ├── index.ts
-│   └── Router
-│       ├── FormInputValidator.ts
-│       └── index.ts
+│   ├── Adapter
+│   │   ├── AbstractFieldController.ts
+│   │   ├── FieldInputController.ts
+│   │   ├── FieldValidationEvent.ts
+│   │   └── index.ts
+│   ├── index.ts
+│   └── Router
+│       └── index.ts
 ├── FormValidateController.ts
 ├── index.ts
 ├── Rules
-│   ├── Choice
-│   │   ├── CheckBoxValidator.ts
-│   │   ├── RadioValidator.ts
-│   │   └── SelectValidator.ts
-│   ├── FieldValidator.ts
-│   ├── File
-│   │   ├── AbstractMediaValidator.ts
-│   │   ├── DocumentValidator.ts  (PdfValidator, ExcelValidator, CsvValidator,
-│   │   │                          MicrosoftWordValidator, OdtValidator)
-│   │   ├── ImageValidator.ts
-│   │   ├── InterfaceMedia.ts
-│   │   └── VideoValidator.ts
-│   └── Text
-│       ├── DateInputValidator.ts
-│       ├── EmailInputValidator.ts
-│       ├── FQDNInputValidator.ts
-│       ├── NumberInputValidator.ts
-│       ├── PasswordInputValidator.ts
-│       ├── TelInputValidator.ts
-│       ├── TextareaValidator.ts
-│       ├── TextInputValidator.ts
-│       └── URLInputValidator.ts
-└── Store
+│   ├── Choice
+│   │   └── index.ts
+│   ├── FieldValidator.ts
+│   ├── File
+│   │   ├── AbstractMediaValidator.ts
+│   │   ├── DocumentValidator.ts
+│   │   ├── ImageValidator.ts
+│   │   ├── index.ts
+│   │   └── VideoValidator.ts
+│   ├── index.ts
+│   └── Text
+│       ├── DateInputValidator.ts
+│       ├── EmailInputValidator.ts
+│       ├── FQDNInputValidator.ts
+│       ├── index.ts
+│       ├── NumberInputValidator.ts
+│       ├── PasswordInputValidator.ts
+│       ├── TelInputValidator.ts
+│       ├── TextInputValidator.ts
+│       └── URLInputValidator.ts
+├── Store
+│   └── index.ts
+└── types
     └── index.ts
 ```
 
@@ -303,7 +300,7 @@ Validates passwords based on character rules (uppercase, lowercase, digits, symb
 import { passwordInputValidator, PassworkRuleOptions } from '@wlindabla/form_validator/validation/rules/text';
 ```
 
-**Key Options (`PassworkRuleOptions`):**
+**Key Options (`PasswordRuleOptions`):**
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -861,18 +858,24 @@ console.log(v?.formErrorStore.getFieldErrors('username'));
 
 ```typescript
 import { FormValidateController } from '@wlindabla/form_validator';
-import { LocalStorageCacheAdapter } from '@wlindabla/form_validator/cache';
+import { LocalStorageCacheAdapter } from '@wlindabla/form_validator/validation/cache';
 
 const controller = new FormValidateController(
   '.registration-form',
   new LocalStorageCacheAdapter() // optional: caches validation options
 );
-
+or 
+import {SessionStorageCacheAdapter} from from '@wlindabla/form_validator/validation/cache' ;
+const controller = new FormValidateController(
+  '.registration-form',
+  new SessionStorageCacheAdapter() // by default: caches validation options
+);
 // Field IDs grouped by trigger event
 console.log(controller.idChildrenUsingEventBlur);      // data-event-validate-blur
 console.log(controller.idChildrenUsingEventInput);     // data-event-validate-input
 console.log(controller.idChildrenUsingEventChange);    // data-event-validate-change
 console.log(controller.idChildrenUsingEventDragenter); // data-event-validate-dragenter
+console.log(controller.idChildrenUsingEventDrop); // data-event-validate-drop
 console.log(controller.idChildrenUsingEventFocus);     // data-event-validate-focus
 
 // Validate all fields (e.g. on submit)
@@ -1264,6 +1267,120 @@ document.addEventListener('DOMContentLoaded', () => {
       (e.target as HTMLFormElement).submit();
     }
   });
+
+
+});
+or 
+document.addEventListener('DOMContentLoaded', () => {
+// Build CSS selector strings from the controller's ID lists
+const selectorBlur = this.buildSelector(controller.idChildrenUsingEventBlur);
+const selectorInput = this.buildSelector(controller.idChildrenUsingEventInput);
+const selectorChange = this.buildSelector(controller.idChildrenUsingEventChange);
+const selectorDragenter = this.buildSelector(controller.idChildrenUsingEventDragenter);
+// Blur validation — validate on field blur
+    form.addEventListener('blur', async (e: FocusEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.matches(selectorBlur)) return;
+
+        if (
+            (target instanceof HTMLInputElement ||
+              target instanceof HTMLTextAreaElement) &&
+            target.type !== 'file'
+        ) {
+            await controller.validateChildrenForm(target);
+        }
+
+        //for input filed don't drap and drop
+        if (
+            target instanceof HTMLInputElement &&
+            target.type === 'file'
+        ) {
+            controller.clearErrorDataChildren(target);
+        }
+
+    }, true); 
+
+// Input — clear errors on input
+form.addEventListener('input', (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(selectorInput)) return;
+
+    if (
+        (target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement) &&
+        target.type !== 'file'
+    ) {
+        controller.clearErrorDataChildren(target);
+    }
+},true);
+
+        // Change — validate file inputs and selects
+form.addEventListener('change', async (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(selectorChange)) return;
+
+    if (
+        target instanceof HTMLInputElement &&
+        target.type === 'file'
+    ) {
+        await controller.validateChildrenForm(target);
+    }
+},true);
+
+// Dragenter — clear errors on file drag
+form.addEventListener('dragenter', (e: DragEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(selectorDragenter)) return;
+
+    if (
+        target instanceof HTMLInputElement &&
+        target.type === 'file'
+    ) {
+        controller.clearErrorDataChildren(target);
+    }
+},true);
+
+form.addEventListener('dragleave', (e: DragEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(selectorDragenter)) return;
+
+    if (
+        target instanceof HTMLInputElement &&
+        target.type === 'file'
+    ) {
+        controller.clearErrorDataChildren(target);
+    }
+}, true);
+
+form.addEventListener('drop', async (e: DragEvent) => {
+    const target = e.target as HTMLElement;
+    if (!target.matches(selectorDragenter)) return;
+        e.preventDefault();
+    if (
+        target instanceof HTMLInputElement &&
+        target.type === 'file'
+    ) {
+        await controller.validateChildrenForm(target);
+    }
+},true);
+
+// Listen to validation events to update submit button state
+form.addEventListener('field:validation:failed', (event) => {
+    const data = (event as CustomEvent).detail as FieldValidationEventData;
+    this.updateSubmitButtonState(form, false);
+
+    controller.addErrorMessageChildrenForm(
+        data.targetChildrenForm,
+        data.message!,
+        'container-div-error-message');
+});
+
+form.addEventListener('field:validation:success', (event) => {
+    const data = (event as CustomEvent).detail as FieldValidationEventData;
+    this.checkFormValidityAndUpdateButton(form, controller);
+    controller.clearErrorDataChildren(data.targetChildrenForm);
+});
+        
 });
 ```
 

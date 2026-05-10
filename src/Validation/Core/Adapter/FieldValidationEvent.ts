@@ -8,35 +8,7 @@
  *
  * For more information, please feel free to contact the author.
  */
-
-import {
-    HTMLFormChildrenElement,
-
-    DataInput
-} from "../../../_Utils";
-
-
-/**
- * Interface representing the data passed with a validation event.
- */
-export interface FieldValidationEventDataInterface {
-    /** The ID attribute of the validated field. */
-    id: string;
-
-    /** The name attribute of the validated field. */
-    name: string;
-
-    /** Optional error message(s) describing the validation issue(s). */
-    message?: string[];
-
-    /** The current value of the validated field. */
-    value: DataInput;
-
-    /** The name of the form or parent container. */
-    formParentName: string;
-
-    target: HTMLFormChildrenElement;
-}
+import type { FieldValidationEventDataInterface } from "../../types";
 
 /**
  * Class to encapsulate and provide read-only access to validation data.

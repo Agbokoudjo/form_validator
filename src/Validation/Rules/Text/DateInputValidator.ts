@@ -10,33 +10,9 @@
  */
 import { REGEX_FORMAT_DATE, pad, zipArray } from "../../../_Utils";
 import { AbstractFieldValidator, } from "../FieldValidator";
-import { TextInputOptions } from "./TextInputValidator";
+import type { DateInputOptions } from "../../types";
+import type { DateInputValidatorInterface } from "../../contracts";
 
-export interface DateInputOptions extends TextInputOptions {
-    format?: string;       // Format attendu (ex: "YYYY-MM-DD", "DD/MM/YYYY")
-    minDate?: Date;      // Date minimale
-    maxDate?: Date;      // Date maximale
-    allowFuture?: boolean; // Autoriser les dates futures
-    allowPast?: boolean;   // Autoriser les dates passées
-    delimiters?: string[]; // Délimiteurs autorisés
-    strictMode?: boolean; //Si true, la date doit respecter strictement la longueur du format.
-}
-
-export interface DateInputValidatorInterface {
-    /**
-     * Validates a date string or Date object based on provided formatting and business rules.
-     *
-     * @param date_input - The date to validate (as a string or Date object).
-     * @param targetInputname - The name of the input field being validated.
-     * @param date_options - Optional rules to validate the date, including format, range, etc.
-     *
-     * @returns The current instance, allowing method chaining.
-     *
-     * @example
-     * dateValidator('2024/06/30', 'birthdate', { format: 'YYYY/MM/DD', allowFuture: false });
- */
-    validate: (date_input: string | Date, targetInputname: string, date_options: DateInputOptions) => this;
-}
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
  * @package <https://github.com/Agbokoudjo/form_validator>

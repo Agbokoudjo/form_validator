@@ -1,6 +1,6 @@
 import { HTMLSubmitterElement } from "../_Utils"
-import { DelegateFormSubmissionInterface, FormSubmissionInterface } from "./contracts"
-import { FetchResponseInterface } from "@wlindabla/http_client"
+import type { DelegateFormSubmissionInterface, FormSubmissionInterface } from "./contracts"
+import type { FetchResponseInterface } from "@wlindabla/http_client/contracts"
 
 export class DefaultNavigator implements DelegateFormSubmissionInterface {
     

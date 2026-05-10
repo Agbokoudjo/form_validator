@@ -1,9 +1,14 @@
-export * from "./TextInputValidator";
-export * from "./TextareaValidator";
-export * from "./PasswordInputValidator";
-export * from "./NumberInputValidator";
-export * from "./TelInputValidator";
-export * from "./DateInputValidator";
-export * from "./FQDNInputValidator";
-export * from "./EmailInputValidator";
-export * from "./URLInputValidator";
+//src/Validation/Rules/Text/index.ts
+export {
+    TextInputValidator, 
+    TextareaValidator,
+    textareaInputValidator,
+    textInputValidator
+} from "./TextInputValidator";
+export {PasswordInputValidator,passwordInputValidator} from "./PasswordInputValidator";
+export {NumberInputValidator,numberInputValidator} from "./NumberInputValidator";
+export {TelInputValidator,telInputValidator} from "./TelInputValidator";
+export {DateInputValidator,dateInputValidator} from "./DateInputValidator";
+export {FQDNInputValidator,fqdnInputValidator} from "./FQDNInputValidator";
+export {EmailInputValidator,emailInputValidator} from "./EmailInputValidator";
+export {URLInputValidator,urlInputValidator} from "./URLInputValidator";

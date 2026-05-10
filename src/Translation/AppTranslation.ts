@@ -204,10 +204,6 @@ export class AppTranslation implements ConfigCacheAdapterTranslation {
         });
     }
 
-    // ========================================================================
-    // PUBLIC API
-    // ========================================================================
-
     /**
      * Retrieves a translated string for the given key
      * 
@@ -440,10 +436,6 @@ export class AppTranslation implements ConfigCacheAdapterTranslation {
         return translations ? Object.keys(translations) : [];
     }
 
-    // ========================================================================
-    // CACHE ADAPTER CONFIGURATION
-    // ========================================================================
-
     /**
      * Gets the current cache adapter
      * 
@@ -477,10 +469,6 @@ export class AppTranslation implements ConfigCacheAdapterTranslation {
             newAdapter: adapter.constructor.name
         });
     }
-
-    // ========================================================================
-    // PRIVATE HELPER METHODS
-    // ========================================================================
 
     /**
      * Detects the current language from the document

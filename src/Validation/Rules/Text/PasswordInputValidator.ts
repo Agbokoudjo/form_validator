@@ -9,9 +9,9 @@
  * For more information, please feel free to contact the author.
  */
 import { AbstractFieldValidator } from "../FieldValidator";
-import { textInputValidator, TextInputOptions } from "./TextInputValidator";
+import { textInputValidator} from "./TextInputValidator";
 import {
-    WordScoringOptions,
+   
     deepMerge,
     lowerRegex,
     punctuationRegex,
@@ -22,27 +22,9 @@ import {
     analyzeWord,
     scoreWord
 } from "../../../_Utils";
+import {type  PasswordRuleOptions } from "../../types";
 
 export const SCOREANALYSISPASSWORD = "scoreAnalysisPassword";
-
-export interface PassworkRuleOptions extends TextInputOptions {
-    upperCaseAllow?: boolean;
-    lowerCaseAllow?: boolean;
-    symbolAllow?: boolean;
-    numberAllow?: boolean;
-    punctuationAllow?: boolean;
-    minLowercase?: number;
-    minUppercase?: number;
-    minNumbers?: number;
-    minSymbols?: number;
-    customUpperRegex?: RegExp;
-    customLowerRegex?: RegExp;
-    customNumberRegex?: RegExp;
-    customSymbolRegex?: RegExp;
-    customPunctuationRegex?: RegExp;
-    enableScoring?: boolean;
-    scoringPasswordOptions?: WordScoringOptions
-}
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -112,7 +94,7 @@ export class PasswordInputValidator extends AbstractFieldValidator {
     public validate = (
         value: string | undefined,
         targetInputname: string,
-        optionsValidate: PassworkRuleOptions,
+        optionsValidate: PasswordRuleOptions,
         ignoreMergeWithDefaultOptions: boolean = false
     ): this => {
 
@@ -219,9 +201,9 @@ export class PasswordInputValidator extends AbstractFieldValidator {
     }
 
     private mergeOptions(
-        optionsinputtext: PassworkRuleOptions,
+        optionsinputtext: PasswordRuleOptions,
         ignoreDefaults: boolean
-    ): PassworkRuleOptions {
+    ): PasswordRuleOptions {
 
         if (ignoreDefaults) {
             return optionsinputtext;

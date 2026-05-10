@@ -10,56 +10,8 @@
  */
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import { OptionsMediaVideo } from './InterfaceMedia';
-
-interface VideoDimensions {
-    width: number;
-    height: number
-}
-
-export interface VideoValidatorInterface {
-    /**
-    * Validates one or more video files based on various criteria such as file extension, size, MIME type,
-    * and metadata (dimensions and duration).
-    * 
-    * This function checks whether the uploaded video files meet the following requirements:
-    * - The file extension must be valid and match one of the allowed extensions specified in the configuration.
-    * - The file size must be less than or equal to the maximum allowed size.
-    * - The MIME type of the file must be valid.
-    * - The metadata of the video (dimensions and duration) must be validated.
-    * 
-    * If any of these criteria fail, an error will be returned, and the file will be ignored for subsequent validations.
-    * 
-    * @param {File | FileList} medias - The video file(s) to validate. Can be a single file or a list of files.
-    * @param {string} [targetInputname='videofile'] - The name of the input field, used to personalize the error messages.
-    * @param {OptionsMediaVideo} [optionsmedia] - The video file validation options, including allowed extensions, 
-    *                                          allowed MIME types, and file size restrictions.
-    * 
-    * @returns {Promise<this>} - A promise that returns the instance of the object after validating the files, 
-    *                             allowing for chaining of additional methods if necessary.
-    * 
-    * @example
-    * const videoFiles = document.getElementById('videoInput').files;
-    * await validator.fileValidator(videoFiles, 'videoInput', {
-    *   extensions: ['mp4', 'mkv'],
-    *   allowedMimeTypeAccept: ['video/mp4', 'video/x-matroska'],
-    *   maxsizeFile: 10,
-    *   unityMaxSizeFile: 'MiB'
-    * });
-    * 
-    * @throws {Error} - Throws an error if validation fails for any of the files, with details about the encountered issue.
-    * 
-    * @see {@link metadataValidate} for validating metadata (dimensions, duration, etc.).
-    * @see {@link sizeValidate} for validating the size of the video files.
-    * @see {@link extensionValidate} for validating the extensions of the video files.
-    * @see {@link mimeTypeFileValidate} for validating the MIME type of the video files.
-    */
-    validate: (
-        medias: File | FileList,
-        targetInputname: string,
-        optionsmedia: OptionsMediaVideo
-    ) => Promise<this>
-}
+import type { OptionsMediaVideo,VideoDimensions  } from '../../types';
+import type { VideoValidatorInterface } from '../../contracts';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>

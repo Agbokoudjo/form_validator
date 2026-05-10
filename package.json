@@ -19,7 +19,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
-  "version": "4.0.3",
+  "version": "4.1.0",
   "keywords": [
     "jquery",
     "typescript",
@@ -238,6 +238,36 @@
         "default": "./dist/cjs/validation/rules/file/index.js"
       }
     },
+    "./validation/cache/index": {
+      "import": {
+        "types": "./dist/validation/cache/index.d.ts",
+        "default": "./dist/esm/validation/cache/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/cache/index.d.ts",
+        "default": "./dist/cjs/validation/cache/index.js"
+      }
+    },
+    "./validation/contracts/index": {
+      "import": {
+        "types": "./dist/validation/contracts/index.d.ts",
+        "default": "./dist/esm/validation/contracts/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/contracts/index.d.ts",
+        "default": "./dist/cjs/validation/contracts/index.js"
+      }
+    },
+    "./validation/types/index": {
+      "import": {
+        "types": "./dist/validation/types/index.d.ts",
+        "default": "./dist/esm/validation/types/index.js"
+      },
+      "require": {
+        "types": "./dist/validation/types/index.d.ts",
+        "default": "./dist/cjs/validation/types/index.js"
+      }
+    },
     "./validation/rules/text": {
       "import": {
         "types": "./dist/validation/rules/text/index.d.ts",
@@ -246,6 +276,16 @@
       "require": {
         "types": "./dist/validation/rules/text/index.d.ts",
         "default": "./dist/cjs/validation/rules/text/index.js"
+      }
+    },
+    "./translation/index": {
+      "import": {
+        "types": "./dist/translation/index.d.ts",
+        "default": "./dist/esm/translation/index.js"
+      },
+      "require": {
+        "types": "./dist/translation/index.d.ts",
+        "default": "./dist/cjs/translation/index.js"
       }
     }
   },
@@ -290,6 +330,15 @@
       "validation/core/router": [
         "./dist/validation/core/router/index.d.ts"
       ],
+      "validation/cache": [
+        "./dist/validation/cache/index.d.ts"
+      ],
+      "validation/contracts": [
+        "./dist/validation/contracts/index.d.ts"
+      ],
+      "validation/types": [
+        "./dist/validation/types/index.d.ts"
+      ],
       "validation/core/adapter": [
         "./dist/validation/core/adapter/index.d.ts"
       ],
@@ -307,6 +356,7 @@
       ]
     }
   },
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
     "prepare": "yarn build",
@@ -332,19 +382,17 @@
     "@types/papaparse": "^5.5.2",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/xlsx": "^0.0.36",
+    "@vitejs/plugin-legacy": "^8.0.1",
     "jquery": "^4.0.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vite": "^8.0.10"
+    "vite": "^8.0.11"
   },
   "dependencies": {
-    "@vitejs/plugin-legacy": "^8.0.1",
-    "@wlindabla/event_dispatcher": "^1.2.1",
-    "@wlindabla/http_client": "^1.1.5",
-    "animate.css": "^4.1.1",
+    "@wlindabla/event_dispatcher": "^1.2.2",
+    "@wlindabla/http_client": "^1.2.0",
     "jszip": "^3.10.1",
-    "libphonenumber-js": "^1.12.42",
-    "lodash.debounce": "^4.0.8",
+    "libphonenumber-js": "^1.13.0",
     "papaparse": "^5.5.3",
     "pdfjs-dist": "^5.7.284",
     "sweetalert2": "^11.26.24",

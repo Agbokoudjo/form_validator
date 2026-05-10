@@ -19,6 +19,9 @@ const entries = {// Point d'entrée principal
     // Validation et ses sous-modules
     'validation/index': 'src/Validation/index.ts',
     'validation/core/index': 'src/Validation/Core/index.ts',
+    'validation/cache/index': 'src/Validation/Cache/index.ts',
+    'validation/contracts/index': 'src/Validation/Contracts/index.ts',
+    'validation/types/index': 'src/Validation/types/index.ts',
     'validation/core/router/index': 'src/Validation/Core/Router/index.ts',
     'validation/core/adapter/index': 'src/Validation/Core/Adapter/index.ts',
 
@@ -70,5 +73,5 @@ export default defineConfig([
             options.target = 'esnext';   // forcer esbuild directement
         },
         outExtension: () => ({ js: '.js' }),
-    },
+    }
 ]);

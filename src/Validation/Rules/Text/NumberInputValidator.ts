@@ -10,14 +10,7 @@
  */
 
 import { AbstractFieldValidator } from "../FieldValidator";
-
-export interface NumberOptions {
-    min?: number;
-    max?: number;
-    step?: number;
-    regexValidator?: RegExp;
-}
-
+import type { NumberOptions } from "../../types";
 /**
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
 * @package <https://github.com/Agbokoudjo/form_validator>

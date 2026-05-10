@@ -16,20 +16,20 @@ import {
     MediaRequiredType,
     MediaType,
     FormInputType
-} from "../../../../_Utils";
+} from "../../../_Utils";
 
 import { CountryCode } from "libphonenumber-js";
 
 import {
     AbstractFieldController,
-    EventValidate,
     DocumentTypeResolver
  } from "./AbstractFieldController";
 
-import { formInputValidator, OptionsValidate } from "../../Router";
+import { formInputValidator} from "../Router";
 
-import {
-    PassworkRuleOptions,
+import type {
+    PasswordRuleOptions,
+    EventValidate,
     NumberOptions,
     DateInputOptions,
     URLOptions,
@@ -43,50 +43,17 @@ import {
     FQDNOptions,
     EmailInputOptions,
     TelInputOptions,
-    FieldValidatorInterface,
     DimensionsMediaOption,
     OptionsExcelFile,
     OptionsCsvFile,
     CsvColumnType,
     OptionsWordFile,
     OptionsOdfFile,
-    UnityMaxSizeTypeFile
-} from "../../../Rules"
+    UnityMaxSizeTypeFile,
+    OptionsValidate
+} from "../../types"
 
-/**
- * Interface for form field validation components.
- */
-export interface FormChildrenValidateInterface {
-    /**
-     * Checks if the current field is valid (i.e., has no validation errors).
-     */
-    isValid(): boolean;
-
-    /**
-     * Retrieves the current validation options for the field.
-     */
-    fieldOptionsValidate: OptionsValidate;
-
-    /**
-     * Runs the validation logic on the field asynchronously.
-     */
-    validate(): Promise<void>;
-
-    /**
-     * Returns the event object responsible for triggering field validation.
-     */
-    eventValidate(): EventValidate;
-
-    /**
-     * Returns the event object responsible for clearing field errors.
-     */
-    eventClearError(): EventValidate;
-
-    /**
-     * Clears the visual error state and message for the field.
-     */
-    clearErrorField(): void;
-}
+import type { FieldValidatorInterface, FormChildrenValidateInterface } from "../../contracts" ;
 
 /**
  * * Class that implements validation for non-file form fields.
@@ -207,6 +174,7 @@ export class FieldInputController extends AbstractFieldController implements For
                     break;
             }
         }
+
         return this.optionsValidate;
     }
 
@@ -460,7 +428,7 @@ export class FieldInputController extends AbstractFieldController implements For
     /**
     * Generates validation options for password fields, including character requirements.
     */
-    private get optionsValidatePassword(): PassworkRuleOptions {
+    private get optionsValidatePassword(): PasswordRuleOptions {
         return {
             upperCaseAllow: this.parseBooleanAttr('data-upper-case-allow', true),
             lowerCaseAllow: this.parseBooleanAttr('data-lower-case-allow', true),

@@ -13,14 +13,13 @@
  * @phone +229 0167 25 18 86
  * @linkedin https://www.linkedin.com/in/internationales-web-apps-services-120520193/
  * @package https://github.com/Agbokoudjo/form_validator
- * @version 1.0.0
+ * @version 1.0.1
  * @license MIT
  */
 
 import {
     TranslationMessages,
-    FetchCacheTranslationInterface,
-    ConfigCacheAdapterTranslation
+    FetchCacheTranslationInterface
 } from "@wlindabla/http_client";
 
 /**

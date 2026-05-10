@@ -8,13 +8,9 @@
  *
  * For more information, please feel free to contact the author.
  */
-import {
-    MediaValidatorInterface,
-    UnityMaxSizeTypeFile,
-    OptionsValidateTypeFile
-} from './InterfaceMedia';
-import { AbstractFieldValidator, } from '../FieldValidator';
-import { convertOctetToMo } from "../../../_Utils"
+import type{UnityMaxSizeTypeFile,OptionsValidateTypeFile} from '../../types';
+import { AbstractFieldValidator } from '../FieldValidator';
+import type {MediaValidatorInterface} from '../../contracts';
 
 /**
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

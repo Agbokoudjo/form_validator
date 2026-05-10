@@ -10,51 +10,9 @@
  */
 
 import { DataInput } from "../../_Utils";
-import { formErrorStore, FormErrorStoreInterface } from "../Store";
-
-export interface FieldStateValidating {
-	errors: string[];
-	isValid: boolean;
-}
-
-/**
- * Interface defining the contract for any single field validator implementation.
- * It provides core utilities for interacting with the global error store and performing validation.
- */
-export interface FieldValidatorInterface {
-
-	/**
-	 * Provides read-only access to the central error management store.
-	 * @type {FormErrorStoreInterface}
-	 */
-	readonly formErrorStore: FormErrorStoreInterface;
-
-	/**
-	 * Sets the validation state (validity status and error message) for the field.
-	 * * @param {boolean} isValid - The validation status (`true` for valid, `false` for invalid).
-	 * @param {string | string[]} errorMessage - The error message(s) to associate with the field if invalid.
-	 * @param {string} fieldName - The name of the input field to update.
-	 * * @returns {this} The current instance for method chaining.
-	 */
-	setValidationState(isValid: boolean, errorMessage: string | string[], fieldName: string): this;
-
-	/**
-	 * Retrieves the current validation state of the field.
-	 * * @param {string} fieldName - The name of the input field to check.
-	 * @returns {FieldStateValidating} An object containing the validity status and error messages.
-	 */
-	getState(fieldName: string): FieldStateValidating;
-
-	/**
-	* Executes the specific validation logic for this field and updates the error state.
-	* * This method supports both synchronous and asynchronous validation.
-	* * @param {DataInput} value - The value to be validated.
-	* @param {string} fieldName - The name of the field.
-	* @returns {Promise<this> | this} Returns the instance (`this`) for synchronous validation, or a 
-	* Promise resolving to the instance for asynchronous validation.
-	*/
-	validate(value: DataInput, fieldName: string, optionsValidate: any,...otherArgs:any): Promise<this> | this;
-}
+import type { FieldValidatorInterface, FormErrorStoreInterface } from "../contracts";
+import type { FieldStateValidating } from "../types";
+import { formErrorStore} from "../Store";
 
 /**
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

@@ -11,60 +11,8 @@
 
 import { escapeHtmlBalise, deepMerge } from "../../../_Utils";
 import { AbstractFieldValidator } from "../FieldValidator";
-
-export interface FQDNOptions {
-    allowWildcard?: boolean; // interdit les domaines de type *.example.com
-    allowNumericTld?: boolean; // interdit les TLD purement numériques
-    allowedUnderscores?: boolean; //if set to true, the validator will allow underscores in the URL.
-    requireTLD?: boolean;         // Exige un TLD comme .com, .org
-    allowTrailingDot?: boolean; // if set to true, the validator will allow the domain to end with a `.` character.
-    ignoreMaxLength?: boolean; // vérifie que chaque partie ≤ 63 caractères
-    allowHyphens?: boolean; // Les tirets sont la norme DNS, donc la valeur par défaut est TRUE.
-}
-
-export interface FQDNInputValidatorInterface {
-
-    /**
-        * Validates a Fully Qualified Domain Name (FQDN) input field.
-        *
-        * This function applies strict validation rules on the structure of the domain name, including:
-        * - the presence of a valid top-level domain (TLD),
-        * - disallowing underscores in domain segments,
-        * - optional support for trailing dots,
-        * - restrictions on numeric-only TLDs,
-        * - length limits on domain segments.
-        * 
-        * Custom validation behavior can be configured through the provided options.
-        * On failure, it updates the validation state and error messages for the target field.
-        *
-        * @param input - The input string representing the domain name to validate (e.g., `example.com`).
-        * @param targetInputname - The name or identifier of the input field in the form (used for error reporting).
-        * @param fqdnOptions - An object configuring the validation logic for the domain input.
-        *
-        * @param fqdnOptions.requireTLD - (default `true`) If `true`, the domain must end with a valid TLD (e.g., `.com`).
-        * @param fqdnOptions.allowedUnderscores - (default `false`) If `true`, underscores (`_`) are allowed in domain segments.
-        * @param fqdnOptions.allowTrailingDot - (default `false`) If `true`, a trailing dot (e.g., `example.com.`) is permitted.
-        * @param fqdnOptions.allowNumericTld - (default `false`) If `true`, allows numeric-only TLDs (e.g., `example.123`).
-        * @param fqdnOptions.allowWildcard - (default `false`) If `true`, allows domains that start with a wildcard (`*.example.com`).
-        * @param fqdnOptions.ignoreMaxLength - (default `false`) If `true`, bypasses the 63-character-per-label limit.
-        * 
-        * Inherits from `TextInputOptions`:
-        * @param fqdnOptions.regexValidator - A custom regular expression to validate domain format.
-        * @param fqdnOptions.errorMessageInput - A custom error message to show if the input is invalid.
-        * @param fqdnOptions.minLength - The minimum required character length.
-        * @param fqdnOptions.maxLength - The maximum allowed character length.
-        * @param fqdnOptions.requiredInput - If `true`, the input must not be empty.
-        * @param fqdnOptions.escapestripHtmlAndPhpTags - If `true`, removes HTML and PHP tags before validation.
-        * @param fqdnOptions.egAwait - Example value to include in the error message for user guidance.
-        *
-        * @param ignoreMergeWithDefaultOptions - If `true`, skips merging with default FQDN validation options.
-        *
-        * @returns A Promise resolving with the current class instance (`this`) for method chaining.
-        *
-    */
-
-    validate: (input: string, targetInputname: string, fqdnOptions: FQDNOptions, ignoreMergeWithDefaultOptions: boolean) => Promise<this>;
-}
+import type { FQDNInputValidatorInterface } from "../../contracts";
+import type { FQDNOptions } from "../../types";
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
