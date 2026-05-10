@@ -2283,7 +2283,7 @@ __metadata:
     "@types/xlsx": "npm:^0.0.36"
     "@vitejs/plugin-legacy": "npm:^8.0.1"
     "@wlindabla/event_dispatcher": "npm:^1.2.2"
-    "@wlindabla/http_client": "npm:^1.2.1"
+    "@wlindabla/http_client": "npm:^1.2.2"
     jquery: "npm:^4.0.0"
     jszip: "npm:^3.10.1"
     libphonenumber-js: "npm:^1.13.0"
@@ -2297,12 +2297,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wlindabla/http_client@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "@wlindabla/http_client@npm:1.2.1"
+"@wlindabla/http_client@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@wlindabla/http_client@npm:1.2.2"
   dependencies:
     "@wlindabla/event_dispatcher": "npm:^1.2.2"
-  checksum: 10c0/e2a7def5130a8cefcf23fe9ca41d57488fb2c5fd9d7fdccea5751891bae4891decaa0899b8f4b3a71bcf408f0ece74ecd0ac697af78fd696621c13931a3486c2
+  checksum: 10c0/1819c84bb6797ebcdb91b0070228ef69b932c51f2f7a3473961bd9d40124644543a4dca669f469e804f33efd4796880a75342ae92b3074d86392644baa307ac8
   languageName: node
   linkType: hard
 

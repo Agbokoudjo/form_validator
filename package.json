@@ -19,7 +19,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "keywords": [
     "jquery",
     "typescript",
@@ -390,7 +390,7 @@
   },
   "dependencies": {
     "@wlindabla/event_dispatcher": "^1.2.2",
-    "@wlindabla/http_client": "^1.2.1",
+    "@wlindabla/http_client": "^1.2.2",
     "jszip": "^3.10.1",
     "libphonenumber-js": "^1.13.0",
     "papaparse": "^5.5.3",
