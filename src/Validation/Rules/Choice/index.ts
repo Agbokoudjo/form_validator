@@ -10,7 +10,7 @@
  */
 import { escapeHtmlBalise } from "../../../_Utils";
 import { AbstractFieldValidator } from "../FieldValidator";
-import type { SelectValidatorInterface } from "../../contracts";
+import type { SelectValidatorInterface } from "../../Contracts";
 import type { SelectOptions } from "../../types";
 
 /**
@@ -77,7 +77,7 @@ export class SelectValidator extends AbstractFieldValidator implements SelectVal
 
 export const selectValidator = SelectValidator.getInstance();
 
-import type {CheckBoxValidatorInterface} from "../../contracts";
+import type { CheckBoxValidatorInterface } from "../../Contracts";
 import type { OptionsCheckbox } from "../../types";
 
 /**

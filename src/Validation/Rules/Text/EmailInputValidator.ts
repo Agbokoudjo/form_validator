@@ -11,11 +11,11 @@
  */
 
 import { isIP, checkHost, isByteLength, deepMergeAll } from "../../../_Utils";
-import type { EmailInputValidatorInterface } from "../../contracts";
+import type { EmailInputValidatorInterface } from "../../Contracts";
 import { AbstractFieldValidator } from "../FieldValidator";
 import { fqdnInputValidator } from "./FQDNInputValidator";
 import { textInputValidator } from "./TextInputValidator";
-import type { EmailInputOptions} from "../../types";
+import type { EmailInputOptions } from "../../types";
 
 
 /**

@@ -11,7 +11,7 @@
 import { REGEX_FORMAT_DATE, pad, zipArray } from "../../../_Utils";
 import { AbstractFieldValidator, } from "../FieldValidator";
 import type { DateInputOptions } from "../../types";
-import type { DateInputValidatorInterface } from "../../contracts";
+import type { DateInputValidatorInterface } from "../../Contracts";
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

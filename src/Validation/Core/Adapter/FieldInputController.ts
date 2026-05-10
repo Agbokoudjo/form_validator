@@ -23,9 +23,9 @@ import { CountryCode } from "libphonenumber-js";
 import {
     AbstractFieldController,
     DocumentTypeResolver
- } from "./AbstractFieldController";
+} from "./AbstractFieldController";
 
-import { formInputValidator} from "../Router";
+import { formInputValidator } from "../Router";
 
 import type {
     PasswordRuleOptions,
@@ -53,7 +53,7 @@ import type {
     OptionsValidate
 } from "../../types"
 
-import type { FieldValidatorInterface, FormChildrenValidateInterface } from "../../contracts" ;
+import type { FieldValidatorInterface, FormChildrenValidateInterface } from "../../Contracts";
 
 /**
  * * Class that implements validation for non-file form fields.
@@ -238,12 +238,12 @@ export class FieldInputController extends AbstractFieldController implements For
         return true;
     }
 
-    
+
 
     /**
     * Retrieves a specific attribute from the checkbox container.
     */
-    private getAttrCheckboxContainer(attributeName: string): string | undefined|null {
+    private getAttrCheckboxContainer(attributeName: string): string | undefined | null {
 
         this.hasContainerCheckbox();
 
@@ -255,7 +255,7 @@ export class FieldInputController extends AbstractFieldController implements For
     /**
     * Retrieves a specific attribute from the radio container.
     */
-    private getAttrRadioContainer(attributeName: string): string | undefined |null {
+    private getAttrRadioContainer(attributeName: string): string | undefined | null {
 
         this.hasContainerRadio();
 
@@ -422,7 +422,7 @@ export class FieldInputController extends AbstractFieldController implements For
             errorMessageInput: this.errorMessage,
             typeInput: "text",
             egAwait: this.egAwait,
-            match:this.matchRegex
+            match: this.matchRegex
         }
     }
     /**
@@ -446,8 +446,8 @@ export class FieldInputController extends AbstractFieldController implements For
             minNumbers: this.parseIntAttr('data-min-number'),
             minSymbols: this.parseIntAttr('data-min-symbol'),
             enableScoring: this.parseBooleanAttr('data-enable-scoring', true),
-            customUpperRegex: stringToRegex(this.getAttrChildren('data-custom-upper-regex'),'u'),
-            customLowerRegex: stringToRegex(this.getAttrChildren('data-custom-lower-regex'),'u'),
+            customUpperRegex: stringToRegex(this.getAttrChildren('data-custom-upper-regex'), 'u'),
+            customLowerRegex: stringToRegex(this.getAttrChildren('data-custom-lower-regex'), 'u'),
             customNumberRegex: stringToRegex(this.getAttrChildren('data-custom-number-regex'), 'u'),
             customSymbolRegex: stringToRegex(this.getAttrChildren('data-custom-symbol-regex'), 'u'),
             customPunctuationRegex: stringToRegex(this.getAttrChildren('data-custom-punctuation-regex'), 'u'),
@@ -505,33 +505,33 @@ export class FieldInputController extends AbstractFieldController implements For
         }
     }
 
-    private get optionsValidateExcelFile():OptionsExcelFile{
+    private get optionsValidateExcelFile(): OptionsExcelFile {
         return {
             minSheets: this.parseIntAttr('data-min-sheets', 1),
             maxSheets: this.parseIntAttr('data-max-sheets'),
             requiredColumns: this.resolveColumns(this.getAttrChildren('data-required-columns')),
             rejectEmptySheet: this.parseBooleanAttr('data-reject-empty-sheet', true),
-            sheetIndex: this.parseIntAttr('data-sheet-index', 1) ,
+            sheetIndex: this.parseIntAttr('data-sheet-index', 1),
             ...this.baseOptionsValidateMedia
         }
     }
 
-    private get optionsValidateCsvFile():OptionsCsvFile{
+    private get optionsValidateCsvFile(): OptionsCsvFile {
         return {
             delimiter: this.getAttrChildren('data-delimiter'),
             requiredHeaders: this.resolveRequiredHeaders(this.getAttrChildren('data-required-headers')),
             columnTypes: this.resolveColumnTypes(this.getAttrChildren('data-column-types')),
-            useFirstLineAsHeaders: this.parseBooleanAttr('data-use-first-line-as-headers',true),
+            useFirstLineAsHeaders: this.parseBooleanAttr('data-use-first-line-as-headers', true),
             skipEmptyLines: this.parseBooleanAttr('data-skip-empty-lines', true),
             maxRows: this.parseIntAttr('data-max-rows'),
-            minRows: this.parseIntAttr('data-min-rows',1),
-            maxRowErrors: this.parseIntAttr('data-max-row-errors',2),
+            minRows: this.parseIntAttr('data-min-rows', 1),
+            maxRowErrors: this.parseIntAttr('data-max-row-errors', 2),
             worker: this.parseBooleanAttr('data-worker'),
             ...this.baseOptionsValidateMedia
         }
     }
 
-    private get optionsValidateWordFile(): OptionsWordFile{
+    private get optionsValidateWordFile(): OptionsWordFile {
         return {
             rejectEmptyDocument: this.parseBooleanAttr('data-reject-empty-document', true),
             minParagraphs: this.parseIntAttr('data-min-paragraphs'),
@@ -542,11 +542,11 @@ export class FieldInputController extends AbstractFieldController implements For
         }
     }
 
-    private get optionsValidateOdfFile(): OptionsOdfFile{
+    private get optionsValidateOdfFile(): OptionsOdfFile {
         return {
             rejectEmptyDocument: this.parseBooleanAttr('data-reject-empty-document', true),
             minParagraphs: this.parseIntAttr('data-min-paragraphs'),
-            allowRtf : this.parseBooleanAttr('data-allow-rtf', true),
+            allowRtf: this.parseBooleanAttr('data-allow-rtf', true),
             requiredTextFragments: this.parseRawToStringArray(this.getAttrChildren('data-required-text-fragments')),
             ...this.baseOptionsValidateMedia
         }
@@ -650,7 +650,7 @@ export class FieldInputController extends AbstractFieldController implements For
                 for (const [key, value] of Object.entries(parsed)) {
                     // Clean the column name (the key)
                     let cleanKey = escapeHtmlBalise(String(key).trim()) as string;
-                       cleanKey= cleanKey.replace(/\s+/g, ' ');
+                    cleanKey = cleanKey.replace(/\s+/g, ' ');
 
                     // Clean and validate the type (the value)
                     const cleanValue = String(value).trim().toLowerCase() as CsvColumnType;

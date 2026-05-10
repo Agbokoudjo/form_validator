@@ -9,7 +9,7 @@
  * For more information, please feel free to contact the author.
  */
 
-import { FormErrorStoreInterface } from "../contracts";
+import { FormErrorStoreInterface } from "../Contracts";
 
 /**
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

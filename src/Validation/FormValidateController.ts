@@ -25,7 +25,7 @@ import type { OptionsValidate } from "./types";
 import type {
     FieldOptionsValidateCacheAdapterInterface,
     FormChildrenValidateInterface
-} from "./contracts";
+} from "./Contracts";
 
 import { SessionStorageCacheAdapter } from "./Cache";
 
@@ -206,7 +206,7 @@ export class FormValidateController {
     constructor(
         formCssSelector: string = ".form-validate",
         _optionsValidatorCacheAdapter?: FieldOptionsValidateCacheAdapterInterface) {
-        
+
         const formElement = document.querySelector<HTMLFormElement>(`form${formCssSelector}`);
 
         if (!formElement) {
@@ -230,24 +230,24 @@ export class FormValidateController {
 
         // Indexing Events (Replacing .each() and .attr())
         allChildren.forEach(el => {
-            ['blur', 'input', 'change', 
-             'dragenter', 'focus',
-             'dragleave', 'dragover','drop'].forEach(evt => {
-                if(el.hasAttribute(`data-event-validate-${evt}`)) {
-                    const current = this._eventGroups.get(evt) || [];
-                    current.push(el.id);
-                    this._eventGroups.set(evt, current);
-                }
-            });
+            ['blur', 'input', 'change',
+                'dragenter', 'focus',
+                'dragleave', 'dragover', 'drop'].forEach(evt => {
+                    if (el.hasAttribute(`data-event-validate-${evt}`)) {
+                        const current = this._eventGroups.get(evt) || [];
+                        current.push(el.id);
+                        this._eventGroups.set(evt, current);
+                    }
+                });
         });
     }
 
     /**
      * Helper to get children as a real Array instead of a JQuery object.
      */
-    private readonly getChildrensArray =(): HTMLFormChildrenElement[] =>{
+    private readonly getChildrensArray = (): HTMLFormChildrenElement[] => {
         const elements = Array.from(this._form.querySelectorAll<HTMLFormChildrenElement>("input, select, textarea"));
-        
+
         return elements.filter(el => {
             if (el instanceof HTMLInputElement) {
                 return !this._excludedTypes.includes(el.type);
@@ -266,7 +266,7 @@ export class FormValidateController {
             )
         ).then(() => void 0);
     }
-    
+
     public validateChildrenForm = async (target: HTMLFormChildrenElement): Promise<void> => {
 
         let optionsValidate: OptionsValidate | undefined = undefined;
@@ -301,7 +301,7 @@ export class FormValidateController {
         elmtfield: HTMLElement,
         errormessagefield: string[],
         className_container_ErrorMessage?: string): void {
-        
+
         addErrorMessageFieldDom(
             elmtfield,
             errormessagefield,
@@ -346,12 +346,12 @@ export class FormValidateController {
 
     public get idChildrenUsingEventDrop(): string[] {
         return this._eventGroups.get('drop') || [];
-    } 
+    }
 
     public get idChildrenUsingEventDragover(): string[] {
         return this._eventGroups.get('dragover') || [];
     }
-   
+
     public get idChildrenUsingEventDragleave(): string[] {
         return this._eventGroups.get('dragleave') || [];
     }
@@ -380,14 +380,14 @@ export class FormValidateController {
         const results = await Promise.all(
             allChildren.map(async (el) => {
                 try {
-                   
+
                     await this.validateChildrenForm(el);
                     const v = this._formChildrenValidate.get(el.name);
 
                     return v ? v.isValid() : true;
                 } catch (e) {
                     Logger.error(`Validation interrupted for field ${el.name}:`, e);
-                    return false; 
+                    return false;
                 }
             })
         );

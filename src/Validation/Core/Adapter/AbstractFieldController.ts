@@ -36,7 +36,7 @@ import {
     EventValidate
 } from "../../types";
 
-import type { FieldValidatorInterface } from "../../contracts";
+import type { FieldValidatorInterface } from "../../Contracts";
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>

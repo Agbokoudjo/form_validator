@@ -8,9 +8,9 @@
  *
  * For more information, please feel free to contact the author.
  */
-import type{UnityMaxSizeTypeFile,OptionsValidateTypeFile} from '../../types';
+import type { UnityMaxSizeTypeFile, OptionsValidateTypeFile } from '../../types';
 import { AbstractFieldValidator } from '../FieldValidator';
-import type {MediaValidatorInterface} from '../../contracts';
+import type { MediaValidatorInterface } from '../../Contracts';
 
 /**
 * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -64,9 +64,9 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
      * @param allowedExtensions Un tableau des extensions autorisées.
      * @returns L'instance de la classe.
      */
-    protected isValidExtension = (file: File,allowedExtensions?: string[]): string | null=> {
+    protected isValidExtension = (file: File, allowedExtensions?: string[]): string | null => {
         const fileExtension = this.getFileExtension(file);
-        if (!fileExtension || !allowedExtensions){ return null ;}
+        if (!fileExtension || !allowedExtensions) { return null; }
 
         if (!allowedExtensions.includes(fileExtension)) {
             return `The ${this.getContext()} ${file.name} extension .${fileExtension} is not allowed.`;
@@ -80,7 +80,7 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
     }
 
     protected async signatureFileValidate(file: File, uint8Array: Uint8Array): Promise<string | null> {
-        return null;     
+        return null;
     }
 
     /**
@@ -95,14 +95,14 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
         return allowedSignatures.some(sig => header.startsWith(sig.toLowerCase()));
     }
 
-    protected  async mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[] | undefined): Promise<string | null> {
+    protected async mimeTypeFileValidate(file: File, allowedMimeTypeAccept?: string[] | undefined): Promise<string | null> {
         return null;
     }
 
     /**
      * the children class (VideoValidator and ImageValidator can modify this)
      */
-    protected async getFileDimensions(file: File): Promise<{ width: number, height: number }>{
+    protected async getFileDimensions(file: File): Promise<{ width: number, height: number }> {
         return {
             width: 0,
             height: 0
@@ -159,7 +159,7 @@ export abstract class AbstractMediaValidator extends AbstractFieldValidator impl
      * @param xml      - The XML string to validate.
      * @param filename - Used in the error message.
      */
-    protected validateXml(xml: string, filename: string, context: string ="word/document.xml"): string | null {
+    protected validateXml(xml: string, filename: string, context: string = "word/document.xml"): string | null {
         try {
             const parser = new DOMParser();
             const doc = parser.parseFromString(xml, 'application/xml');

@@ -11,7 +11,7 @@
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import type { OptionsImage } from '../../types';
-import type {MediaValidatorInterface} from '../../contracts';
+import type { MediaValidatorInterface } from '../../Contracts';
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * @package <https://github.com/Agbokoudjo/form_validator>
@@ -178,7 +178,7 @@ export class ImageValidator extends AbstractMediaValidator implements MediaValid
                 }
             };
             readerImg.onerror = async (errorEvent: ProgressEvent<FileReader>) => {
-                const error = errorEvent.target?.error;  
+                const error = errorEvent.target?.error;
                 resolve(`File reading error: ${error?.message} name_image: ${file.name}`);
             };
             readerImg.readAsArrayBuffer(file);
@@ -316,7 +316,7 @@ export class ImageValidator extends AbstractMediaValidator implements MediaValid
 
         return new Promise((resolve, reject) => {
             image.addEventListener('error', () => {
-                if (isFile) URL.revokeObjectURL(url); 
+                if (isFile) URL.revokeObjectURL(url);
                 if (config?.throw) {
                     reject('The media resource is either invalid, corrupt or unsuitable.');
                 } else {
@@ -325,7 +325,7 @@ export class ImageValidator extends AbstractMediaValidator implements MediaValid
             });
 
             image.addEventListener('load', () => {
-                if (isFile) URL.revokeObjectURL(url); 
+                if (isFile) URL.revokeObjectURL(url);
                 resolve(true);
             }, false);
         });

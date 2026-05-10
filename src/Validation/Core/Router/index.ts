@@ -17,7 +17,7 @@ import type {
     FieldValidatorInterface,
     FormInputValidatorInterface,
     ContainerValidatorInterface
-} from "../../contracts"
+} from "../../Contracts"
 
 import {
     emailInputValidator,
@@ -47,14 +47,14 @@ import type {
     OptionsCheckbox,
     OptionsRadio,
     SelectOptions,
-     OptionsWordFile,
+    OptionsWordFile,
     OptionsCsvFile,
     OptionsExcelFile,
     OptionsOdfFile,
     OptionsFile,
     OptionsImage,
     OptionsMediaVideo,
-     PasswordRuleOptions,
+    PasswordRuleOptions,
     URLOptions,
     NumberOptions,
     TelInputOptions,

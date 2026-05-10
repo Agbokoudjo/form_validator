@@ -1,5 +1,5 @@
 export type * from "./types";
-export type * from "./contracts";
+export type * from "./Contracts";
 
 export {
     LocalStorageCacheAdapter,

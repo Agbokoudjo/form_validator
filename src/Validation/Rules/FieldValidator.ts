@@ -10,7 +10,7 @@
  */
 
 import { DataInput } from "../../_Utils";
-import type { FieldValidatorInterface, FormErrorStoreInterface } from "../contracts";
+import type { FieldValidatorInterface, FormErrorStoreInterface } from "../Contracts";
 import type { FieldStateValidating } from "../types";
 import { formErrorStore} from "../Store";
 

@@ -11,8 +11,8 @@
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import * as pdfjsLib from 'pdfjs-dist';
-import type { OptionsFile} from '../../types';
-import type { MediaValidatorInterface } from '../../contracts';
+import type { OptionsFile } from '../../types';
+import type { MediaValidatorInterface } from '../../Contracts';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
@@ -24,9 +24,9 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
     private static instance: PdfValidator;
 
     private constructor() {
-         super(); 
-         pdfjsLib.GlobalWorkerOptions.workerSrc = 
-        'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
+        super();
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
     }
 
     public static getInstance(): PdfValidator {
@@ -203,7 +203,7 @@ export class ExcelValidator extends AbstractMediaValidator implements MediaValid
             const extensionError = this.isValidExtension(file, allowedExtensions);
             if (extensionError) {
                 this.handleValidationError(targetInputname, file.name, extensionError);
-                break; 
+                break;
             }
 
             this.sizeValidate(file, targetInputname, maxsizeFile, unityMaxSizeFile);
@@ -537,30 +537,30 @@ export class CsvValidator extends AbstractMediaValidator implements MediaValidat
         return null;
     }
 
-     /**
-     * Full CSV validation using PapaParse.
-     *
-     * Steps:
-     *  5. PapaParse structural check (parse errors)
-     *  6. Required headers
-     *  7. Row count (minRows / maxRows)
-     *  8. Column data types (per cell)
-     *
-     * @param file    - The CSV file.
-     * @param options - Validation options.
-     * @returns A formatted error string, or null if the file is valid.
-     */
-    private  validateCsv(file: File, options: OptionsCsvFile): Promise<string | null> {
+    /**
+    * Full CSV validation using PapaParse.
+    *
+    * Steps:
+    *  5. PapaParse structural check (parse errors)
+    *  6. Required headers
+    *  7. Row count (minRows / maxRows)
+    *  8. Column data types (per cell)
+    *
+    * @param file    - The CSV file.
+    * @param options - Validation options.
+    * @returns A formatted error string, or null if the file is valid.
+    */
+    private validateCsv(file: File, options: OptionsCsvFile): Promise<string | null> {
         const {
-            requiredHeaders  = [],
-            columnTypes      = {},
+            requiredHeaders = [],
+            columnTypes = {},
             useFirstLineAsHeaders = true,
-            skipEmptyLines   = true,
+            skipEmptyLines = true,
             delimiter,           // undefined → PapaParse auto-detects
-            minRows          = 1,
+            minRows = 1,
             maxRows,
             worker,
-            maxRowErrors=2
+            maxRowErrors = 2
         } = options;
 
         return new Promise<string | null>((resolve) => {
@@ -571,11 +571,11 @@ export class CsvValidator extends AbstractMediaValidator implements MediaValidat
             let abortedEarly = false;
 
             Papa.parse<Record<string, string>>(file, {
-                header:         useFirstLineAsHeaders,
+                header: useFirstLineAsHeaders,
                 skipEmptyLines: skipEmptyLines ? 'greedy' : false,
-                delimiter:      delimiter ?? '',   // '' = auto-detect
-                dynamicTyping:  false,             // we validate types ourselves
-                worker:  worker  ??  false,             // keep synchronous for simplicity in browser
+                delimiter: delimiter ?? '',   // '' = auto-detect
+                dynamicTyping: false,             // we validate types ourselves
+                worker: worker ?? false,             // keep synchronous for simplicity in browser
 
                 /**
                  * step() is called once per data row, enabling streaming validation.
@@ -845,7 +845,7 @@ export class CsvValidator extends AbstractMediaValidator implements MediaValidat
 export const csvValidator = CsvValidator.getInstance();
 
 import JSZip from 'jszip';
-import type { OptionsWordFile,WordDocumentInfo } from '../../types';
+import type { OptionsWordFile, WordDocumentInfo } from '../../types';
 
 /**
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
@@ -946,13 +946,13 @@ export class MicrosoftWordValidator extends AbstractMediaValidator implements Me
         return MicrosoftWordValidator.instance;
     }
 
-     /**
-     * Validates a File or FileList of Word documents.
-     *
-     * @param medias          - A single File or a FileList.
-     * @param targetInputname - The name of the input field (error key).
-     * @param optionsfile     - Validation options.
-     */
+    /**
+    * Validates a File or FileList of Word documents.
+    *
+    * @param medias          - A single File or a FileList.
+    * @param targetInputname - The name of the input field (error key).
+    * @param optionsfile     - Validation options.
+    */
     public validate = async (
         medias: File | FileList,
         targetInputname: string = 'wordfile',
@@ -964,9 +964,9 @@ export class MicrosoftWordValidator extends AbstractMediaValidator implements Me
 
         const {
             allowedExtensions = ['docx', 'doc'],
-            maxsizeFile       = 10,
-            unityMaxSizeFile  = 'MiB',
-            allowLegacyDoc    = true,
+            maxsizeFile = 10,
+            unityMaxSizeFile = 'MiB',
+            allowLegacyDoc = true,
         } = optionsfile;
 
         // Filter out .doc if legacy support is disabled
@@ -1012,7 +1012,7 @@ export class MicrosoftWordValidator extends AbstractMediaValidator implements Me
 
             // Determine actual format from magic bytes
             const isDocx = this.isZipBased(uint8Array);
-            const isDoc  = !isDocx && this.isOle2Based(uint8Array);
+            const isDoc = !isDocx && this.isOle2Based(uint8Array);
 
             // 5–9. Deep inspection — only possible for .docx (ZIP-based)
             if (isDocx) {
@@ -1271,7 +1271,7 @@ export class MicrosoftWordValidator extends AbstractMediaValidator implements Me
 
 export const microsoftWordValidator = MicrosoftWordValidator.getInstance();
 
-import type { OptionsOdfFile,OdfDocumentInfo  } from '../../types';
+import type { OptionsOdfFile, OdfDocumentInfo } from '../../types';
 
 /**
  * Official IANA MIME types for OpenDocument Format (ODF) files.
@@ -1369,7 +1369,7 @@ export class OdtValidator extends AbstractMediaValidator implements MediaValidat
 
     private static instance: OdtValidator;
 
-    public static LIBREOFFICE_EXTENSIONS=['odt', 'ott', 'ods', 'ots', 'odp', 'otp', 'odg', 'rtf'];
+    public static LIBREOFFICE_EXTENSIONS = ['odt', 'ott', 'ods', 'ots', 'odp', 'otp', 'odg', 'rtf'];
 
     private constructor() { super(); }
 
@@ -1397,7 +1397,7 @@ export class OdtValidator extends AbstractMediaValidator implements MediaValidat
         const files = medias instanceof FileList ? Array.from(medias) : [medias];
 
         const {
-            allowedExtensions = OdtValidator.LIBREOFFICE_EXTENSIONS ,
+            allowedExtensions = OdtValidator.LIBREOFFICE_EXTENSIONS,
             maxsizeFile = 10,
             unityMaxSizeFile = 'MiB',
             allowRtf = true,
@@ -1638,7 +1638,7 @@ export class OdtValidator extends AbstractMediaValidator implements MediaValidat
         }
 
         // Validate content.xml as well-formed XML
-        const xmlError = this.validateXml(contentXml, file.name,"content.xml");
+        const xmlError = this.validateXml(contentXml, file.name, "content.xml");
         if (xmlError) { return xmlError; }
 
         // Content inspection

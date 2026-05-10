@@ -10,8 +10,8 @@
  */
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
-import type { OptionsMediaVideo,VideoDimensions  } from '../../types';
-import type { VideoValidatorInterface } from '../../contracts';
+import type { OptionsMediaVideo, VideoDimensions } from '../../types';
+import type { VideoValidatorInterface } from '../../Contracts';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
@@ -77,13 +77,13 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
             allowedMimeTypeAccept = this.defaultOptions.allowedMimeTypeAccept,
             maxsizeFile = 50,   // 50 MiB is a more realistic default for video
             unityMaxSizeFile = 'MiB',
-            validateBySignature = true 
+            validateBySignature = true
         } = optionsmedia;
 
         for (const file of files) {
             const extensionError = this.isValidExtension(
                 file,
-                allowedExtensions 
+                allowedExtensions
             );
 
             if (extensionError) {
@@ -121,7 +121,7 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
                     `Metadata validation failed: ${error instanceof Error ? error.message : error}`);
                 break;
             }
-            
+
             if (!this.formErrorStore.isFieldValid(targetInputname)) { break; }
         }
 
@@ -245,7 +245,7 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
             };
 
             video.onerror = () => {
-                cleanup(); 
+                cleanup();
                 const msg = `Failed to load metadata for "${media.name}". The file may not be a valid video.`;
                 this.setValidationState(false, msg, targetInputname);
                 reject(new Error(msg)); // always reject with a meaningful Error
@@ -256,9 +256,9 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
         });
     };
 
-     /**
-     * Default validation options for video files.
-     */
+    /**
+    * Default validation options for video files.
+    */
     private get defaultOptions(): OptionsMediaVideo {
         return {
             allowedExtensions: [
@@ -267,7 +267,7 @@ export class VideoValidator extends AbstractMediaValidator implements VideoValid
                 "3g2", "m4v", "mpg", "mpeg",
                 "ts", "ogv", "asf", "rm", "divx"
             ],
-             allowedMimeTypeAccept: [
+            allowedMimeTypeAccept: [
                 'video/x-msvideo',                  // AVI
                 'video/x-flv',                      // FLV
                 'video/x-ms-wmv',                   // WMV

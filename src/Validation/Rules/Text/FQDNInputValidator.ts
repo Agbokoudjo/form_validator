@@ -11,7 +11,7 @@
 
 import { escapeHtmlBalise, deepMerge } from "../../../_Utils";
 import { AbstractFieldValidator } from "../FieldValidator";
-import type { FQDNInputValidatorInterface } from "../../contracts";
+import type { FQDNInputValidatorInterface } from "../../Contracts";
 import type { FQDNOptions } from "../../types";
 
 /**

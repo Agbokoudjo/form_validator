@@ -12,8 +12,8 @@
 import { checkHost, deepMergeAll, isIP, CustomURL as URL } from "../../../_Utils";
 import { AbstractFieldValidator } from "../FieldValidator";
 import { textInputValidator } from "./TextInputValidator";
-import { fqdnInputValidator} from "./FQDNInputValidator";
-import type { URLInputValidatorInterface } from "../../contracts";
+import { fqdnInputValidator } from "./FQDNInputValidator";
+import type { URLInputValidatorInterface } from "../../Contracts";
 import type { URLOptions } from "../../types";
 
 /**
@@ -39,7 +39,7 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
     public validate = async (urlData: string, targetInputname: string, url_options: URLOptions): Promise<this> => {
         this.formErrorStore.clearFieldState(targetInputname);
         urlData = this.getRawStringValue(urlData)
-        
+
         if (!urlData || /[\s<>]/.test(urlData) || urlData.startsWith('mailto:') === true) {
 
             return this.setValidationState(false, `The value "${urlData}" is not a valid URL format.`, targetInputname);
@@ -65,7 +65,7 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
                 escapestripHtmlAndPhpTags: __UrlOptions.escapestripHtmlAndPhpTags,
                 typeInput: "url",
                 egAwait: undefined,
-                match:__UrlOptions.match ?? true
+                match: __UrlOptions.match ?? true
             }, true)
 
             if (!this.formErrorStore.isFieldValid(targetInputname)) { return this; }
@@ -158,7 +158,7 @@ export class URLInputValidator extends AbstractFieldValidator implements URLInpu
                 return this.setValidationState(false, `The hostname "${hostname}" is not in the allowed list.`, targetInputname);
             }
         }
-        
+
         return this;
     }
 
