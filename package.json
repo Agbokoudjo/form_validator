@@ -390,7 +390,7 @@
   },
   "dependencies": {
     "@wlindabla/event_dispatcher": "^1.2.2",
-    "@wlindabla/http_client": "^1.2.0",
+    "@wlindabla/http_client": "^1.2.1",
     "jszip": "^3.10.1",
     "libphonenumber-js": "^1.13.0",
     "papaparse": "^5.5.3",

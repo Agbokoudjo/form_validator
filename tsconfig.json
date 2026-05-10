@@ -29,5 +29,5 @@
     ],
   },
   "include": ["src/**/*", "src/global.d.ts","pdfjs-dist.d.ts"],
-  "exclude": ["node_modules","src/main.ts","dist","src/test/**/*"]
+  "exclude": ["node_modules","dist","src/test/**/*"]
 }

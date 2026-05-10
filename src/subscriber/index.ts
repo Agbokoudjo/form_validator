@@ -6,7 +6,12 @@ import {
     FetchErrorTranslatorInterface
 } from "@wlindabla/http_client";
 
-import {showErrorDialog } from "../_Utils";
+import {
+    showErrorDialog,
+    showLoadingDialog,
+    showSuccessDialog,
+    handleErrorsManyForm
+} from "../_Utils";
 
 
 export class HttpRequestSubscriber implements EventSubscriberInterface{
@@ -57,15 +62,14 @@ import {
     FormSubmitRequestEvents,
     FormSubmitFailedEvent,
     FormSubmitSuccessEvent,
-    PrepareRequestFormSubmitEvent,
-    showLoadingDialog,
-    showSuccessDialog,
-    handleErrorsManyForm,
-    AppTranslation,
-} from '@wlindabla/form_validator';
+    PrepareRequestFormSubmitEvent
+} from '../FormSubmit/events';
 
-import { FetchResponse } from "@wlindabla/http_client/core";
-import { BadResponseHttp } from '@wlindabla/http_client/exceptions';
+import {
+    AppTranslation
+} from '../Translation';
+
+import { FetchResponse, BadResponseHttp } from "@wlindabla/http_client";
 
 /**
  * @example Twig block to add to your template:
@@ -91,7 +95,7 @@ import { BadResponseHttp } from '@wlindabla/http_client/exceptions';
  * document.addEventListener('DOMContentLoaded', async () => {
  *   window.SonataTranslator = appTranslation;
  *
- *   const currentHash = jQuery('meta[name="sonata-translations-hash"]').attr('content');
+ *   const currentHash = document.querySelector('meta[name="sonata-translations-hash"]').getAttribute('content');
  *   const cachedHash = localStorage.getItem('sonata_translations_hash');
  *
  *   if (currentHash && cachedHash !== currentHash) {
