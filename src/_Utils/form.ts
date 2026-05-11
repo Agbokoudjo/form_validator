@@ -386,23 +386,20 @@ export function MyFormComponent() {
 export function getInputPatternRegex(
     children: HTMLElement,
     formParentName: string,
-    flag: string = 'i'
+    flag: string = 'iu'
 ): RegExp | undefined {
     if (!children) {
         console.warn(`The input element is not present in the DOM for ${formParentName}`);
         return undefined;
     }
 
-    // Valider les flags
-    const isValidFlag = /^[gimuys]*$/.test(flag);
-    if (!isValidFlag) {
-        console.error(`Invalid regex flag(s) "${flag}" passed for the ${formParentName} form.`);
-        return undefined;
-    }
+    // Force 'u' flag if pattern contains Unicode property escapes
+    const rawFlag = /^[gimuys]*$/.test(flag) ? flag : 'iu';
+    const finalFlag = rawFlag.includes('u') ? rawFlag : rawFlag + 'u';
 
     try {
-        const pattern = getAttr(children, 'pattern') ?? getAttr(children,'data-pattern');
-        const fieldName = getAttr(children,'name') ?? '[unknown name]';
+        const pattern = getAttr(children, 'pattern') || getAttr(children,'data-pattern');
+        const fieldName = getAttr(children,'name') || '[unknown name]';
 
         if (!pattern) {
             console.error(
@@ -411,11 +408,8 @@ export function getInputPatternRegex(
 
             return undefined;
         }
-        const regex = new RegExp(pattern as string| RegExp, flag);
-
-        console.log('Pattern transform in javascript:', regex)
-
-        return regex;
+        
+        return new RegExp(pattern as string, finalFlag);
     } catch (error: any) {
         console.error(`Invalid pattern in ${formParentName} form field: ${error.message}`);
         throw error;

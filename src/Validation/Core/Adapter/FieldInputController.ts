@@ -104,6 +104,8 @@ export class FieldInputController extends AbstractFieldController implements For
                     specificType,
                     specificOptions // Each file now has its own specific rule set!
                 );
+
+                this.emitEventHandler();
             }
         } else {
             // Standard non-document validation
@@ -113,9 +115,9 @@ export class FieldInputController extends AbstractFieldController implements For
                 currentType,
                 this.fieldOptionsValidate
             );
-        }
 
-        this.emitEventHandler();
+            this.emitEventHandler();
+        }
     }
 
     /**
@@ -181,87 +183,6 @@ export class FieldInputController extends AbstractFieldController implements For
     protected get errorStoreAccessor(): FieldValidatorInterface | undefined {
 
         return formInputValidator.getValidator(this.name);
-    }
-
-    /**
-     * Ensures that all checkboxes with the same name are grouped within a container with the same ID.
-     * Throws an error if the structure is invalid.
-     */
-    private hasContainerCheckbox(): boolean {
-        // Remplacement de closest() jQuery par le natif
-        const container = this._children.closest(`[id="${this.name}"]`) as HTMLElement | null;
-
-        if (!container) {
-            throw new Error(`All checkboxes with name "${this.name}" must be wrapped inside a container with id="${this.name}".`);
-        }
-
-        // querySelectorAll remplace .find() et Array.from remplace .get()
-        const checkboxes = Array.from(
-            this._formParent.querySelectorAll<HTMLInputElement>(`input[type="checkbox"][name="${this.name}"]`)
-        );
-
-        // .contains est déjà une méthode native du DOM
-        const notInsideContainer = checkboxes.some((checkbox) => !container.contains(checkbox));
-
-        if (notInsideContainer) {
-            throw new Error(`Some checkboxes with name "${this.name}" are not inside the container with id="${this.name}". Group them correctly.`);
-        }
-
-        this._checkBoxContainer = container;
-        return true;
-    }
-
-    /**
-     * Ensures that all radios with the same name are grouped within a container with the same ID.
-     * Throws an error if the structure is invalid.
-     */
-    private hasContainerRadio(): boolean {
-        // Remplacement de closest() jQuery par le natif
-        const container = this._children.closest(`[id="${this.name}"]`) as HTMLElement | null;
-
-        if (!container) {
-            throw new Error(`All radios with name "${this.name}" must be wrapped inside a container with id="${this.name}".`);
-        }
-
-        // querySelectorAll pour récupérer toutes les radios du formulaire
-        const radios = Array.from(
-            this._formParent.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${this.name}"]`)
-        );
-
-        const notInsideContainer = radios.some((radio) => !container.contains(radio));
-
-        if (notInsideContainer) {
-            throw new Error(`Some radios with name "${this.name}" are not inside the container with id="${this.name}". Group them correctly.`);
-        }
-
-        this._radiosContainer = container;
-        return true;
-    }
-
-
-
-    /**
-    * Retrieves a specific attribute from the checkbox container.
-    */
-    private getAttrCheckboxContainer(attributeName: string): string | undefined | null {
-
-        this.hasContainerCheckbox();
-
-        if (!this._checkBoxContainer) { return undefined; }
-
-        return this._checkBoxContainer.getAttribute(attributeName);
-    }
-
-    /**
-    * Retrieves a specific attribute from the radio container.
-    */
-    private getAttrRadioContainer(attributeName: string): string | undefined | null {
-
-        this.hasContainerRadio();
-
-        if (!this._radiosContainer) { return undefined; }
-
-        return this._radiosContainer.getAttribute(attributeName);
     }
 
     /**
@@ -562,48 +483,105 @@ export class FieldInputController extends AbstractFieldController implements For
             ignoreMaxLength: this.parseBooleanAttr('data-ignore-max-length', false),
         };
     }
-
+    
     /**
-     * Retrieves the selected values of a group of checkboxes.
-     * Uses native querySelectorAll for better performance.
+     * Returns all checkbox inputs sharing the same name within the parent form.
      */
-    private get _valueCheckbox(): string | string[] {
-        const selector = `input[type="checkbox"][name="${this.name}"]`;
-        const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
-
-        const checkedValues = Array.from(checkboxes)
-            .filter(checkbox => checkbox.checked)
-            .map(checkbox => checkbox.value);
-
-        // Si tu veux rester cohérent avec ton type de retour string | string[]
-        // Tu peux ajouter une condition ici, ou retourner le tableau vide/plein.
-        return checkedValues;
+    private get checkboxGroup(): HTMLInputElement[] {
+            return Array.from(
+                this._formParent.querySelectorAll<HTMLInputElement>(
+                    `input[type="checkbox"][name="${this.name}"]`
+                )
+            );
     }
 
     /**
-     * Retrieves all possible values from the checkbox group.
+     * Returns the values of all checked checkboxes in the group.
      */
-    private get _valueOptionsheckbox(): string[] {
-        const selector = `input[type="checkbox"][name="${this.name}"]`;
-        const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
-
-        return Array.from(checkboxes).map(checkbox => checkbox.value);
+    private get checkedValues(): string[] {
+        return this.checkboxGroup
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
     }
 
     /**
-     * Constructs validation options for checkbox fields based on attributes from their container.
+     * Returns all possible values in the checkbox group.
+     */
+    private get allCheckboxValues(): string[] {
+        return this.checkboxGroup.map(cb => cb.value);
+    }
+
+    /**
+     * Reads a data attribute from the closest ancestor that has it,
+     * searching upward from the current checkbox element.
+     * Falls back to the form element itself if not found on any ancestor.
+     */
+    private getAttrCheckboxContainer(attributeName: string): string | undefined {
+        // Walk up the DOM from the checkbox looking for the attribute
+        let el: HTMLElement | null = this._children.parentElement;
+
+        while (el && el !== this._formParent) {
+            const val = el.getAttribute(attributeName);
+            if (val !== null) return val;
+            el = el.parentElement;
+        }
+
+        // Fallback: check the form itself
+        return this._formParent.getAttribute(attributeName) ?? undefined;
+    }
+
+    /**
+     * Builds checkbox validation options without requiring a dedicated container.
      */
     private get optionsValidateCheckBox(): OptionsCheckbox {
         const max_allowed = this.getAttrCheckboxContainer('data-max-allowed');
         const min_allowed = this.getAttrCheckboxContainer('data-min-allowed');
+
         return {
-            maxAllowed: max_allowed ? parseInt(max_allowed) : undefined,
-            minAllowed: min_allowed ? parseInt(min_allowed) : undefined,
+            maxAllowed: max_allowed !== undefined ? parseInt(max_allowed, 10) : undefined,
+            minAllowed: min_allowed !== undefined ? parseInt(min_allowed, 10) : undefined,
             required: this.required,
-            dataChoices: this._valueCheckbox,
-            optionsChoicesCheckbox: this._valueOptionsheckbox
-        }
+            dataChoices: this.checkedValues,
+            optionsChoicesCheckbox: this.allCheckboxValues,
+        };
     }
+
+    /**
+     * Returns all radio inputs sharing the same name within the parent form.
+     */
+    private get radioGroup(): HTMLInputElement[] {
+        return Array.from(
+            this._formParent.querySelectorAll<HTMLInputElement>(
+                `input[type="radio"][name="${this.name}"]`
+            )
+        );
+    }
+
+    /**
+     * Reads a data attribute by walking up the DOM from the current radio element.
+     */
+    private getAttrRadioContainer(attributeName: string): string | undefined {
+        let el: HTMLElement | null = this._children.parentElement;
+
+        while (el && el !== this._formParent) {
+            const val = el.getAttribute(attributeName);
+            if (val !== null) return val;
+            el = el.parentElement;
+        }
+
+        return this._formParent.getAttribute(attributeName) ?? undefined;
+    }
+
+    /**
+     * Builds radio validation options without requiring a dedicated container.
+     */
+    private get optionsValidateRadio(): OptionsRadio {
+        return {
+            required: this.required,
+        };
+    }
+
+    
 
     private get optionsValidateTel(): TelInputOptions {
         return {
@@ -616,15 +594,6 @@ export class FieldInputController extends AbstractFieldController implements For
             errorMessageInput: this.errorMessage,
             egAwait: this.egAwait,
         };
-    }
-
-    /**
-    * Constructs validation options for radio fields based on attributes from their container.
-    */
-    private get optionsValidateRadio(): OptionsRadio {
-        return {
-            required: this.required
-        }
     }
 
     public eventClearError(): EventValidate { return this.toConvertTypeEvent(this.getAttrChildren('event-clear-error') ?? 'change'); }

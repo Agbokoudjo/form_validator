@@ -24,7 +24,8 @@ import {
     MediaType,
     MediaTypeArray,
     escapeHtmlBalise,
-    MediaRequiredType
+    MediaRequiredType,
+    getAttr
 } from "../../../_Utils";
 
 import { OdtValidator } from "../../Rules";
@@ -146,12 +147,15 @@ export abstract class AbstractFieldController {
             return files;
         }
 
-        // Checkbox management (returns count of checked items with same name)
         if (this.type === "checkbox") {
-            const selector = `input[type="checkbox"][name="${this.name}"]`;
-            const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(selector);
-            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
-            return checkedCount;
+            const checkboxes = this._formParent.querySelectorAll<HTMLInputElement>(
+                `input[type="checkbox"][name="${this.name}"]`
+            );
+            const checkedValues = Array.from(checkboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            // Retourne le tableau des valeurs cochées, cohérent avec OptionsCheckbox.dataChoices
+            return checkedValues.length > 0 ? checkedValues : [];
         }
 
         // Radio management
@@ -171,7 +175,7 @@ export abstract class AbstractFieldController {
      * @param attributeName The name of the attribute to retrieve.
      */
     protected getAttrChildren(attributeName: string): string | undefined {
-        return this._children.getAttribute(attributeName) ?? undefined;
+        return getAttr(this._children, attributeName) || undefined;
     }
 
 
@@ -183,7 +187,7 @@ export abstract class AbstractFieldController {
      */
     protected getAttrFormParent(attributeName: string): string {
 
-        const attributeValue = this._formParent.getAttribute(attributeName);
+        const attributeValue = getAttr<string|null>(this._formParent, attributeName) ;
 
         if (attributeValue === undefined || attributeValue === null) {
             throw new FormAttributeNoFoundException(
@@ -220,7 +224,7 @@ export abstract class AbstractFieldController {
     ): void {
 
         this.htmlElementFormParent.dispatchEvent(new CustomEvent(event_type, {
-            bubbles: false,
+            bubbles: true,
             cancelable: true,
             detail: new FieldValidationEventData(data_event)
         }))
