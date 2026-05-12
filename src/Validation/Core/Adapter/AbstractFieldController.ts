@@ -54,6 +54,11 @@ export abstract class AbstractFieldController {
     protected _radiosContainer: HTMLElement | undefined;
 
     /**
+     * Must be implemented by subclasses to return the specific form error handler for this field.
+     */
+    protected errorStoreAccessor: FieldValidatorInterface | undefined;
+
+    /**
      * @param children The raw HTML input or textarea element to be validated.
      */
     protected constructor(children: HTMLFormChildrenElement) {
@@ -231,11 +236,6 @@ export abstract class AbstractFieldController {
     }
 
     /**
-     * Must be implemented by subclasses to return the specific form error handler for this field.
-     */
-    protected abstract get errorStoreAccessor(): FieldValidatorInterface | undefined;
-
-    /**
      * Converts a string value to a valid event type for triggering validation.
      * Defaults to "blur" if the provided value is not supported.
      * @param value_event The value to convert (e.g., from `event-validate` attribute).
@@ -313,16 +313,15 @@ export abstract class AbstractFieldController {
     * Emits a validation event based on the current validation state.
     * Sends either a success or failure event with full context.
     */
-    protected emitEventHandler(key_name_for_recovery_error_message?: string): void {
+    protected emitEventHandler(): void {
         const validatorField = this.errorStoreAccessor;
         if (!validatorField) {
             return;
         }
 
-        const { errors, isValid } = validatorField.getState(key_name_for_recovery_error_message ?? this.name);
+        const { errors, isValid } = validatorField.getState(this.name);
 
         if (!isValid) {
-
             this.emitEvent(FieldValidationFailed, {
                 id: this.id,
                 name: this.name,

@@ -394,7 +394,7 @@ export interface FormInputValidatorInterface {
 export interface ContainerValidatorInterface {
 
     setValidator(targetInputname: string, validator: FieldValidatorInterface): void;
-
+    removeValidator(targetInputname: string): void;
     getValidator: (targetInputname: string) => FieldValidatorInterface | undefined
 }
 
