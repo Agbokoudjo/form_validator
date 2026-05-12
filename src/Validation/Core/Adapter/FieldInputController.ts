@@ -91,22 +91,26 @@ export class FieldInputController extends AbstractFieldController implements For
             DocumentTypeResolver.clearCache(this.name);
             const detectedTypes = DocumentTypeResolver.detect(val as File | File[] | FileList, this.name);
             const files = Array.from(val as FileList | File[]);
-
+            let fieldName = this.name;
             for (let i = 0; i < files.length; i++) {
                 const specificType = detectedTypes[i];
-
+                fieldName = `${this.name}_${files[i].name}`;
                 // MATH LOGIC: We resolve the specific options for THIS specific file type
                 const specificOptions = this.resolveOptionsByType(specificType);
 
                 await formInputValidator.allTypesValidator(
                     files[i],
-                    this.name,
+                    fieldName,
                     specificType,
                     specificOptions // Each file now has its own specific rule set!
                 );
-
-                this.emitEventHandler();
+                //call store 
+                if (!this.isValidDocumentFile(fieldName)) {
+                    //quit the for immediate when once file have not valid
+                    break;
+                }
             }
+            this.emitEventHandler(fieldName);
         } else {
             // Standard non-document validation
             await formInputValidator.allTypesValidator(
@@ -115,7 +119,6 @@ export class FieldInputController extends AbstractFieldController implements For
                 currentType,
                 this.fieldOptionsValidate
             );
-
             this.emitEventHandler();
         }
     }
@@ -483,16 +486,16 @@ export class FieldInputController extends AbstractFieldController implements For
             ignoreMaxLength: this.parseBooleanAttr('data-ignore-max-length', false),
         };
     }
-    
+
     /**
      * Returns all checkbox inputs sharing the same name within the parent form.
      */
     private get checkboxGroup(): HTMLInputElement[] {
-            return Array.from(
-                this._formParent.querySelectorAll<HTMLInputElement>(
-                    `input[type="checkbox"][name="${this.name}"]`
-                )
-            );
+        return Array.from(
+            this._formParent.querySelectorAll<HTMLInputElement>(
+                `input[type="checkbox"][name="${this.name}"]`
+            )
+        );
     }
 
     /**
@@ -581,7 +584,7 @@ export class FieldInputController extends AbstractFieldController implements For
         };
     }
 
-    
+
 
     private get optionsValidateTel(): TelInputOptions {
         return {

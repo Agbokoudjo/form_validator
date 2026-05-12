@@ -11,7 +11,6 @@
 
 import {
     HTMLFormChildrenElement,
-    Logger,
     addErrorMessageFieldDom,
     clearErrorInput
 } from "../_Utils";
@@ -287,11 +286,11 @@ export class FormValidateController {
                 // Utilisation de  .setItem() sans 'await' pour rendre l'écriture non-bloquante,
                 // et .catch() pour ignorer les erreurs de cache silencieusement.
                 this.optionsValidatorCacheAdapter.setItem(target.name, validator.fieldOptionsValidate)
-                    .catch(error => Logger.warn(`Cache write failed for ${target.name}:`, error));
+                    .catch(error => console.warn(`Cache write failed for ${target.name}:`, error));
             }
 
         } catch (error) {
-            Logger.error('Validation failed:', error);
+            console.error('Validation failed:', error);
             throw error;
         }
     }
@@ -379,13 +378,10 @@ export class FormValidateController {
         const results = await Promise.all(
             allChildren.map(async (el) => {
                 try {
-
-                    await this.validateChildrenForm(el);
                     const v = this._formChildrenValidate.get(el.name);
-
                     return v ? v.isValid() : true;
                 } catch (e) {
-                    Logger.error(`Validation interrupted for field ${el.name}:`, e);
+                    console.error(`Validation interrupted for field ${el.name}:`, e);
                     return false;
                 }
             })

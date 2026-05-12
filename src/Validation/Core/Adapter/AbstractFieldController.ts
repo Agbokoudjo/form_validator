@@ -103,7 +103,6 @@ export abstract class AbstractFieldController {
 
             throw new AttributeException('name', this.htmlElementChildren.tagName.toLowerCase(), this.getAttrFormParent('name') ?? '[unknown form]');
         }
-
         return name;
     }
 
@@ -187,7 +186,7 @@ export abstract class AbstractFieldController {
      */
     protected getAttrFormParent(attributeName: string): string {
 
-        const attributeValue = getAttr<string|null>(this._formParent, attributeName) ;
+        const attributeValue = getAttr<string | null>(this._formParent, attributeName);
 
         if (attributeValue === undefined || attributeValue === null) {
             throw new FormAttributeNoFoundException(
@@ -298,18 +297,29 @@ export abstract class AbstractFieldController {
         return true;
     }
 
+    protected isValidDocumentFile(key_name: string): boolean {
+        const validator = this.errorStoreAccessor;
+
+        return validator ? validator.formErrorStore.isFieldValid(key_name) : true;
+    }
+
+    protected getErrorsMessageForDocumentFile(key_name: string): string[] {
+        const validator = this.errorStoreAccessor;
+
+        return validator ? validator.formErrorStore.getFieldErrors(key_name) : [];
+    }
+
     /**
     * Emits a validation event based on the current validation state.
     * Sends either a success or failure event with full context.
     */
-    protected emitEventHandler(): void {
-
+    protected emitEventHandler(key_name_for_recovery_error_message?: string): void {
         const validatorField = this.errorStoreAccessor;
         if (!validatorField) {
             return;
         }
 
-        const { errors, isValid } = validatorField.getState(this.name);
+        const { errors, isValid } = validatorField.getState(key_name_for_recovery_error_message ?? this.name);
 
         if (!isValid) {
 
