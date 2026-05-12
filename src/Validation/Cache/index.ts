@@ -65,26 +65,6 @@ export abstract class AbstractCacheAdapter implements FieldOptionsValidateCacheA
         });
     }
 
-    public async setItem(targetInputName: string, options: OptionsValidate): Promise<void> {
-        return new Promise(resolve => {
-            try {
-                const parentKey = this.getFormParentName(targetInputName);
-
-                const formCache = this.getFormOptionsValidateCache(targetInputName) ?? {};
-
-                formCache[targetInputName] = options;
-
-                // Persister
-                this.getStorage().setItem(parentKey, JSON.stringify(formCache));
-                resolve();
-            } catch (e) {
-                // Fail silently : quota exceeded ou storage indisponible
-                console.error(`[${this.constructor.name}] write error for "${targetInputName}":`, e);
-                resolve();
-            }
-        });
-    }
-
     /**
       * Reads and deserializes the validation options cache for the form 
       * to which the given input belongs.
@@ -93,6 +73,26 @@ export abstract class AbstractCacheAdapter implements FieldOptionsValidateCacheA
       * allowing the controller to recalculate options from the DOM 
       * (fallback mechanism).
       */
+    public async setItem(targetInputName: string, options: OptionsValidate): Promise<void> {
+        return new Promise(resolve => {
+            try {
+                const parentKey = this.getFormParentName(targetInputName);
+                const formCache = this.getFormOptionsValidateCache(targetInputName) ?? {};
+
+                formCache[targetInputName] = options;
+
+                this.getStorage().setItem(
+                    parentKey,
+                    JSON.stringify(formCache, AbstractCacheAdapter.replacer)
+                );
+                resolve();
+            } catch (e) {
+                console.error(`[${this.constructor.name}] write error for "${targetInputName}":`, e);
+                resolve();
+            }
+        });
+    }
+
     protected getFormOptionsValidateCache(
         targetInputName: string
     ): Record<string, OptionsValidate> | undefined {
@@ -100,15 +100,15 @@ export abstract class AbstractCacheAdapter implements FieldOptionsValidateCacheA
             const parentKey = this.getFormParentName(targetInputName);
             const existingJson = this.getStorage().getItem(parentKey);
 
-            if (!existingJson) return undefined;  // Cache miss — pas d'erreur
+            if (!existingJson) return undefined;
 
-            return JSON.parse(existingJson) as Record<string, OptionsValidate>;
+            return JSON.parse(
+                existingJson,
+                AbstractCacheAdapter.reviver // ← reviver
+            ) as Record<string, OptionsValidate>;
         } catch (error) {
-            // JSON corrompu, quota dépassé, ou storage inaccessible :
-            // on retourne undefined pour déclencher le recalcul depuis le DOM.
             console.error(
-                `[${this.constructor.name}] cache read failed for input "${targetInputName}". ` +
-                `Recalculating options from DOM.`,
+                `[${this.constructor.name}] cache read failed for "${targetInputName}". Recalculating from DOM.`,
                 error
             );
             return undefined;
@@ -150,6 +150,65 @@ export abstract class AbstractCacheAdapter implements FieldOptionsValidateCacheA
         }
 
         return `${this.storageKeyPrefix}${id_or_name}`;
+    }
+
+    /**
+     * JSON replacer: serializes non-JSON-native types found in OptionsValidate
+     * to a tagged plain object that JSON.stringify can handle.
+     *
+     * Handles:
+     * - RegExp  → { __type: 'RegExp', source: string, flags: string }
+     * - Date    → { __type: 'Date', iso: string }
+     * - Array<string | RegExp> → each RegExp element is tagged individually
+     */
+    private static replacer(_key: string, value: unknown): unknown {
+        // RegExp → plain object with __type tag
+        if (value instanceof RegExp) {
+            return {
+                __type: 'RegExp',
+                source: value.source,
+                flags: value.flags
+            };
+        }
+
+        if (value instanceof Date) {
+            return {
+                __type: 'Date',
+                iso: value.toISOString()
+            };
+        }
+
+        return value;
+    }
+
+    /**
+     * JSON reviver: reconstructs non-JSON-native types from their tagged form.
+     *
+     * Handles:
+     * - { __type: 'RegExp', source, flags } → new RegExp(source, flags)
+     * - { __type: 'Date', iso }             → new Date(iso)
+     */
+    private static reviver(_key: string, value: unknown): unknown {
+        if (
+            typeof value === 'object' &&
+            value !== null &&
+            '__type' in value
+        ) {
+            const tagged = value as Record<string, unknown>;
+
+            switch (tagged.__type) {
+                case 'RegExp':
+                    return new RegExp(
+                        tagged.source as string,
+                        tagged.flags as string
+                    );
+
+                case 'Date':
+                    return new Date(tagged.iso as string);
+            }
+        }
+
+        return value;
     }
 }
 

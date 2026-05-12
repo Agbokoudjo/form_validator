@@ -26,6 +26,7 @@ import type {
     FieldOptionsValidateCacheAdapterInterface,
     FormChildrenValidateInterface
 } from "./Contracts";
+import { SessionStorageCacheAdapter } from "./Cache";
 
 /**
 ---
@@ -213,7 +214,7 @@ export class FormValidateController {
 
         this._form = formElement;
         this._formChildrenValidate = new Map<string, FormChildrenValidateInterface>();
-        this.optionsValidatorCacheAdapter = _optionsValidatorCacheAdapter;
+        this.optionsValidatorCacheAdapter = _optionsValidatorCacheAdapter ?? new SessionStorageCacheAdapter();
         this.init();
     }
 

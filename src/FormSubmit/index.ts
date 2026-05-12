@@ -8,10 +8,11 @@ export {
     FormSubmitSuccessEvent,
     FormSubmitEndEvent,
     FormSubmitFailedEvent,
-    FormSubmitRequestErrorEvent
+    FormSubmitRequestErrorEvent,
+    PrepareRequestFormSubmitEvent
 } from "./events";
-export {DefaultNavigator} from "./Navigator";
+export { DefaultNavigator } from "./Navigator";
 export {
     FormSubmission,
     FormSubmissionState
-} from "./FormSubmission";
+} from "./FormSubmission";  
