@@ -476,10 +476,20 @@ export class FieldInputController extends AbstractFieldController implements For
         const extensions_file = this.getAttrChildren('data-extentions');
         const allowedMimeTypeAccept_file = this.getAttrChildren('data-allowed-mime-type-accept');
         return {
-            allowedMimeTypeAccept: allowedMimeTypeAccept_file ? allowedMimeTypeAccept_file.split(',') : undefined,
+           allowedMimeTypeAccept: allowedMimeTypeAccept_file
+            ? allowedMimeTypeAccept_file
+                .split(',')
+                .map(mime => mime.trim())      
+                .filter(mime => mime.length > 0) 
+            : undefined,
             maxsizeFile: this.parseIntAttr('data-maxsize-file', 2),
             unityMaxSizeFile: this.getAttrChildren('data-unity-max-size-file') as UnityMaxSizeTypeFile,
-            allowedExtensions: extensions_file ? extensions_file.split(',') : undefined,
+            allowedExtensions: extensions_file
+                ? extensions_file
+                    .split(',')
+                    .map(ext => ext.trim())         
+                    .filter(ext => ext.length > 0)
+                : undefined,
             unityDimensions: this.getAttrChildren('data-unity-dimensions')
         }
     }
