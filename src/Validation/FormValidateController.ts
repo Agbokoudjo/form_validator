@@ -33,10 +33,10 @@ import { SessionStorageCacheAdapter } from "./Cache";
 # Class: `FormValidateController`
 
 * @Description
-* **Contrôleur de Formulaire (Orchestrateur)** et point d'entrée principal pour la gestion d'un formulaire HTML unique.
- * Cette classe est responsable de l'initialisation du formulaire, de la gestion du cycle de vie des champs, 
- * et de l'orchestration des validations pour l'ensemble du formulaire. Elle stocke les instances de l'Adaptateur/Contrôleur DOM 
- * (FieldInputController) pour un accès rapide aux statuts de champ.
+* **Form Controller (Orchestrator)** and main entry point for managing a single HTML form.
+* This class is responsible for initializing the form, managing the lifecycle of the fields,
+* and orchestrating validations for the entire form. It stores instances of the DOM Adapter/Controller
+* (FieldInputController) for quick access to field statuses.
  * 
 This class manages the validation of form fields inside a given HTML form using jQuery. It supports automatic validator instantiation for different input types (file and non-file inputs), builds validator instances, triggers validations on demand, and organizes form children fields by the type of DOM event that triggers their validation. This structure simplifies event handling and validation control on the frontend.
 
@@ -281,14 +281,10 @@ export class FormValidateController {
             await validator.validate();
             this._formChildrenValidate.set(target.name, validator);
 
-            //Mise à jour du cache (Cache Write)
             if (this.optionsValidatorCacheAdapter) {
-                // Utilisation de  .setItem() sans 'await' pour rendre l'écriture non-bloquante,
-                // et .catch() pour ignorer les erreurs de cache silencieusement.
                 this.optionsValidatorCacheAdapter.setItem(target.name, validator.fieldOptionsValidate)
                     .catch(error => console.warn(`Cache write failed for ${target.name}:`, error));
             }
-
         } catch (error) {
             console.error('Validation failed:', error);
             throw error;

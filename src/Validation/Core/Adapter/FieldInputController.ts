@@ -53,7 +53,7 @@ import type {
     OptionsValidate
 } from "../../types"
 
-import type { FieldValidatorInterface, FormChildrenValidateInterface } from "../../Contracts";
+import type {FormChildrenValidateInterface } from "../../Contracts";
 
 /**
  * * Class that implements validation for non-file form fields.
@@ -61,11 +61,10 @@ import type { FieldValidatorInterface, FormChildrenValidateInterface } from "../
  * 
  * @class FieldInputController
  * @description 
- * **L'Adaptateur/Contrôleur DOM** pour un champ de formulaire unique. 
- * Cette classe agit comme l'interface de haut niveau entre l'élément HTML (input, textarea, etc.) et le moteur de validation. 
- * Elle est responsable d'exposer les propriétés brutes du DOM (name, value, required, disabled) de manière sécurisée et de contrôler le flux d'exécution 
- * de la validation en déléguant la tâche au Routeur Central (FormInputValidator).
- * 
+**The DOM Adapter/Controller** for a single form field.
+* This class acts as the high-level interface between the HTML element (input, textarea, etc.) and the validation engine.
+* It is responsible for exposing the raw DOM properties (name, value, required, disabled) in a secure manner and for controlling the execution flow
+* of the validation by delegating the task to the Central Router (FormInputValidator).
  * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
  * @package <https://github.com/Agbokoudjo/form_validator>
  */
@@ -75,7 +74,6 @@ export class FieldInputController extends AbstractFieldController implements For
         childrenInput: HTMLFormChildrenElement,
         private optionsValidate?: OptionsValidate) {
         super(childrenInput);
-        this.errorStoreAccessor = formInputValidator.getValidator(this.name);
     }
 
     /**
@@ -98,52 +96,77 @@ export class FieldInputController extends AbstractFieldController implements For
         if (currentType === "document" && val) {
             DocumentTypeResolver.clearCache(this.name);// Reset resolver cache to ensure fresh detection
             // Map each file to its specific validator type (e.g., [pdf, word, excel])
-            const detectedTypes = DocumentTypeResolver.detect(val as File | File[] | FileList, this.name);
-            const files = Array.from(val as FileList | File[]);
-            let isAllValid = true;
-            let lastErrorKey = this.name; 
+            let fileArray: File[]=[];
 
-            for (let i = 0; i < files.length; i++) {
+            if (val instanceof File) {
+                // Fichier unique retourné par this.value quand multiple=false
+                fileArray = [val];
+            } else if (val instanceof FileList) {
+                fileArray = Array.from(val);
+            } 
+
+            if (fileArray.length === 0) {
+                this.emitEventHandler();
+                return;
+            }
+
+            const detectedTypes = await DocumentTypeResolver.detect(fileArray, this.name);
+            let isAllValid = true;
+            let lastErrorKey = this.name;
+            for (let i = 0; i < fileArray.length; i++) {
                 const specificType = detectedTypes[i];
                 // Generate a unique internal key for each file to isolate validation logic
-                const fileKey = `${this.name}_${files[i].name.replace(/[^a-z0-9]/gi, '_')}`;
+                const fileKey = `${this.name}_${fileArray[i].name.replace(/[^a-z0-9]/gi, '_')}`;
                 // MATH LOGIC: We resolve the specific options for THIS specific file type
                 // Resolve specific rules (e.g., PDF-specific max size vs Excel-specific sheets)
-                const specificOptions = this.resolveOptionsByType(specificType);
+                this.optionsValidate = this.resolveOptionsByType(specificType);
                 // Execute validation for the individual file
                 await formInputValidator.allTypesValidator(
-                    files[i],
+                    fileArray[i],
                     fileKey,
                     specificType,
-                    specificOptions
+                    this.optionsValidate
                 );
                 // Check if the current file failed validation
-                if (!this.isValidDocumentFile(fileKey)) {
+                const fileValidator = formInputValidator.getValidator(fileKey);
+                const isFileValid = fileValidator
+                    ? fileValidator.formErrorStore.isFieldValid(fileKey)
+                    : false;  // pas de validator = on ne sait pas = invalide par sécurité
+
+                if (!isFileValid) {
                     isAllValid = false;
-                    lastErrorKey = fileKey; // it memory key failluire
-                    break; // Stop processing further files after the first error (UX choice)
+                    lastErrorKey = fileKey;
+                    break;
                 }
             }
 
             if (!isAllValid) {
                 // Retrieve the validator instance that caught the error
                 this.errorStoreAccessor = formInputValidator.getValidator(lastErrorKey);
-
                 if (this.errorStoreAccessor) {
                     // Extract specific error messages for this file
                     const fileErrors = this.errorStoreAccessor.formErrorStore.getFieldErrors(lastErrorKey);
-
                     /** 
                      * BUBBLING LOGIC: 
                      * We transfer the failure state from the specific fileKey to the main 
                      * input name so the UI Controller can catch it and display the error.
                      */
                     this.errorStoreAccessor.setValidationState(false, fileErrors, this.name);
-
                     // Clean up the temporary fileKey state to keep the store lean
                     this.errorStoreAccessor.formErrorStore.clearFieldState(lastErrorKey);
                     formInputValidator.setValidator(this.name, this.errorStoreAccessor); //on transfert le validator au champ input concernet
-                      formInputValidator.removeValidator(lastErrorKey);//on supprime le validator du fichier echouer 
+                    formInputValidator.removeValidator(lastErrorKey);//on supprime le validator du fichier echouer 
+                }
+                this.errorStoreAccessor = formInputValidator.getValidator(this.name);
+            } else {
+                const lastFile = fileArray[fileArray.length - 1];
+                const lastFileKey = `${this.name}_${lastFile.name.replace(/[^a-z0-9]/gi, '_')}`;
+                const lastValidator = formInputValidator.getValidator(lastFileKey);
+                if (lastValidator) {
+                    // On transfère l'état "valide global" sous la clé principale du champ
+                    lastValidator.setValidationState(true, [], this.name);
+                    formInputValidator.setValidator(this.name, lastValidator);
+                    formInputValidator.removeValidator(lastFileKey);
                 }
             }
         } else {
@@ -155,7 +178,7 @@ export class FieldInputController extends AbstractFieldController implements For
                 this.fieldOptionsValidate
             );
         }
-
+        this.errorStoreAccessor = formInputValidator.getValidator(this.name);
         // Trigger events (Success or Failure) to update the UI/Controller
         this.emitEventHandler();
     }

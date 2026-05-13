@@ -297,12 +297,6 @@ export abstract class AbstractFieldController {
         return true;
     }
 
-    protected isValidDocumentFile(key_name: string): boolean {
-        const validator = this.errorStoreAccessor;
-
-        return validator ? validator.formErrorStore.isFieldValid(key_name) : true;
-    }
-
     protected getErrorsMessageForDocumentFile(key_name: string): string[] {
         const validator = this.errorStoreAccessor;
 
@@ -548,46 +542,172 @@ export class DocumentTypeResolver {
     private constructor() { }
 
     /**
-     * Detects document types for one or more files.
-     * * @param files A single File or a FileList/Array of files.
-     * @param targetName The name attribute of the input field.
-     * @returns {MediaRequiredType[]} An array of detected types.
+     * Détecte le type réel de chaque fichier en lisant ses magic bytes.
+     * Asynchrone car nécessite une lecture partielle du fichier.
      */
-    public static detect(files: File | File[] | FileList, targetName: string): MediaRequiredType[] {
-        // Consistency check: Convert everything to an array
-        const fileArray = files instanceof File
-            ? [files]
-            : Array.from(files);
+    public static async detect(
+        files: File | File[] | FileList,
+        targetName: string
+    ): Promise<MediaRequiredType[]> {
 
-        // Return from cache if already detected
-        if (this.documentTypeCache.has(targetName)) {
-            return this.documentTypeCache.get(targetName)!;
-        }
+        const fileArray = files instanceof File ? [files] : Array.from(files);
 
-        const detectedTypes: MediaRequiredType[] = fileArray.map(file => {
-            const extension = file.name.split('.').pop()?.toLowerCase() || '';
+        const detectedTypes = await Promise.all(
+            fileArray.map(file => this.detectSingleFile(file))
+        );
 
-            if (OdtValidator.LIBREOFFICE_EXTENSIONS.includes(extension)) return "odf";
-            if (['docx', 'doc', 'dotx'].includes(extension)) return "word";
-            if (extension === 'pdf') return "pdf";
-            if (extension === 'csv') return "csv";
-            if (['xls', 'xlsx', 'xlsm'].includes(extension)) return "excel";
-
-            return "pdf";
-        });
-
-        // Save result
         this.documentTypeCache.set(targetName, detectedTypes);
-
         return detectedTypes;
     }
 
     /**
-     * Helper to get the primary type (useful for choosing a single validator).
+     * Détecte le type réel d'un fichier unique via ses magic bytes.
+     * L'extension n'est utilisée que pour affiner les formats ZIP/OLE2 ambigus.
      */
-    public static resolvePrimaryType(files: File | File[] | FileList, targetName: string): MediaRequiredType {
-        const types = this.detect(files, targetName);
-        return types.length > 0 ? types[0] : "pdf";
+    private static async detectSingleFile(file: File): Promise<MediaRequiredType> {
+        // Lire les 8 premiers octets — suffisant pour toutes les signatures connues
+        const header = await this.readFileHeader(file, 8);
+        if (!header) {
+            // Lecture impossible → fallback extension
+            return this.fallbackByExtension(file.name);
+        }
+
+        // PDF : %PDF = 25 50 44 46
+        if (header[0] === 0x25 && header[1] === 0x50 &&
+            header[2] === 0x44 && header[3] === 0x46) {
+            return 'pdf';
+        }
+
+        // RTF : {\rtf = 7B 5C 72 74 66
+        if (header[0] === 0x7B && header[1] === 0x5C &&
+            header[2] === 0x72 && header[3] === 0x74) {
+            return 'odf';
+        }
+
+        // OLE2 : D0 CF 11 E0 — .xls ou .doc selon l'extension
+        if (header[0] === 0xD0 && header[1] === 0xCF &&
+            header[2] === 0x11 && header[3] === 0xE0) {
+            return this.refineOle2ByExtension(file.name);
+        }
+
+        // ZIP : PK 03 04 — .xlsx, .docx, .odt, .ods, .odp…
+        // Nécessite une inspection interne pour distinguer les formats
+        if (header[0] === 0x50 && header[1] === 0x4B &&
+            header[2] === 0x03 && header[3] === 0x04) {
+            return await this.refineZipFormat(file);
+        }
+
+        // Aucune signature reconnue → fichier invalide ou format inconnu
+        // On retourne 'pdf' comme type par défaut pour que le validator PDF
+        // rejette proprement le fichier avec un message d'erreur clair
+        return this.fallbackByExtension(file.name);
+    }
+
+    /**
+     * Pour les fichiers OLE2 (D0 CF 11 E0), affine le type par l'extension.
+     * OLE2 est utilisé par .xls, .doc, .ppt — tous ont la même signature binaire.
+     */
+    private static refineOle2ByExtension(fileName: string): MediaRequiredType {
+        const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+        if (['xls', 'xlsm'].includes(ext)) return 'excel';
+        if (['doc', 'dot'].includes(ext)) return 'word';
+        // Fallback : on retourne 'word' pour que le validator rejette proprement
+        return 'word';
+    }
+
+    /**
+     * Pour les fichiers ZIP (PK 03 04), inspecte l'entrée interne pour
+     * distinguer .xlsx, .docx, .odt, .ods, .odp, etc.
+     * 
+     * On lit la liste des entrées ZIP sans décompresser le contenu — 
+     * c'est rapide même pour des fichiers volumineux.
+     */
+    private static async refineZipFormat(file: File): Promise<MediaRequiredType> {
+        try {
+            // Import dynamique pour éviter de charger JSZip si inutile
+            const JSZip = (await import('jszip')).default;
+            const arrayBuffer = await file.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+
+            const entryNames = Object.keys(zip.files);
+
+            // ODF : contient toujours une entrée "mimetype" non compressée
+            if (entryNames.includes('mimetype')) {
+                const mimeContent = await zip.file('mimetype')!.async('string');
+                return this.odfMimeToType(mimeContent.trim());
+            }
+
+            // OOXML Word : contient word/document.xml
+            if (entryNames.some(n => n.startsWith('word/'))) {
+                return 'word';
+            }
+
+            // OOXML Excel : contient xl/workbook.xml
+            if (entryNames.some(n => n.startsWith('xl/'))) {
+                return 'excel';
+            }
+
+            // OOXML PowerPoint : contient ppt/
+            // Non géré par tes validators actuels → fallback extension
+            if (entryNames.some(n => n.startsWith('ppt/'))) {
+                return this.fallbackByExtension(file.name);
+            }
+
+            // ZIP générique non reconnu → fallback extension
+            return this.fallbackByExtension(file.name);
+
+        } catch {
+            // JSZip ne peut pas ouvrir le fichier → fallback extension
+            return this.fallbackByExtension(file.name);
+        }
+    }
+
+    /**
+     * Convertit un MIME type ODF interne en MediaRequiredType.
+     */
+    private static odfMimeToType(mimeType: string): MediaRequiredType {
+        if (mimeType.includes('spreadsheet')) return 'odf'; // .ods
+        if (mimeType.includes('presentation')) return 'odf'; // .odp
+        if (mimeType.includes('graphics')) return 'odf';    // .odg
+        if (mimeType.includes('text')) return 'odf';        // .odt
+        return 'odf'; // autres formats ODF
+    }
+
+    /**
+     * Fallback par extension — utilisé uniquement quand les magic bytes
+     * sont absents ou insuffisants (ex: CSV, texte pur).
+     * 
+     * Pour les fichiers avec une signature non reconnue, retourne un type
+     * qui fera rejeter le fichier avec un message d'erreur explicite.
+     */
+    private static fallbackByExtension(fileName: string): MediaRequiredType {
+        const ext = fileName.split('.').pop()?.toLowerCase() ?? '';
+
+        if (OdtValidator.LIBREOFFICE_EXTENSIONS.includes(ext)) return 'odf';
+        if (['docx', 'doc', 'dotx'].includes(ext)) return 'word';
+        if (ext === 'pdf') return 'pdf';
+        if (ext === 'csv') return 'csv'; // CSV n'a pas de magic bytes
+        if (['xls', 'xlsx', 'xlsm'].includes(ext)) return 'excel';
+
+        // Extension inconnue → 'pdf' pour forcer un rejet propre
+        return 'pdf';
+    }
+
+    /**
+     * Lit les N premiers octets d'un fichier sans le charger entièrement.
+     * Utilise File.slice() pour ne lire que ce qui est nécessaire.
+     */
+    private static async readFileHeader(
+        file: File,
+        byteCount: number
+    ): Promise<Uint8Array | null> {
+        try {
+            const slice = file.slice(0, byteCount);
+            const buffer = await slice.arrayBuffer();
+            return new Uint8Array(buffer);
+        } catch {
+            return null;
+        }
     }
 
     public static clearCache(targetName?: string): void {

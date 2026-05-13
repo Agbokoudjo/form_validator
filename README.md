@@ -27,7 +27,6 @@ The library supports a wide range of input types, from standard text, email, pas
 * **Decoupled Architecture:** Utilizes the Adapter pattern (`FieldInputController`) to decouple DOM interaction from validation logic, making it highly testable.
 * **Router-Based Validation:** A dedicated `FormInputController` acts as a router, dispatching validation tasks to specific, highly specialized validators (e.g., `PasswordInputValidator`, `UrlInputValidator`).
 * **Performance Caching (v2.2.0):** Introduces a pluggable cache architecture (using `FieldOptionsValidateCacheAdapterInterface` and `LocalStorageCacheAdapter`) to significantly speed up repeated validation checks by minimizing DOM lookups.
-* **HTTP Handler:** Includes a powerful `httpFetchHandler` function to standardize and centralize form data submission and error handling.
 * **Future-Proof & Compatible:** While using jQuery internally for maximum cross-browser compatibility and event delegation, the core logic is separate, allowing for **seamless integration into modern frameworks** like ReactJS, Angular, and VueJS.
 
 ### 🌐 Isomorphic Ready (Front-end & Back-end)
@@ -48,7 +47,12 @@ npm install @wlindabla/form_validator
 # Using yarn
 yarn add @wlindabla/form_validator
 ```
-
+  ## Form Validators 
+  The **Form Validator Library** is a centralized form error state management solution designed to provide a Single Source of Truth for form validation across your application. This library implements the Singleton pattern to ensure consistent form state management throughout your project.
+  Built with TypeScript, it offers type-safe error tracking, field validity management, and intuitive chainable methods for seamless integration into modern web applications.
+  A comprehensive form validation library for HTML forms supporting `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `checkbox`, `radio`,`fqdn`, and enriched file types: **images**, **PDFs**, **Word documents**, **Excel**, **CSV**, **ODF/RTF**, and **videos** — with binary signature inspection (magic bytes), real metadata validation, and a centralized error store.
+  - [Documentation](./docs/Validators/index.md)
+  
   ## Collection
 `SymfonyFieldCollectionManager` is a TypeScript/JavaScript class that **automates the management of dynamic form field collections** in Symfony applications.
 It is specifically designed to work with [Symfony's `CollectionType`](https://symfony.com/doc/current/reference/forms/types/collection.html) form field, which exposes an HTML `data-prototype` attribute to allow JavaScript to clone and inject new form rows dynamically.
@@ -157,10 +161,4 @@ All utilities are **framework-agnostic** and work anywhere JavaScript runs in a 
   🎨 **Fully customizable** - Custom dialogs, headers, callbacks, and event names  
   ⚡ **Production-ready** - Used in enterprise applications handling thousands of transactions daily
   - [CRUDAction](./docs/User/action_and_listener.md)
-  
-  ## Form Validators 
-  The **Form Validator Library** is a centralized form error state management solution designed to provide a Single Source of Truth for form validation across your application. This library implements the Singleton pattern to ensure consistent form state management throughout your project.
-  Built with TypeScript, it offers type-safe error tracking, field validity management, and intuitive chainable methods for seamless integration into modern web applications.
-  A comprehensive form validation library for HTML forms supporting `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `checkbox`, `radio`,`fqdn`, and enriched file types: **images**, **PDFs**, **Word documents**, **Excel**, **CSV**, **ODF/RTF**, and **videos** — with binary signature inspection (magic bytes), real metadata validation, and a centralized error store.
-  - [Documentation](./docs/Validators/index.md)
   
