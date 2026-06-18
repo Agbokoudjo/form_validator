@@ -33,7 +33,6 @@ export class FormFormattingEvent {
 
     public init = (options: OptionsFormattingEvent = {}): this => {
         this.m_option_module = { ...this.m_option_module, ...options };
-        Logger.info("FormFormattingEvent initialisé avec les options :", this.m_option_module);
         return this;
     }
 
@@ -50,7 +49,7 @@ export class FormFormattingEvent {
 
         const listener = (event: Event) => {
             const target = event.target as HTMLElement;
-            if (target && target.matches(selector)) {
+            if (target) {
                 handler(target as HTMLInputElement);
             }
         };
