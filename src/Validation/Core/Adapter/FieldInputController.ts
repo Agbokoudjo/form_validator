@@ -54,7 +54,8 @@ import type {
     IsbnOptions,
     IsbnType,
     CardSchemeOptions,
-    CardSchemeType
+    CardSchemeType,
+    OptionsPdf
 } from "../../types"
 
 import type {FormChildrenValidateInterface } from "../../Contracts";
@@ -546,6 +547,14 @@ export class FieldInputController extends AbstractFieldController implements For
         }
     }
 
+    private get optionsValidatePdf():OptionsPdf{
+        return {
+            password: this.password,
+            skipPasswordProtectedValidation: this.skipPasswordProtectedValidation,
+            ...this.baseOptionsValidateMedia
+        }
+    }
+
     private get optionsValidateExcelFile(): OptionsExcelFile {
         return {
             minSheets: this.parseIntAttr('data-min-sheets', 1),
@@ -802,7 +811,7 @@ export class FieldInputController extends AbstractFieldController implements For
             case 'odf': return this.optionsValidateOdfFile;
             case 'image': return this.optionsValidateImage;
             case 'video': return this.optionsValidateVideo;
-            case 'pdf': return this.baseOptionsValidateMedia; // PDF usually uses base file options
+            case 'pdf': return this.optionsValidatePdf; // PDF usually uses base file options
             default: return this.fieldOptionsValidate;    // Fallback to standard logic
         }
     }

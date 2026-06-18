@@ -1164,7 +1164,9 @@ await pdfValidator.validate(file, 'contract', {
   allowedExtensions: ['pdf'],
   allowedMimeTypeAccept: ['application/pdf', 'application/x-pdf'],
   maxsizeFile: 10,
-  unityMaxSizeFile: 'MiB'
+  unityMaxSizeFile: 'MiB',
+  password, // undefined default 
+  skipPasswordProtectedValidation = false // Issue a default warning
 });
 ```
 
@@ -1434,6 +1436,7 @@ console.log(v?.formErrorStore.getFieldErrors('username'));
 | `'word'` | Word document |
 | `'odf'` | ODF / RTF document |
 | `'document'` | Auto-detected document |
+| `'card'` | Card Scheme Credit |
 
 > **Note on the `'document'` type:** When using the `'document'` type via `FieldInputController`, the system uses `DocumentTypeResolver` to automatically detect the real type of each file (pdf, excel, csv, word, odf) by its extension and applies the appropriate validator. This allows handling fields that accept multiple document types in a single input.
 
@@ -1670,7 +1673,8 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
 | `data-type` | `"card"` | For card number fields: set `data-type="card"` |
 | `data-card-schemes` | Comma-separated `CardSchemeType` | Schemes to validate against e.g. `"VISA,MASTERCARD"` |
 | `data-card-sanitize` | `"true"` / `"false"` | Strip spaces and hyphens before validation (default: `true`) |
-
+| `data-password` | Protected PDF + correct password |
+| `data-data-skip-password-protected-validation` | Rejects protected PDFs
 **Full HTML form example with attribute-based validation:**
 
 ```html

@@ -411,6 +411,20 @@ export abstract class AbstractFieldController {
         return toBoolean(this.getAttrChildren(attrName) ?? defaultValue.toString());
     }
 
+    protected get password():string|undefined{
+        return this.getAttrChildren('password') ??
+               this.getAttrChildren('data-password') ??
+               this.getAttrChildren('data-password-field') ??
+               this.getAttrChildren('password-field')
+    }
+
+    protected get skipPasswordProtectedValidation():boolean {
+        const _skipPassword = this.getAttrChildren("data-skip-password-protected-validation") ??
+            this.getAttrChildren("skip-password-protected-validation");
+        
+        return toBoolean(_skipPassword ?? "false");
+    }
+
     protected noValidate(): boolean{
         const _noValidate=this.getAttrChildren("novalidate") ;
 

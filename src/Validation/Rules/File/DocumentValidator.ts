@@ -11,14 +11,15 @@
 
 import { AbstractMediaValidator } from './AbstractMediaValidator';
 import * as pdfjsLib from 'pdfjs-dist';
-import type { OptionsFile } from '../../types';
+import type { OptionsPdf } from '../../types';
 import type { MediaValidatorInterface } from '../../Contracts';
 
 /**
  * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
  * @package <https://github.com/Agbokoudjo/form_validator>
  */
-export class PdfValidator extends AbstractMediaValidator implements MediaValidatorInterface {
+export class PdfValidator extends AbstractMediaValidator 
+    implements MediaValidatorInterface {
     protected readonly signatureHexadecimalFormatDocument: string[] = ['25504446'];
 
     private static instance: PdfValidator;
@@ -36,7 +37,10 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
         return PdfValidator.instance;
     }
 
-    public validate = async (medias: File | FileList, targetInputname: string, optionsdoc: OptionsFile): Promise<this> => {
+    public validate = async (
+        medias: File | FileList, 
+        targetInputname: string, 
+        optionsdoc: OptionsPdf): Promise<this> => {
 
         const files = medias instanceof FileList ? Array.from(medias) : [medias];
         const mimeTypeMap = optionsdoc.allowedMimeTypeAccept || ['application/pdf', 'application/x-pdf']
@@ -55,7 +59,7 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
                 break;
             }
 
-            const signatureErrorPdf = await this.filevalidate(filepdf);
+            const signatureErrorPdf = await this.filevalidate(filepdf, optionsdoc);
             if (signatureErrorPdf) {
                 this.handleValidationError(targetInputname, filepdf.name, `${signatureErrorPdf} name_document: ${filepdf.name}`);
                 break;
@@ -64,7 +68,7 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
         return this;
     }
 
-    private async filevalidate(file: File): Promise<string | null> {
+    private async filevalidate(file: File,options?: OptionsPdf): Promise<string | null> {
 
         const uint8Array = await this.readFileAsUint8Array(file);
 
@@ -72,21 +76,66 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
             return `The file ${file.name} has an invalid signature.`;
         }
 
-        return this.validatePdf(file, uint8Array);
+        return this.validatePdf(file, uint8Array, options);
     }
 
-    private async validatePdf(file: File, uint8Array: Uint8Array): Promise<string | null> {
+    private async validatePdf(
+        file: File,
+        uint8Array: Uint8Array,
+        options?: OptionsPdf
+    ): Promise<string | null> {
         try {
-            const pdfDocument = await pdfjsLib.getDocument(uint8Array).promise;
+           //Try WITHOUT password first
+            const pdfDocument = await pdfjsLib.getDocument({data: uint8Array}).promise;
+
             if (pdfDocument.numPages <= 0) {
                 return `The file ${file.name} contains no pages.`;
             }
+            return null;
 
-            return null; //`The file ${file.name} is not a valid PDF.`;
-        } catch (error) {
-            // Error while parsing PDF
-            console.log('Error while parsing PDF', error)
-            return `Failed to parse ${file.name}: ${error}`;
+        } catch (error: any) {
+            const isPasswordError =
+                error?.name === 'PasswordException' ||
+                (error?.message && typeof error.message === 'string' &&
+                    error.message.includes('Password'));
+
+            if (isPasswordError) {
+                if (options?.password) {
+                    try {
+                        const pdfDocumentWithPassword = await pdfjsLib.getDocument({
+                            data: uint8Array,
+                            password: options.password
+                        }).promise;
+
+                        if (pdfDocumentWithPassword.numPages <= 0) {
+                            return `The file ${file.name} contains no pages.`;
+                        }
+                        return null; 
+                    } catch (passwordError: any) {
+                        if ((passwordError as any)?.name === 'PasswordException') {
+                            return `Incorrect password provided for "${file.name}".`;
+                        }
+                        return `Failed to validate ${file.name} with the provided password.`;
+                    }
+                }
+
+                if (options?.skipPasswordProtectedValidation === true) {
+                    console.info(
+                        `[PdfValidator] "${file.name}" is password-protected. ` +
+                        `Signature verified, content validation skipped.`
+                    );
+                    return null;
+                }
+
+                return (
+                    `The file "${file.name}" is password-protected. ` +
+                    `Pass password via 'password' option, ` +
+                    `or set 'skipPasswordProtectedValidation: true' to accept it.`
+                );
+            }
+
+            console.error('[PdfValidator] Error while parsing PDF', error);
+            return `Failed to parse ${file.name}: ${error?.message || error}`;
         }
     }
 

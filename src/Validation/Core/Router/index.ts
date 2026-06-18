@@ -53,7 +53,6 @@ import type {
     OptionsCsvFile,
     OptionsExcelFile,
     OptionsOdfFile,
-    OptionsFile,
     OptionsImage,
     OptionsMediaVideo,
     PasswordRuleOptions,
@@ -66,7 +65,8 @@ import type {
     DateInputOptions,
     OptionsValidate,
     IsbnOptions,
-    CardSchemeOptions
+    CardSchemeOptions,
+    OptionsPdf
 } from "../../types"
 
 /**
@@ -134,7 +134,7 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
                     this.setValidator(targetInputname, csvValidator);
                     break;
                 case "pdf":
-                    await pdfValidator.validate(datainput, targetInputname, options_validator as OptionsFile);
+                    await pdfValidator.validate(datainput, targetInputname, options_validator as OptionsPdf);
                     this.setValidator(targetInputname, pdfValidator);
                     break;
                 default:

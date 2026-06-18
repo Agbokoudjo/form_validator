@@ -329,6 +329,11 @@ export interface OptionsFile {
     unityDimensions?: string;
 }
 
+export interface OptionsPdf extends OptionsFile{
+    password?: string;                          
+    skipPasswordProtectedValidation?: boolean;   
+}
+
 export interface DimensionsMediaOption {
     minWidth?: number;
     maxWidth?: number;
@@ -610,7 +615,7 @@ export interface OptionsRadio {
  */
 export type OptionsValidateTypeFile = OptionsFile | OptionsImage
     | OptionsMediaVideo | OptionsExcelFile
-    | OptionsCsvFile | OptionsWordFile | OptionsOdfFile;
+    | OptionsCsvFile | OptionsWordFile | OptionsOdfFile | OptionsPdf;
 
 /**
  * Représente les métadonnées d'un fichier multimédia (stocké dans IndexedDB ou sur un serveur distant).
@@ -656,13 +661,7 @@ export type OptionsValidate = TextInputOptions
     | URLOptions
     | NumberOptions
     | TelInputOptions
-    | OptionsFile
-    | OptionsImage
-    | OptionsMediaVideo
-    | OptionsWordFile
-    | OptionsOdfFile
-    | OptionsCsvFile
-    | OptionsExcelFile
+    | OptionsValidateTypeFile
     | IsbnOptions
     | CardSchemeOptions
     ;
