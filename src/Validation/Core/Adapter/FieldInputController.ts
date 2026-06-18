@@ -50,18 +50,21 @@ import type {
     OptionsWordFile,
     OptionsOdfFile,
     UnityMaxSizeTypeFile,
-    OptionsValidate
+    OptionsValidate,
+    IsbnOptions,
+    IsbnType,
+    CardSchemeOptions,
+    CardSchemeType
 } from "../../types"
 
 import type {FormChildrenValidateInterface } from "../../Contracts";
 
 /**
- * * Class that implements validation for non-file form fields.
  * Automatically infers validation rules based on HTML attributes if no explicit options are provided.
  * 
  * @class FieldInputController
  * @description 
-**The DOM Adapter/Controller** for a single form field.
+ *  The DOM Adapter/Controller** for a single form field.
 * This class acts as the high-level interface between the HTML element (input, textarea, etc.) and the validation engine.
 * It is responsible for exposing the raw DOM properties (name, value, required, disabled) in a secure manner and for controlling the execution flow
 * of the validation by delegating the task to the Central Router (FormInputValidator).
@@ -89,7 +92,7 @@ export class FieldInputController extends AbstractFieldController implements For
      */
     public async validate(): Promise<void> {
         const val = this.value;  // Retrieve current field value
-        if (!val && !this.isRequiredField()) return;  // Short-circuit if field is empty and not required
+        if ((!val && !this.isRequiredField()) || this.noValidate()) return;  // Short-circuit if field is empty and not required
 
         const currentType = this.type;
         //Specialized Document Validation 
@@ -99,7 +102,6 @@ export class FieldInputController extends AbstractFieldController implements For
             let fileArray: File[]=[];
 
             if (val instanceof File) {
-                // Fichier unique retourné par this.value quand multiple=false
                 fileArray = [val];
             } else if (val instanceof FileList) {
                 fileArray = Array.from(val);
@@ -131,7 +133,7 @@ export class FieldInputController extends AbstractFieldController implements For
                 const fileValidator = formInputValidator.getValidator(fileKey);
                 const isFileValid = fileValidator
                     ? fileValidator.formErrorStore.isFieldValid(fileKey)
-                    : false;  // pas de validator = on ne sait pas = invalide par sécurité
+                    : false;  // no validator = we don’t know = invalid for safety
 
                 if (!isFileValid) {
                     isAllValid = false;
@@ -154,16 +156,17 @@ export class FieldInputController extends AbstractFieldController implements For
                     this.errorStoreAccessor.setValidationState(false, fileErrors, this.name);
                     // Clean up the temporary fileKey state to keep the store lean
                     this.errorStoreAccessor.formErrorStore.clearFieldState(lastErrorKey);
-                    formInputValidator.setValidator(this.name, this.errorStoreAccessor); //on transfert le validator au champ input concernet
-                    formInputValidator.removeValidator(lastErrorKey);//on supprime le validator du fichier echouer 
+                    formInputValidator.setValidator(this.name, this.errorStoreAccessor); //we transfer the validator to the relevant input field
+                    formInputValidator.removeValidator(lastErrorKey);//we remove the validator from the failed file
                 }
+
                 this.errorStoreAccessor = formInputValidator.getValidator(this.name);
             } else {
                 const lastFile = fileArray[fileArray.length - 1];
                 const lastFileKey = `${this.name}_${lastFile.name.replace(/[^a-z0-9]/gi, '_')}`;
                 const lastValidator = formInputValidator.getValidator(lastFileKey);
                 if (lastValidator) {
-                    // On transfère l'état "valide global" sous la clé principale du champ
+                    // We transfer the 'overall valid' state under the main key of the field
                     lastValidator.setValidationState(true, [], this.name);
                     formInputValidator.setValidator(this.name, lastValidator);
                     formInputValidator.removeValidator(lastFileKey);
@@ -191,6 +194,9 @@ export class FieldInputController extends AbstractFieldController implements For
             switch (this.type) {
                 case 'text':
                     this.optionsValidate = this.optionsValidateSimpleText;
+                    break;
+                case 'isbn':
+                    this.optionsValidate = this.optionsValidateIsbn;
                     break;
                 case 'email':
                     this.optionsValidate = this.optionsValidateEmail;
@@ -234,6 +240,9 @@ export class FieldInputController extends AbstractFieldController implements For
                 case 'video':
                     this.optionsValidate = this.optionsValidateVideo;
                     break;
+                case 'card':
+                    this.optionsValidate = this.optionsValidateCard;
+                    break;
                 default:
                     this.optionsValidate = this.optionsValidateSimpleText;
                     break;
@@ -243,8 +252,47 @@ export class FieldInputController extends AbstractFieldController implements For
         return this.optionsValidate;
     }
 
+    private get optionsValidateCard(): CardSchemeOptions {
+        const schemesAttr = this.getAttrChildren('data-card-schemes');
+
+        return {
+            requiredInput: this.required,
+            errorMessageInput: this.errorMessage,
+            egAwait: this.egAwait,
+            sanitize: this.parseBooleanAttr('data-card-sanitize', true),
+            luhnCheck: this.parseBooleanAttr('data-card-luhn-check', true),
+            schemes: schemesAttr
+                ? (schemesAttr
+                    .split(',')
+                    .map(s => s.trim().toUpperCase())
+                    .filter(Boolean) as CardSchemeType[])
+                : undefined,
+        };
+    }
+
     /**
-     * Generates validation options for textarea fields using HTML attributes or default values.
+     * Build complete TextInputOptions object from textarea attributes.
+     * Uses the HYBRID approach (JSON with fallback to granular).
+     * HTML:
+     * ```html
+     * <textarea
+     *   id="article_editor"
+     *   name="article_content"
+     *   data-type="textarea"
+     *   data-security-mode="rich-text"
+     *   data-allowed-tags="p,h1,h2,strong,em,a,img"
+     *   data-allowed-html-attributes='{
+     *     "a": ["href", "title"],
+     *     "img": ["src", "alt"],
+     *     "*": []
+     *   }'
+     *   data-sanitize-instead-of-reject="true"
+     *   required
+     *   minlength="50"
+     *   maxlength="5000"
+     * ></textarea>
+     * ```
+     * Returns: Complete TextInputOptions object ready for validation
      */
     private get optionsValidateTextarea(): TextInputOptions {
         return {
@@ -264,6 +312,10 @@ export class FieldInputController extends AbstractFieldController implements For
                             Please review your entry and try again.`,
             regexValidator: this.patternRegExp,
             match: this.matchRegex,
+            sanitizeInsteadOfReject: this.sanitizeInsteadOfReject,
+            securityMode: this.securityMode,
+            allowedHtmlTags: this.allowedTags.length > 0 ? this.allowedTags : undefined,
+            allowedHtmlAttributes: this.allowedAttributesHybrid || undefined,
         }
     }
 
@@ -662,6 +714,20 @@ export class FieldInputController extends AbstractFieldController implements For
             errorMessageInput: this.errorMessage,
             egAwait: this.egAwait,
         };
+    }
+
+    private get optionsValidateIsbn():IsbnOptions{
+        return {
+            requiredInput: this.required,
+            errorMessageInput: this.errorMessage,
+            egAwait: this.egAwait,
+            type: this.getAttrChildren('data-type-isbn') as IsbnType,
+            isbn10Message: this.getAttrChildren('data-isbn-10-message'),
+            isbn13Message: this.getAttrChildren('data-isbn-13-message'),
+            bothIsbnMessage: this.getAttrChildren('data-isbn-both-message'),
+            allowHyphens: this.parseBooleanAttr('data-allow-hyphens',true),
+            allowSpaces: this.parseBooleanAttr('data-allow-spaces', true),
+        }
     }
 
     public eventClearError(): EventValidate { return this.toConvertTypeEvent(this.getAttrChildren('event-clear-error') ?? 'change'); }

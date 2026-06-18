@@ -6,6 +6,9 @@ import {
 } from "../../_Utils";
 import { CountryCode } from "libphonenumber-js";
 
+
+export type SecurityModeType = 'strict' | 'safe-html' | 'rich-text';
+
 export interface BaseInputOptions {
     requiredInput?: boolean;
     minLength?: number;
@@ -15,10 +18,34 @@ export interface BaseInputOptions {
     typeInput?: FormInputType;
     regexValidator?: RegExp;
     match?: boolean;
+    egAwait?: string;
 }
 
 export interface TextInputOptions extends BaseInputOptions {
-    egAwait?: string;
+    /**
+    * Security mode for HTML/PHP content
+    * - 'strict' (default): blocks ALL HTML/PHP/JavaScript
+    * - 'safe-html': allows a whitelist of safe tags
+    * - 'rich-text': allows HTML with controlled attributes (WYSIWYG editors)
+    */
+    securityMode?: SecurityModeType
+    /**
+    * Whitelist of allowed HTML tags (if securityMode !== 'strict')
+    * Ex: ['b', 'i', 'u', 'p', 'br', 'strong', 'em']
+    */
+    allowedHtmlTags?: string[];
+
+    /**
+    * If true, cleans the HTML instead of rejecting the field
+    * (strips dangerous tags instead of failing validation)
+    */
+    sanitizeInsteadOfReject?: boolean;
+
+    /**
+    * Allowed HTML attributes (if securityMode = 'rich-text')
+    * Ex: { a: ['href', 'title'], img: ['src', 'alt'] }
+    */
+    allowedHtmlAttributes?: Record<string, string[]>;
 }
 
 
@@ -100,6 +127,187 @@ export interface URLOptions extends FQDNOptions, TextInputOptions {
     requireHost?: boolean;
     requireValidProtocol?: boolean;
     requireProtocol?: boolean;
+}
+
+
+/**
+ * ISBN Validation Type Definitions
+ * 
+ * @author AGBOKOUDJO Franck <franckagbokoudjo301@gmail.com>
+ * @package @wlindabla/form_validator
+ */
+
+/**
+ * Supported ISBN versions for validation
+ */
+export type IsbnType = 'isbn10' | 'isbn13' | 'both';
+
+/**
+ * Error codes for ISBN validation (matching Symfony conventions)
+ */
+export enum IsbnErrorCode {
+    TOO_SHORT_ERROR = 'too_short_error',
+    TOO_LONG_ERROR = 'too_long_error',
+    INVALID_CHARACTERS_ERROR = 'invalid_characters_error',
+    CHECKSUM_FAILED_ERROR = 'checksum_failed_error',
+    TYPE_NOT_RECOGNIZED_ERROR = 'type_not_recognized_error',
+}
+
+/**
+ * Options for ISBN validation
+ */
+export interface IsbnOptions {
+    /**
+     * ISBN type to validate: 'isbn10', 'isbn13', or 'both' (default)
+     * @default 'both'
+     */
+    type?: IsbnType;
+
+    /**
+     * Whether the field is required
+     * @default true
+     */
+    requiredInput?: boolean;
+
+    /**
+     * Custom error message for ISBN-10 validation
+     */
+    isbn10Message?: string;
+
+    /**
+     * Custom error message for ISBN-13 validation
+     */
+    isbn13Message?: string;
+
+    /**
+     * Custom error message when both formats fail
+     */
+    bothIsbnMessage?: string;
+
+    /**
+     * Generic error message (overrides type-specific messages if set)
+     */
+    errorMessageInput?: string;
+
+    /**
+     * Example ISBN to show in error messages
+     */
+    egAwait?: string;
+
+    /**
+     * Whether to allow hyphens and spaces
+     * @default true
+     */
+    allowHyphens?: boolean;
+
+    /**
+     * Whether to allow spaces
+     * @default true
+     */
+    allowSpaces?: boolean;
+}
+
+/**
+ * Result of ISBN validation
+ */
+export interface IsbnValidationResult {
+    isValid: boolean;
+    type?: 'isbn10' | 'isbn13';
+    cleanedValue?: string;
+    errorCode?: IsbnErrorCode;
+    errorMessage?: string;
+}
+
+/**
+ * Supported card scheme identifiers — mirrors Symfony's CardScheme constants.
+ * @see https://en.wikipedia.org/wiki/Payment_card_number
+ */
+export type CardSchemeType =
+    | 'AMEX'
+    | 'CHINA_UNIONPAY'
+    | 'DINERS'
+    | 'DISCOVER'
+    | 'INSTAPAYMENT'
+    | 'JCB'
+    | 'LASER'
+    | 'MAESTRO'
+    | 'MASTERCARD'
+    | 'MIR'
+    | 'UATP'
+    | 'VISA';
+
+/**
+ * Error codes mirroring Symfony's CardScheme constraint.
+ */
+export type CardSchemeErrorCode =
+    | 'NOT_NUMERIC_ERROR'
+    | 'INVALID_FORMAT_ERROR'
+    | 'MISSING_SCHEMES_ERROR';
+
+/**
+ * Internal result of a single card validation attempt.
+ */
+export interface CardSchemeValidationResult {
+    isValid: boolean;
+    errorCode?: CardSchemeErrorCode;
+    errorMessage?: string;
+    /** The scheme whose regex matched first, if any. */
+    detectedScheme?: CardSchemeType;
+    /** Sanitized (digits-only) card number after stripping spaces/hyphens. */
+    cleanedValue?: string;
+}
+
+/**
+ * Options for CardSchemeValidator.validate().
+ * Mirrors Symfony's CardScheme constraint options.
+ *
+ * @example
+ * ```typescript
+ * // Accept only VISA and MASTERCARD
+ * { schemes: ['VISA', 'MASTERCARD'], requiredInput: true }
+ *
+ * // Accept any known scheme
+ * { requiredInput: true }
+ * ```
+ */
+export interface CardSchemeOptions {
+    /**
+     * One or more card schemes to validate against.
+     * If omitted or empty → validates against ALL known schemes.
+     * @example 'VISA' | ['VISA', 'MASTERCARD']
+     */
+    schemes?: CardSchemeType | CardSchemeType[];
+
+    /**
+     * Whether the field is required.
+     * @default true
+     */
+    requiredInput?: boolean;
+
+    /**
+     * Custom error message overriding the default.
+     * @default 'Unsupported card type or invalid card number.'
+     */
+    errorMessageInput?: string;
+
+    /**
+     * Example card number shown alongside the error message.
+     * @example '4111 1111 1111 1111'
+     */
+    egAwait?: string;
+
+    /**
+     * Strip spaces and hyphens from the input before validation.
+     * @default true
+     */
+    sanitize?: boolean;
+
+    /**
+     * Run the Luhn algorithm checksum after format validation.
+     * China UnionPay is automatically exempt (does not follow Luhn).
+     * @default true
+     */
+    luhnCheck?: boolean;
 }
 
 export type UnityMaxSizeTypeFile = 'B' | 'KiB' | 'MiB' | 'GiB';
@@ -455,6 +663,8 @@ export type OptionsValidate = TextInputOptions
     | OptionsOdfFile
     | OptionsCsvFile
     | OptionsExcelFile
+    | IsbnOptions
+    | CardSchemeOptions
     ;
 export interface FieldStateValidating {
     errors: string[];

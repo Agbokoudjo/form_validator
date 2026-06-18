@@ -31,7 +31,7 @@ import {
 
 import {
     DelegateFormSubmissionInterface,
-    FormSubmissionInterface
+    FormSubmissionInterface,
 } from "./contracts";
 
 export const FormSubmissionState = {
@@ -49,7 +49,7 @@ import {
     FetchRequestOptions,
 } from "@wlindabla/http_client";
 
-import type { FetchResponseInterface } from "@wlindabla/http_client/contracts"
+import type { FetchResponseInterface, FetchRequestInterface } from "@wlindabla/http_client/contracts"
 import { EventTargetType, RequestType } from "@wlindabla/http_client/types";
 
 import {
@@ -90,7 +90,7 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
 
         this.fetchRequest = new FetchRequest(
             this,
-            formEventDispatcher,
+            this.formEventDispatcher,
             this.fetchRequestOptions,
             RequestType.MAIN,
             {
@@ -111,15 +111,15 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         return Promise.resolve(confirm(message))
     }
 
-    //permettre au developpeur de modifier le header
-    public prepareRequest(request: Request): void {
+    //allow the developer to modify the header
+    public prepareRequest(request: FetchRequestInterface): void {
         this.formEventDispatcher.dispatch(
             new PrepareRequestFormSubmitEvent(request, this.form),
             FormSubmitRequestEvents.FORM_SUBMIT_PREPARE_REQUEST
         )
     }
 
-    public requestStarted(_request: Request): void {
+    public requestStarted(_request: FetchRequestInterface): void {
         this.state = FormSubmissionState.waiting
         FormSubmission.beforeSubmit(this.submitter);
 
@@ -140,15 +140,18 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
 
         const answer = await this._confirmMethod(confirmationMessage, this.form, this.submitter)
         if (!answer) {
-            return null;
+            throw new Error(`Form submission aborted: User confirmation required.
+            https://github.com/Agbokoudjo/form_validator/blob/main/docs/form_submission/formSubmission.md#api-reference`);
         }
 
-        if (this.state == initialized) {
-            this.state = requesting
-            return await this.fetchRequest.handle()
-        }
-
-        return null;
+       try {
+           if (this.state !== initialized) { return null; }
+           
+           this.state = requesting
+           return await this.fetchRequest.handle()
+       } catch (error) {
+          throw error ;
+       }
     }
 
     processStop() {
@@ -164,7 +167,7 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         }
     }
 
-    public requestSucceededWithResponse(request: Request, fetchResponse: FetchResponseInterface): void {
+    public requestSucceededWithResponse(request: FetchRequestInterface, fetchResponse: FetchResponseInterface): void {
         this.state = FormSubmissionState.receiving
         this._result = { success: true, fetchResponse: fetchResponse };
 
@@ -176,18 +179,21 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         );
 
         this.delegateFormSubmission.formSubmissionSucceededWithResponse(this, fetchResponse);
-        Logger.log(this.mustRedirect);
+
+        if (Logger.debug || Logger.env !== "prod") {
+           Logger.log(this.mustRedirect,request);
+        }
     }
 
-    public requestPreventedHandlingResponse(request: Request, fetchResponse: FetchResponseInterface): void {
+    public requestPreventedHandlingResponse(request: FetchRequestInterface, fetchResponse: FetchResponseInterface): void {
         this._result = { success: fetchResponse.succeeded, fetchResponse: fetchResponse }
     }
 
-    public requestFailedWithResponse(request: Request, response: FetchResponseInterface) {
+    public requestFailedWithResponse(request: FetchRequestInterface, response: FetchResponseInterface) {
         this.state = FormSubmissionState.error;
         this._result = { success: false, fetchResponse: response }
         
-        if (response.statusCode === 422 && this.isHandleErrorsManyForm) {
+        if (response.statusCode === 422 && this.isHandleErrorsManyForm ===true) {
             const errorData = response.data;
             if (errorData.violations) {
                 handleErrorsManyForm(
@@ -196,12 +202,14 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
                     errorData.violations
                 )
 
-                console.info(
-                    `
+                if (Logger.debug || Logger.env !== "prod") {
+                    Logger.info(
+                        `
                 consulting documentation https://github.com/Agbokoudjo/form_validator/blob/master/docs/_Utils/form.md#handleerrorsmanyform
                 for infos more on using of function  handleErrorsManyForm
-                `
-                );
+                    `);
+                }
+                
             } else {
                 this.isHandleErrorsManyForm = false;
             }
@@ -214,12 +222,14 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
 
         this.delegateFormSubmission.formSubmissionFailedWithResponse(this, response)
 
-        Logger.error('requestFailedWithResponse:', request);
+        if (Logger.debug || Logger.env !== "prod") {
+            Logger.error('requestFailedWithResponse:', request);
+        }
     }
 
     //Manager of the errors because by fetch api (Network,Abort,timeout,cancel)
     //you can use Modal SweetAlert for display modal information or customed your modal 
-    public requestErrored(request: Request, error: Error): void {
+    public requestErrored(request: FetchRequestInterface, error: Error): void {
         this.state = FormSubmissionState.error;
         this._result = { success: false, requestError: error };
 
@@ -229,10 +239,14 @@ export class FormSubmission extends SubmitterHandle implements FormSubmissionInt
         );
 
         this.delegateFormSubmission.formSubmissionErrored(this, error)
-        Logger.log(request);
+
+        if (Logger.debug || Logger.env !== "prod") {
+            Logger.log(request);
+        }
+        
     }
 
-    public requestFinished(_request: Request): void {
+    public requestFinished(_request: FetchRequestInterface): void {
         this.state = FormSubmissionState.stopped;
 
         FormSubmission.afterSubmit(this.submitter);

@@ -254,7 +254,7 @@ export class FormValidateController {
         });
     }
 
-    public autoValidateAllFields = (): Promise<void> => {
+    public autoValidateAllFields =async (): Promise<void> => {
         const children = this.getChildrensArray();
 
         return Promise.all(
@@ -271,12 +271,9 @@ export class FormValidateController {
 
         try {
             if (this.optionsValidatorCacheAdapter) {
-                // Essayer de lire depuis le cache (Cache Hit)
                 optionsValidate = await this.optionsValidatorCacheAdapter.getItem(target.name);
             }
 
-            // Creation et Validation
-            // Si optionsValidate est 'undefined', FieldInputController calculera automatiquement les options lui meme (Cache Miss).
             const validator = new FieldInputController(target, optionsValidate);
             await validator.validate();
             this._formChildrenValidate.set(target.name, validator);
@@ -365,8 +362,8 @@ export class FormValidateController {
     public get form(): HTMLFormElement { return this._form; }
 
     /**
-  * Valide l'intégralité du formulaire.
-  * @returns true si TOUS les champs sont valides, false sinon.
+  * 
+  * @returns true 
   */
     public async isFormValid(): Promise<boolean> {
         const allChildren = this.childrens;

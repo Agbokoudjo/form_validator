@@ -432,3 +432,357 @@ export interface FormChildrenValidateInterface {
      */
     clearErrorField(): void;
 }
+
+
+export interface SmartHtmlSecurityValidatorInterface{
+    /**
+     * Strips HTML tags that are not included in the allowed tags list.
+     * 
+     * This method removes any HTML opening or closing tags that are not explicitly
+     * whitelisted, while preserving the text content and allowed tags. It uses a 
+     * regular expression to identify all HTML tags and evaluates each one against
+     * the whitelist before deciding whether to keep or remove it.
+     *
+     * @param {string} html - The HTML string to be sanitized. Can contain mixed 
+     *                        allowed and disallowed tags.
+     * 
+     * @param {string[]} allowedTags - Array of tag names (in lowercase) that are 
+     *                                 permitted to remain in the output.
+     *                                 Example: ['p', 'strong', 'em', 'a']
+     *
+     * @returns {string} The sanitized HTML string with disallowed tags removed.
+     *                   Text content is preserved. Allowed tags (both opening and 
+     *                   closing) remain intact.
+     *
+     * @example
+     * // Basic usage
+     * const html = '<p>Hello <strong>World</strong> <script>alert(1)</script></p>';
+     * const allowedTags = ['p', 'strong'];
+     * const result = stripUnallowedTags(html, allowedTags);
+     * // Result: '<p>Hello <strong>World</strong></p>'
+     *
+     * @example
+     * // Preserves text content while removing dangerous tags
+     * const html = '<div>Welcome <script>malicious code</script> here!</div>';
+     * const allowedTags = ['p', 'strong'];
+     * const result = stripUnallowedTags(html, allowedTags);
+     * // Result: 'Welcome malicious code here!'
+     *
+     * @example
+     * // Case-insensitive tag matching
+     * const html = '<P>Text</P> <SCRIPT>bad</SCRIPT>';
+     * const allowedTags = ['p'];
+     * const result = stripUnallowedTags(html, allowedTags);
+     * // Result: '<P>Text</P> bad'
+     *
+     * @remarks
+     * - Tag matching is case-insensitive (both <DIV> and <div> are recognized)
+     * - Only the tag names are checked; attributes are ignored
+     * - HTML attributes are removed along with disallowed tags
+     * - Empty tags (e.g., <br/>) and self-closing tags are handled correctly
+     * - The function does NOT escape or encode special characters in content
+     * - This is a DESTRUCTIVE operation; use for sanitization, not preservation
+     *
+     * @note
+     * This method is typically used in rich-text editor scenarios where you want to
+     * allow only specific HTML tags. For example, a blog editor might allow 'p', 
+     * 'strong', 'em', 'a' but reject 'script', 'iframe', 'style', etc.
+     *
+     * @throws Does not throw errors. Invalid input is handled gracefully:
+     *         - null/undefined html → returns empty string
+     *         - empty allowedTags array → removes all HTML tags
+     *
+     * @see validateRichText - For validation instead of stripping
+     * @see sanitizeRichText - For comprehensive sanitization with warnings
+     *
+     * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+     * @package @wlindabla/form_validator
+     */
+    stripUnallowedTags(html: string, allowedTags: string[]): string;
+
+    /**
+     * Removes HTML attributes that are not explicitly whitelisted for each tag.
+     * 
+     * This method parses the input HTML string and selectively removes attributes
+     * from tags based on a whitelist configuration. Only attributes explicitly 
+     * permitted for each tag name are preserved; all others are stripped while 
+     * keeping the tag structure intact. Attribute matching is case-insensitive.
+     *
+     * @param {string} html - The HTML string containing tags with attributes to be sanitized.
+     *                        This can include any valid HTML with opening tags that contain
+     *                        attributes. Example: '<a href="link" onclick="bad()">Click</a>'
+     *
+     * @param {Record<string, string[]>} allowedAttributes - A configuration object mapping
+     *                                                       tag names to arrays of permitted
+     *                                                       attribute names. Tag names should
+     *                                                       be lowercase. Attributes are 
+     *                                                       matched case-insensitively.
+     *                                                       
+     *                                                       Structure: {
+     *                                                         'tagName': ['attr1', 'attr2'],
+     *                                                         'anotherTag': ['attrX']
+     *                                                       }
+     *
+     * @returns {string} The sanitized HTML string with disallowed attributes removed.
+     *                   Tag structures are preserved, and text content remains unchanged.
+     *                   Closing tags (which contain no attributes) are unaffected.
+     *
+     * @example
+     * // Example 1: Remove event handlers from a link
+     * const html = '<a href="https://example.com" onclick="malicious()">Visit</a>';
+     * const allowedAttributes = {
+     *   'a': ['href', 'title', 'target']
+     * };
+     * 
+     * const result = stripUnallowedAttributes(html, allowedAttributes);
+     * // Result: '<a href="https://example.com">Visit</a>'
+     * // Note: onclick attribute was removed because it's not in the whitelist
+     *
+     * @example
+     * // Example 2: Multiple tags with different allowed attributes
+     * const html = '<div id="main" onclick="alert()"><img src="pic.jpg" onerror="bad()" alt="Photo"></div>';
+     * const allowedAttributes = {
+     *   'div': ['id', 'class'],        // Only id and class allowed on div
+     *   'img': ['src', 'alt', 'title'] // Only src, alt, title allowed on img
+     * };
+     * 
+     * const result = stripUnallowedAttributes(html, allowedAttributes);
+     * // Result: '<div id="main"><img src="pic.jpg" alt="Photo"></div>'
+     * // Note: onclick on div and onerror on img were removed
+     *
+     * @example
+     * // Example 3: Empty whitelist for a tag (removes all attributes)
+     * const html = '<p id="para" class="text" data-value="5">Paragraph</p>';
+     * const allowedAttributes = {
+     *   'p': []  // No attributes allowed on p tag
+     * };
+     * 
+     * const result = stripUnallowedAttributes(html, allowedAttributes);
+     * // Result: '<p>Paragraph</p>'
+     * // Note: All attributes (id, class, data-value) were removed
+     *
+     * @example
+     * // Example 4: Case-insensitive tag matching
+     * const html = '<A HREF="test" ONCLICK="bad">Link</A>';
+     * const allowedAttributes = {
+     *   'a': ['href'] // Note: lowercase in config
+     * };
+     * 
+     * const result = stripUnallowedAttributes(html, allowedAttributes);
+     * // Result: '<A HREF="test">Link</A>'
+     * // Note: Works even though HTML uses uppercase tags
+     *
+     * @example
+     * // Example 5: Real-world rich-text editor scenario
+     * const html = `
+     *   <p>Hello <strong>World</strong></p>
+     *   <a href="/page" onclick="hack()" title="Link">Click here</a>
+     *   <img src="/image.jpg" onerror="alert()" alt="Image" width="100">
+     * `;
+     * 
+     * const allowedAttributes = {
+     *   'p': [],
+     *   'strong': [],
+     *   'em': [],
+     *   'a': ['href', 'title', 'target'],
+     *   'img': ['src', 'alt', 'width', 'height']
+     * };
+     * 
+     * const result = stripUnallowedAttributes(html, allowedAttributes);
+     * // Result: 
+     * // '<p>Hello <strong>World</strong></p>'
+     * // '<a href="/page" title="Link">Click here</a>'
+     * // '<img src="/image.jpg" alt="Image" width="100">'
+     * // Note: onclick and onerror event handlers were removed
+     *
+     * @remarks
+     * - Tag name matching is case-insensitive (both <A> and <a> work)
+     * - Attribute name matching is case-insensitive (both href and HREF work)
+     * - Self-closing tags (e.g., <br/>, <img/>) are handled correctly
+     * - Closing tags (e.g., </div>) contain no attributes and are unaffected
+     * - HTML entities within attributes are preserved as-is
+     * - Whitespace and formatting within attributes are preserved
+     * - If a tag has no entry in allowedAttributes, all its attributes are removed
+     * - Empty attribute arrays [] mean that tag gets all attributes stripped
+     *
+     * @warning
+     * This function does NOT validate or escape attribute values. It only filters
+     * attribute names. Malicious content within attribute values (e.g., 
+     * href="javascript:alert()") is NOT removed. Use this in combination with
+     * URL validation functions for complete security.
+     *
+     * @security
+     * This function removes dangerous event handlers (onclick, onerror, etc.) by 
+     * filtering attribute names. However, it is part of a multi-layer defense:
+     * 1. stripUnallowedAttributes() → removes event handler attributes
+     * 2. validateRichText() → validates URLs in href/src attributes
+     * 3. Server-side Content-Security-Policy → final browser protection
+     *
+     * @example
+     * // Security example: Event handler removal
+     * const dangerous = '<p onclick="window.location=\'http://evil.com\'">Text</p>';
+     * const allowedAttributes = { 'p': [] };
+     * 
+     * const safe = stripUnallowedAttributes(dangerous, allowedAttributes);
+     * // Result: '<p>Text</p>'
+     * // The onclick handler is completely removed
+     *
+     * @note
+     * Typical use case: Building a rich-text editor (blog, comments, etc.)
+     * where you want to allow certain HTML tags but restrict their attributes
+     * to prevent XSS attacks via event handlers and dangerous attributes.
+     *
+     * @performance
+     * - Time complexity: O(n) where n is the length of the HTML string
+     * - Two regex passes: one for tags, one for attributes within each tag
+     * - Suitable for strings up to several MB in size
+     *
+     * @see stripUnallowedTags - For removing entire tags instead of attributes
+     * @see validateRichText - For full HTML validation with domain checks
+     * @see sanitizeRichText - For comprehensive sanitization with warnings
+     *
+     * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+     * @package @wlindabla/form_validator
+     */
+    stripUnallowedAttributes(html: string,allowedAttributes: Record<string, string[]>): string ;
+
+    /**
+     * Sanitizes HTML content from a rich-text editor (WYSIWYG) by removing dangerous
+     * patterns and non-whitelisted tags/attributes.
+     *
+     * Unlike `validateRichText()` which rejects invalid content, this function modifies
+     * the content to make it safe while preserving the overall structure and user intent.
+     * This approach is ideal for WYSIWYG editors where users expect their content to be saved.
+     *
+     * @param {string} html - The HTML string to sanitize. Can contain any HTML tags,
+     *                        attributes, and content. The function will progressively
+     *                        clean it without removing the text content.
+     *
+     * @param {Object} options - Configuration object for sanitization behavior
+     *
+     * @param {string[]} options.allowedTags - Array of lowercase tag names to preserve.
+     *                                         All other tags will be stripped (text preserved).
+     *                                         Example: ['p', 'strong', 'em', 'a', 'img', 'h1', 'h2']
+     *
+     * @param {Record<string, string[]>} options.allowedAttributes - Mapping of tag names
+     *                                                               to arrays of allowed
+     *                                                               attribute names.
+     *                                                               All other attributes
+     *                                                               will be removed.
+     *                                                               Example: {
+     *                                                                 'a': ['href', 'title'],
+     *                                                                 'img': ['src', 'alt']
+     *                                                               }
+     *
+     * @param {boolean} [options.stripDangerousAttributes=true] - If true, performs an
+     *                                                            additional pass to remove
+     *                                                            event handler attributes
+     *                                                            like onclick, onerror.
+     *
+     * @returns {string} The sanitized HTML string with:
+     *                   - Dangerous XSS patterns removed
+     *                   - Non-whitelisted tags stripped (content preserved)
+     *                   - Non-whitelisted attributes removed
+     *                   - Whitespace normalized
+     *
+     * @example
+     * // Clean WYSIWYG editor output
+     * const dirtyHtml = '<p>Hello <strong>World</strong></p><script>alert("xss")</script>';
+     * const clean = sanitizeRichText(dirtyHtml, {
+     *   allowedTags: ['p', 'strong'],
+     *   allowedAttributes: { 'p': [], 'strong': [] }
+     * });
+     * // Result: '<p>Hello <strong>World</strong></p>'
+     *
+     * @example
+     * // Blog article with controlled attributes
+     * const article = '<h1>Title</h1><p>Content</p><img src="/img.jpg" onerror="alert(1)" alt="Photo">';
+     * const clean = sanitizeRichText(article, {
+     *   allowedTags: ['h1', 'p', 'img'],
+     *   allowedAttributes: {
+     *     'img': ['src', 'alt']
+     *   }
+     * });
+     * // Result: '<h1>Title</h1><p>Content</p><img src="/img.jpg" alt="Photo">'
+     * // - onerror handler removed
+     *
+     * @example
+     * // Forum post with potential XSS
+     * const post = '<p>Check <a href="javascript:alert(1)">this</a></p>';
+     * const clean = sanitizeRichText(post, {
+     *   allowedTags: ['p', 'a'],
+     *   allowedAttributes: { 'a': ['href'] }
+     * });
+     * // Result: '<p>Check <a href="">this</a></p>'
+     * // - dangerous javascript: protocol is removed in Step 1
+     *
+     * @remarks
+     * **URL Handling:**
+     * This function does NOT validate or filter URLs in href/src attributes.
+     * All URLs (external, relative, data:, etc.) are passed through unchanged.
+     * URL security is delegated to:
+     * - Server-side Content-Security-Policy (CSP) headers
+     * - File upload validation (magic bytes, not extensions)
+     * - Browser CSP enforcement
+     *
+     * **Processing Steps:**
+     * 1. Remove absolute XSS patterns (scripts, event handlers, template injection)
+     * 2. Strip non-whitelisted tags (preserve text content)
+     * 3. Remove non-whitelisted attributes (from all remaining tags)
+     * 4. (Optional) Additional event handler stripping
+     * 5. Normalize whitespace (collapse multiple spaces)
+     *
+     * **Idempotence:**
+     * Running this function twice on the same content produces the same result as once.
+     * Sanitized content is stable and will not change on repeated sanitization.
+     *
+     * @security
+     * This sanitizer operates in "cleaning mode" not "rejection mode":
+     * - Modifies content to remove threats instead of rejecting it
+     * - Suitable for WYSIWYG editors where users expect their content to be saved
+     * - Provides defense-in-depth when combined with server CSP and upload validation
+     *
+     * **Defense layers:**
+     * 1. Client-side: This sanitizer removes obvious XSS patterns
+     * 2. Server-side: CSP header prevents execution of any injected scripts
+     * 3. Upload: File validation (magic bytes, not just extension/MIME)
+     * 4. Storage: Sanitized content stored in database
+     * 5. Output: Content displayed with CSP protections in place
+     *
+     * **What this CANNOT protect against:**
+     * - Server misconfigurations (missing CSP headers)
+     * - Stored XSS if database is compromised
+     * - Attacks via non-HTML vectors (CSS injections in certain contexts)
+     * - Sophisticated polyglot payloads (use dedicated library like DOMPurify for that)
+     *
+     * @note
+     * **File Uploads:**
+     * Images, videos, and PDF uploads are validated server-side BEFORE their URLs
+     * are inserted into the HTML. This function does not re-validate files.
+     * URL format is accepted as-is. See upload endpoint documentation for file validation.
+     *
+     * **Logging:**
+     * - Uses console.warn() for debugging. Can be disabled in production.
+     * - Each sanitization step logs warnings of what was removed.
+     * - Useful for understanding what content was modified.
+     *
+     * @performance
+     * - Time Complexity: O(n) where n = HTML string length
+     * - Space Complexity: O(n) for temporary regex matches
+     * - Suitable for: Documents up to 10MB
+     * - For larger documents: Consider chunking or streaming
+     * - Typical performance: 50-500ms for 1MB of HTML
+     *
+     * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+     * @company INTERNATIONALES WEB APPS & SERVICES
+     * @license MIT
+     */
+    sanitizeRichText(
+        html: string,
+        options: {
+            allowedTags: string[];
+            allowedAttributes: Record<string, string[]>;
+            stripDangerousAttributes?: boolean;
+        }
+    ): string;
+}

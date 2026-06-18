@@ -119,9 +119,6 @@ export class TelInputValidator extends AbstractFieldValidator {
 
                 if (targetInput) {
                     targetInput.value = phoneNumber.formatInternational();
-
-                    // Si tu as besoin de déclencher manuellement l'événement 'input' ou 'change' 
-                    // pour que d'autres scripts (ou React/Angular) voient la modification :
                     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }

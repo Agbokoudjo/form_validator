@@ -2,7 +2,7 @@
 
 > **Powerful, framework-agnostic JavaScript/TypeScript form validation library**
 
-A comprehensive form validation library for HTML forms supporting `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `checkbox`, `radio`, and enriched file types: **images**, **PDFs**, **Word documents**, **Excel**, **CSV**, **ODF/RTF**, and **videos** — with binary signature inspection (magic bytes), real metadata validation, and a centralized error store.
+A comprehensive form validation library for HTML forms supporting `text`, `email`, `tel`, `password`, `URL`, `date`, `number`, `select`, `ISBN`,`checkbox`, `radio`, **credit/debit card numbers** (CardSchemeValidator), and enriched file types: **images**, **PDFs**, **Word documents**, **Excel**, **CSV**, **ODF/RTF**, and **videos** — with binary signature inspection (magic bytes), real metadata validation, and a centralized error store.
 
 **Author:** [AGBOKOUDJO Franck](https://www.linkedin.com/in/internationales-web-apps-services-120520193/)  
 **Company:** INTERNATIONALES WEB APPS & SERVICES  
@@ -23,6 +23,32 @@ A comprehensive form validation library for HTML forms supporting `text`, `email
   - [Text Validators](#text-validators)
     - [TextInputValidator](#textinputvalidator)
     - [TextareaValidator](#textareavalidator)
+      - [Security Modes (Rich Text Support)](#security-modes-rich-text-support)
+      - [HTML Attributes Configuration](#html-attributes-configuration)
+    - [IsbnValidator](#isbnvalidator)
+    - [Simple Usage](#simple-usage)
+      - [Accept both formats](#accept-both-formats)
+      - [Only ISBN-13](#only-isbn-13)
+      - [Strict (no dashes/spaces)](#strict-no-dashesspaces)
+      - [Optional field](#optional-field)
+      - [Via the Central Router](#via-the-central-router)
+      - [Avec FormValidateController (HTML-driven)](#avec-formvalidatecontroller-html-driven)
+      - [Formats Acceptés](#formats-acceptés)
+      - [Checksum Validation](#checksum-validation)
+      - [Avec React](#avec-react)
+      - [Avec Vue.js](#avec-vuejs)
+    - [CardSchemeValidator](#cardschemevalidator)
+      - [Simple Usage](#simple-usage-1)
+      - [Accept multiple schemes](#accept-multiple-schemes)
+      - [Accept any known scheme](#accept-any-known-scheme)
+      - [Optional field](#optional-field-1)
+      - [With spaces and hyphens (sanitize: true by default)](#with-spaces-and-hyphens-sanitize-true-by-default)
+      - [Via the Central Router](#via-the-central-router-1)
+      - [Via FormValidateController (HTML-driven)](#via-formvalidatecontroller-html-driven)
+      - [Validation pipeline](#validation-pipeline)
+      - [With React](#with-react)
+      - [With Symfony + Twig](#with-symfony--twig)
+      - [Static utility](#static-utility)
     - [EmailInputValidator](#emailinputvalidator)
     - [PasswordInputValidator](#passwordinputvalidator)
     - [TelInputValidator](#telinputvalidator)
@@ -250,8 +276,553 @@ textareaInputValidator.validate(
   }
 );
 ```
+#### Security Modes (Rich Text Support)
+
+TextareaValidator now supports three security levels for HTML content:
+
+| Mode | Purpose | Use Case |
+|------|---------|----------|
+| `'strict'` (default) | Rejects ALL HTML/PHP/JS | Plain text fields, comments |
+| `'safe-html'` | Whitelist of tags without attributes | Simple blogs, forums |
+| `'rich-text'` | HTML with controlled attributes | WYSIWYG editors (TinyMCE, Quill) |
+
+**Example - Rich Text Mode:**
+```typescript
+textareaInputValidator.validate(
+  userContent,
+  'article_body',
+  {
+    typeInput: 'textarea',
+    securityMode: 'rich-text',
+    allowedHtmlTags: ['p', 'h1', 'h2', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'li', 'ol'],
+    allowedHtmlAttributes: {
+      'a': ['href', 'title', 'target'],
+      'img': ['src', 'alt', 'width', 'height'],
+      'p': [],
+      'h1': [],
+      'h2': [],
+      'strong': [],
+      'em': [],
+      'blockquote': [],
+      'ul': [],
+      'li': [],
+      'ol': [],
+      '*': [] // Other tags: no attributes allowed
+    },
+    sanitizeInsteadOfReject: true,
+    minLength: 50,
+    maxLength: 5000,
+    requiredInput: true
+  }
+);
+```
+
+#### HTML Attributes Configuration
+
+Configure textarea validation directly from HTML using `data-*` attributes:
+
+**Method A: JSON in Single Attribute** (Recommended for small/medium configs)
+```html
+<textarea
+  id="article"
+  name="article_body"
+  data-type="textarea"
+  data-security-mode="rich-text"
+  data-allowed-tags="p,h1,h2,strong,em,a,img,blockquote,ul,li,ol"
+  data-allowed-html-attributes='{
+    "a": ["href", "title", "target"],
+    "img": ["src", "alt", "width", "height"],
+    "p": [],
+    "h1": [],
+    "h2": [],
+    "strong": [],
+    "em": [],
+    "blockquote": [],
+    "ul": [],
+    "li": [],
+    "ol": [],
+    "*": []
+  }'
+  data-sanitize-instead-of-reject="true"
+  required
+  minlength="50"
+  maxlength="5000"
+  data-event-validate="blur"
+  data-event-validate-blur="blur"
+></textarea>
+```
+
+**Method B: Granular Attributes** (Better for backend template generation)
+```html
+<textarea
+  id="article"
+  name="article_body"
+  data-type="textarea"
+  data-security-mode="rich-text"
+  data-allowed-tags="p,h1,strong,em,a,img"
+  data-allowed-attrs-for-p=""
+  data-allowed-attrs-for-h1=""
+  data-allowed-attrs-for-strong=""
+  data-allowed-attrs-for-em=""
+  data-allowed-attrs-for-a="href,title,target"
+  data-allowed-attrs-for-img="src,alt,width,height"
+  data-sanitize-instead-of-reject="true"
+  required
+  minlength="50"
+  maxlength="5000"
+></textarea>
+```
+
+**Method C: Global Configuration** (Best for multiple textareas)
+```typescript
+// Define once at app startup
+window.TEXTAREA_CONFIGS = {
+  'blog-post': {
+    a: ['href', 'title', 'target'],
+    img: ['src', 'alt', 'width', 'height'],
+    p: [],
+    h1: [],
+    h2: [],
+    strong: [],
+    em: [],
+    blockquote: [],
+    ul: [],
+    li: [],
+    ol: [],
+    '*': []
+  },
+  'forum-post': {
+    strong: [],
+    em: [],
+    blockquote: [],
+    '*': []
+  }
+};
+```
+
+```html
+<!-- Use config by key -->
+<textarea
+  id="article"
+  data-allowed-tags="p,h1,h2,strong,em,a,img,blockquote,ul,li,ol"
+  data-allowed-attributes-key="blog-post"
+  data-security-mode="rich-text"
+  data-sanitize-instead-of-reject="true"
+></textarea>
+```
+---
+
+### IsbnValidator 
+
+** ISBN Validator **
+
+Validates ISBN-10 and ISBN-13 numbers with automatic checksum.
+
+### Simple Usage
+
+```typescript
+import { isbnValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+// Validate an ISBN
+isbnValidator.validate('978-3-16-148410-0', 'isbn', {
+  type: 'isbn13',
+  requiredInput: true
+});
+
+// Check the result
+if (isbnValidator.formErrorStore.isFieldValid('isbn')) {
+  console.log('✅ ISBN valide!');
+} else {
+  const errors = isbnValidator.formErrorStore.getFieldErrors('isbn');
+  console.log('❌ Erreurs:', errors);
+}
+```
+
+** Validation Options **
+```typescript
+interface IsbnOptions {
+  // Type: 'isbn10' | 'isbn13' | 'both' (default)
+  type?: 'isbn10' | 'isbn13' | 'both';
+
+  // required
+  requiredInput?: boolean;  // default: true
+
+  // Custom error messages
+  isbn10Message?: string;
+  isbn13Message?: string;
+  bothIsbnMessage?: string;
+
+  // Example for the error message
+  egAwait?: string;  // Ex: "978-3-16-148410-0"
+
+ // Management of dashes/spaces
+  allowHyphens?: boolean;   // default: true
+  allowSpaces?: boolean;    // default: true
+}
+```
+
+** Examples ** 
+
+#### Accept both formats
+
+```typescript
+isbnValidator.validate(value, 'isbn', {
+  type: 'both',
+  requiredInput: true
+});
+```
+
+#### Only ISBN-13 
+
+```typescript
+isbnValidator.validate(value, 'isbn', {
+  type: 'isbn13',
+  requiredInput: true,
+  isbn13Message: 'Enter a valid ISBN-13'
+});
+```
+
+#### Strict (no dashes/spaces)
+
+```typescript
+isbnValidator.validate(value, 'isbn', {
+  type: 'isbn10',
+  allowHyphens: false,
+  allowSpaces: false
+});
+```
+
+#### Optional field
+
+```typescript
+isbnValidator.validate(value, 'isbn', {
+  type: 'both',
+  requiredInput: false
+});
+```
+
+#### Via the Central Router
+
+```typescript
+import { formInputValidator } from '@wlindabla/form_validator/validation/core/router';
+
+await formInputValidator.allTypesValidator(
+  '978-3-16-148410-0',
+  'myIsbn',
+  'isbn13',
+  { requiredInput: true }
+);
+```
+
+#### Avec FormValidateController (HTML-driven)
+
+```html
+<form name="myForm" class="form-validate" novalidate>
+  <input
+    id="isbn"
+    name="isbn"
+    type="text"
+    required
+    data-type="isbn"
+    data-type-isbn="isbn13"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="ISBN invalide"
+    placeholder="978-3-16-148410-0"
+  />
+  <button type="submit">Valider</button>
+</form>
+```
+
+#### Formats Acceptés
+
+**ISBN-10:**
+- `0306406152` (sans tirets)
+- `0-306-40615-2` (avec tirets)
+- `043942089X` (avec X comme checksum)
+
+**ISBN-13:**
+- `9783161484100` (sans tirets)
+- `978-3-16-148410-0` (avec tirets)
+- `978 3 16 148410 0` (avec espaces)
+
+#### Checksum Validation
+
+Le validateur vérifie automatiquement que la checksum est correcte:
+
+```typescript
+isbnValidator.validate('9783161484100', 'isbn', { type: 'isbn13' });
+// ✅ Valide (checksum correcte)
+
+isbnValidator.validate('9783161484101', 'isbn', { type: 'isbn13' });
+// ❌ Invalide (checksum incorrecte)
+```
+
+#### Avec React
+
+```typescript
+import { useState } from 'react';
+import { isbnValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+function IsbnInput() {
+  const [isbn, setIsbn] = useState('');
+  const [error, setError] = useState('');
+
+  const validateIsbn = (value: string) => {
+    isbnValidator.validate(value, 'isbn', { type: 'both' });
+    const errors = isbnValidator.formErrorStore.getFieldErrors('isbn');
+    setError(errors[0] || '');
+  };
+
+  return (
+    <div>
+      <input
+        value={isbn}
+        onChange={(e) => setIsbn(e.target.value)}
+        onBlur={() => validateIsbn(isbn)}
+        placeholder="978-3-16-148410-0"
+      />
+      {error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+```
+
+#### Avec Vue.js
+
+```vue
+<template>
+  <div>
+    <input
+      v-model="isbn"
+      @blur="validateIsbn"
+      placeholder="978-3-16-148410-0"
+    />
+    <p v-if="error" class="error">{{ error }}</p>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import { isbnValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+const isbn = ref('');
+const error = ref('');
+
+const validateIsbn = () => {
+  isbnValidator.validate(isbn.value, 'isbn', { type: 'both' });
+  const errors = isbnValidator.formErrorStore.getFieldErrors('isbn');
+  error.value = errors[0] || '';
+};
+</script>
+```
 
 ---
+
+### CardSchemeValidator
+
+Validates credit and debit card numbers against one or more card schemes.
+Inspired by Symfony's `CardScheme` constraint — same scheme registry, same two-step pipeline: numeric guard → scheme regex match.
+
+> **Note on Luhn:** Unlike some third-party libraries, `CardSchemeValidator` does **not** run the Luhn checksum by default — consistent with Symfony's `CardSchemeValidator` philosophy. The constraint validates the **format** of the number, not its real-world existence. Luhn verification is the responsibility of the payment gateway (Stripe, PayPal, etc.).
+
+**Supported schemes:**
+
+| Constant | Description |
+|----------|-------------|
+| `AMEX` | American Express — starts with 34 or 37, 15 digits |
+| `CHINA_UNIONPAY` | China UnionPay — starts with 62, 16–19 digits. **Luhn-exempt** |
+| `DINERS` | Diners Club — starts with 300–305, 36 or 38, 14 digits |
+| `DISCOVER` | Discover — starts with 6011, 622126–622925, 644–649 or 65, 16 digits |
+| `INSTAPAYMENT` | InstaPayment — starts with 637–639, 16 digits |
+| `JCB` | JCB — starts with 2131, 1800 (15 digits) or 35xxxx (16 digits) |
+| `LASER` | Laser — starts with 6304, 6706, 6709 or 6771, 16–19 digits |
+| `MAESTRO` | Maestro — various prefixes, 12–19 digits |
+| `MASTERCARD` | MasterCard — starts with 51–55 or 222100–272099, 16 digits |
+| `MIR` | MIR (Russia) — starts with 2200–2204, 16–19 digits |
+| `UATP` | UATP — starts with 1, 15 digits |
+| `VISA` | Visa — starts with 4, 13, 16 or 19 digits |
+
+**Import:**
+```typescript
+import { cardSchemeValidator } from '@wlindabla/form_validator/validation/rules/text';
+```
+
+**Options (`CardSchemeOptions`):**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `schemes` | `CardSchemeType \| CardSchemeType[]` | `[]` (all) | Scheme(s) to validate against. Empty = all known schemes |
+| `requiredInput` | `boolean` | `true` | Field is required |
+| `errorMessageInput` | `string` | `'Unsupported card type or invalid card number.'` | Custom error message |
+| `egAwait` | `string` | — | Example value shown in error message |
+| `sanitize` | `boolean` | `true` | Strip spaces and hyphens before validation |
+| `luhnCheck` | `boolean` | `false` | Run Luhn checksum after format validation (opt-in) |
+
+#### Simple Usage
+
+```typescript
+import { cardSchemeValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+// Validate a VISA card
+cardSchemeValidator.validate('4111111111111111', 'cardNumber', {
+    schemes: 'VISA',
+    requiredInput: true,
+});
+
+if (cardSchemeValidator.formErrorStore.isFieldValid('cardNumber')) {
+    console.log('Valid VISA card!');
+} else {
+    console.log(cardSchemeValidator.formErrorStore.getFieldErrors('cardNumber'));
+}
+```
+
+#### Accept multiple schemes
+
+```typescript
+cardSchemeValidator.validate('5500005555555559', 'cardNumber', {
+    schemes: ['VISA', 'MASTERCARD'],
+    egAwait: '4111 1111 1111 1111',
+});
+```
+
+#### Accept any known scheme
+
+```typescript
+// No schemes restriction → validates against all 12 known schemes
+cardSchemeValidator.validate('378282246310005', 'cardNumber', {
+    requiredInput: true,
+});
+```
+
+#### Optional field
+
+```typescript
+cardSchemeValidator.validate(undefined, 'cardNumber', {
+    requiredInput: false,
+    schemes: ['VISA', 'MASTERCARD'],
+});
+// → valid (field is not required and value is empty)
+```
+
+#### With spaces and hyphens (sanitize: true by default)
+
+```typescript
+// These three calls are strictly equivalent
+cardSchemeValidator.validate('4111 1111 1111 1111', 'cardNumber', { schemes: 'VISA' });
+cardSchemeValidator.validate('4111-1111-1111-1111', 'cardNumber', { schemes: 'VISA' });
+cardSchemeValidator.validate('4111111111111111',    'cardNumber', { schemes: 'VISA' });
+```
+
+#### Via the Central Router
+
+```typescript
+import { formInputValidator } from '@wlindabla/form_validator/validation/core/router';
+
+await formInputValidator.allTypesValidator(
+    '4111111111111111',
+    'cardNumber',
+    'card',
+    { schemes: ['VISA', 'MASTERCARD'], requiredInput: true }
+);
+
+const validator = formInputValidator.getValidator('cardNumber');
+console.log(validator?.formErrorStore.isFieldValid('cardNumber')); // true
+```
+
+#### Via FormValidateController (HTML-driven)
+
+```html
+<form name="paymentForm" class="form-validate" novalidate>
+  <input
+    id="cardNumber"
+    name="cardNumber"
+    type="text"
+    data-type="card"
+    required
+    data-card-schemes="VISA,MASTERCARD"
+    data-card-sanitize="true"
+    data-eg-await="4111 1111 1111 1111"
+    data-error-message-input="Please enter a valid VISA or Mastercard number."
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+  />
+</form>
+```
+
+#### Validation pipeline
+
+```
+Input value
+    │
+    ├─ 1. Clear previous state
+    ├─ 2. Required check          → empty + required  → NOT_NUMERIC_ERROR
+    ├─ 3. XSS guard               → escapeHtmlBalise()
+    ├─ 4. Sanitize                → strip spaces / hyphens (if sanitize: true)
+    ├─ 5. Numeric guard           → /^[0-9]+$/  → NOT_NUMERIC_ERROR
+    ├─ 6. Scheme regex match      → test each scheme's patterns
+    │         no match            → INVALID_FORMAT_ERROR
+    └─ 7. Luhn checksum (opt-in)  → only if luhnCheck: true AND scheme not LUHN-exempt
+              fail                → INVALID_FORMAT_ERROR
+              pass                → ✅ valid
+```
+
+#### With React
+
+```tsx
+import { cardSchemeValidator } from '@wlindabla/form_validator/validation/rules/text';
+import { useState } from 'react';
+
+function CardField() {
+    const [error, setError] = useState('');
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        cardSchemeValidator.validate(e.target.value, 'cardNumber', {
+            schemes: ['VISA', 'MASTERCARD'],
+        });
+        const errors = cardSchemeValidator.formErrorStore.getFieldErrors('cardNumber');
+        setError(errors[0] ?? '');
+    };
+
+    return (
+        <div>
+            <input type="text" name="cardNumber" onBlur={handleBlur} />
+            {error && <span className="error">{error}</span>}
+        </div>
+    );
+}
+```
+
+#### With Symfony + Twig
+
+```twig
+{{ form_row(paymentForm.cardNumber, {
+    'attr': {
+        'data-type': 'card',
+        'data-card-schemes': 'VISA,MASTERCARD',
+        'data-card-sanitize': 'true',
+        'data-eg-await': '4111 1111 1111 1111',
+        'data-error-message-input': 'Please enter a valid VISA or Mastercard number.',
+        'data-event-validate': 'blur',
+        'data-event-validate-blur': 'blur'
+    }
+}) }}
+```
+
+#### Static utility
+
+```typescript
+// Run Luhn only — without the full validator pipeline
+const isLuhnValid = CardSchemeValidator.luhnCheck('4111111111111111');
+console.log(isLuhnValid); // true
+
+// Inspect the full scheme registry
+const allSchemes = CardSchemeValidator.schemes;
+console.log(Object.keys(allSchemes));
+// ['AMEX', 'CHINA_UNIONPAY', 'DINERS', ...]
+```
+
+
 
 ### EmailInputValidator
 
@@ -794,7 +1365,29 @@ import { formInputValidator } from '@wlindabla/form_validator/validation/core/ro
 await formInputValidator.allTypesValidator('Alice', 'username', 'text', {
   minLength: 3, maxLength: 30, requiredInput: true
 });
-
+//ISBN 13
+await formInputValidator.allTypesValidator(
+  '978-3-16-148410-0',
+  'myIsbn',
+  'isbn',
+  { requiredInput: true,type: "isbn13" }
+);
+//ISBN both
+await formInputValidator.allTypesValidator(
+  '9783161484100',
+  'myIsbn',
+  'isbn',
+  { requiredInput: false,type: "both" }
+);
+//ISBN 10
+await formInputValidator.allTypesValidator(
+  '0-306-40615-2',
+  'myIsbn',
+  'isbn',
+  { requiredInput: false,type: "isbn10",
+   allowHyphens: false,
+  allowSpaces: false }
+);
 // Email
 await formInputValidator.allTypesValidator('alice@example.com', 'email', 'email', {
   requiredInput: true
@@ -822,6 +1415,7 @@ console.log(v?.formErrorStore.getFieldErrors('username'));
 |------|--------------|
 | `'text'` | Text field |
 | `'email'` | Email field |
+| `'isbn'` |ISBN type to validate field |
 | `'password'` | Password field |
 | `'tel'` | Phone number |
 | `'url'` | URL field |
@@ -1025,7 +1619,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
 | Attribute | Role |
 |-----------|------|
 | `type` | Input type (`text`, `email`, `password`, `url`, `date`, `tel`, `number`, `file`) |
-| `data-type` | Override for custom types (`fqdn`, `textarea`) |
+| `data-type` | Override for custom types (`fqdn`, `textarea`,`isbn`) |
 | `data-media-type` | For `type="file"`: `image`, `video`, `document` |
 | `required` / `data-required` | Required field |
 | `data-event-validate` | Event triggering validation (`blur`, `input`, `change`, `focus`) |
@@ -1038,7 +1632,7 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
 | `data-min-length` / `data-max-length` | Length constraints |
 | `minLength` / `maxLength` | Native HTML length constraints |
 | `pattern` / `data-flag-pattern` | Regex pattern + flags |
-| `data-match-regex` | `true`/`false` — match or reject the pattern |
+| `data-match-regexp` | `true`/`false` — match or reject the pattern |
 | `data-eg-await` | Example value shown in the error |
 | `data-escapestrip-html-and-php-tags` | Strip tags before validation |
 | `data-default-country` | Country code for phone validation (e.g. `US`, `FR`) |
@@ -1061,6 +1655,21 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
 | `data-min-paragraphs` | Minimum number of paragraphs in Word/ODF |
 | `data-allow-rtf` | Allow RTF files in OdtValidator (default: `true`) |
 | `data-allow-legacy-doc` | Allow `.doc` files in MicrosoftWordValidator (default: `true`) |
+| `data-security-mode` | Security level for textarea: 'strict', 'safe-html', or 'rich-text' (default: `'strict'`) |
+| `data-allowed-tags` | Comma-separated list of allowed HTML tags for rich-text mode |
+| `data-allowed-html-attributes` | JSON object mapping tags to allowed attributes |
+| `data-allowed-attrs-for-*` | Per-tag configuration (e.g. `data-allowed-attrs-for-a="href,title"`) |
+| `data-allowed-attributes-key` | Reference key to global TEXTAREA_CONFIGS object |
+| `data-sanitize-instead-of-reject` | Auto-sanitize invalid HTML instead of rejecting (default: `false`) |
+| ` data-type-isbn` | ISBN type to validate: 'isbn10', 'isbn13', or 'both' (default: `both`) |
+| `data-isbn-10-message` | Custom error message for ISBN-10 validation |
+| `data-isbn-13-message` |Custom error message for ISBN-13 validation |
+| `data-isbn-both-message` | Custom error message when both formats fail |
+| `data-allow-hyphens` | Whether to allow hyphens and spaces (default: `true`)|
+| `data-allow-spaces` | Whether to allow hyphens and spaces (default: `true`)|
+| `data-type` | `"card"` | For card number fields: set `data-type="card"` |
+| `data-card-schemes` | Comma-separated `CardSchemeType` | Schemes to validate against e.g. `"VISA,MASTERCARD"` |
+| `data-card-sanitize` | `"true"` / `"false"` | Strip spaces and hyphens before validation (default: `true`) |
 
 **Full HTML form example with attribute-based validation:**
 
@@ -1119,7 +1728,26 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate="input"
     data-event-validate-input="input"
   />
-
+    <!-- Rich Text Editor (Textarea with HTML support) -->
+  <textarea
+    id="article_content"
+    name="article_content"
+    data-type="textarea"
+    data-security-mode="rich-text"
+    data-allowed-tags="p,h1,h2,strong,em,a,img,blockquote,ul,li,ol"
+    data-allowed-html-attributes='{
+      "a": ["href", "title", "target"],
+      "img": ["src", "alt", "width", "height"],
+      "*": []
+    }'
+    data-sanitize-instead-of-reject="true"
+    required
+    minlength="50"
+    maxlength="5000"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="Article content must be between 50 and 5000 characters."
+  ></textarea>
   <!-- Image upload -->
   <input
     id="avatar"
@@ -1135,7 +1763,18 @@ class SessionStorageAdapter implements FieldOptionsValidateCacheAdapterInterface
     data-event-validate-change="change"
     data-event-validate-dragenter="dragenter"
   />
-
+<input
+    id="isbn"
+    name="isbn"
+    type="text"
+    required
+    data-type="isbn"
+    data-type-isbn="isbn13"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="ISBN invalide"
+    placeholder="978-3-16-148410-0"
+  />
   <!-- Document upload (PDF, Word, Excel, CSV auto-detected) -->
   <input
     id="document"
@@ -1942,7 +2581,7 @@ document.addEventListener('DOMContentLoaded', () => {
 | `@wlindabla/form_validator` | `FormValidateController`, `FieldValidationFailed`, `FieldValidationSuccess`, `addHashToIds` |
 | `@wlindabla/form_validator/validation/core/router` | `formInputValidator`, `FormInputValidator`, `OptionsValidate` |
 | `@wlindabla/form_validator/validation` | `formErrorStore`, `FormErrorStore` |
-| `@wlindabla/form_validator/validation/rules/text` | `textInputValidator`, `emailInputValidator`, `passwordInputValidator`, `telInputValidator`, `urlInputValidator`, `fqdnInputValidator`, `dateInputValidator`, `numberInputValidator`, `textareaInputValidator` |
+| `@wlindabla/form_validator/validation/rules/text` | `textInputValidator`, `emailInputValidator`, `passwordInputValidator`, `telInputValidator`, `urlInputValidator`, `fqdnInputValidator`, `dateInputValidator`, `numberInputValidator`, `textareaInputValidator` , `isbnValidator`,`IsbnValidator`,`cardSchemeValidator`, `CardSchemeValidator` |
 | `@wlindabla/form_validator/validation/rules/choice` | `selectValidator`, `checkboxValidator`, `radioValidator` |
 | `@wlindabla/form_validator/validation/rules/file` | `imageValidator`, `videoValidator`, `pdfValidator`, `excelValidator`, `csvValidator`, `microsoftWordValidator`, `odtValidator` |
 | `@wlindabla/form_validator/validation/core/adapter` | `FieldOptionsValidateCacheAdapterInterface` |

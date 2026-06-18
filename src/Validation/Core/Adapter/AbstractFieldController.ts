@@ -34,7 +34,8 @@ import {
     FieldValidationFailed,
     FieldValidationSuccess,
     FormChildrenValidateEvent,
-    EventValidate
+    EventValidate,
+    SecurityModeType
 } from "../../types";
 
 import type { FieldValidatorInterface } from "../../Contracts";
@@ -374,6 +375,7 @@ export abstract class AbstractFieldController {
 
         return this.getAttrChildren('maxLength')
             ?? this.getAttrChildren('max-length')
+            ?? this.getAttrChildren('maxlength')
             ?? this.getAttrChildren('data-max-length')
             ?? this.getAttrChildren('data-maxLength')
             ;
@@ -393,6 +395,7 @@ export abstract class AbstractFieldController {
 
         return this.getAttrChildren('minLength')
             ?? this.getAttrChildren('min-length')
+            ?? this.getAttrChildren('minlength')
             ?? this.getAttrChildren('data-min-length')
             ?? this.getAttrChildren('data-minLength')
             ;
@@ -406,6 +409,13 @@ export abstract class AbstractFieldController {
     protected parseBooleanAttr(attrName: string, defaultValue: boolean = true): boolean {
 
         return toBoolean(this.getAttrChildren(attrName) ?? defaultValue.toString());
+    }
+
+    protected noValidate(): boolean{
+        const _noValidate=this.getAttrChildren("novalidate") ;
+
+        return (_noValidate !== undefined && _noValidate !== null) ||
+                (this.parseBooleanAttr("data-novalidate",false) === true)
     }
 
     protected parseIntAttr(attrName: string, defaultValue: number = 1, radix: number | undefined = 10): number {
@@ -440,7 +450,8 @@ export abstract class AbstractFieldController {
 
     protected get matchRegex(): boolean | undefined {
 
-        const match = this.getAttrChildren('data-match-regex')
+        const match = this.getAttrChildren('data-match-regexp')
+            ?? this.getAttrChildren('data-match-regExp')
             ?? this.getAttrChildren('data-match')
             ?? this.getAttrChildren('match')
             ;
@@ -527,6 +538,269 @@ export abstract class AbstractFieldController {
                 return sanitized.replace(/\s+/g, ' ');
             })
             .filter(item => item.length > 0);
+    }
+
+    /**
+     * Get allowed HTML tags from textarea.
+     * 
+     * HTML:
+     * ```html
+     * <textarea data-allowed-tags="p,strong,em,a,img,blockquote,ul,li,ol"></textarea>
+     * ```
+     * Returns: ['p', 'strong', 'em', 'a', 'img', 'blockquote', 'ul', 'li', 'ol']
+     */
+    protected get allowedTags(): string[] {
+        return this.getAttrChildren('data-allowed-tags')
+            ?.split(',')
+            .map(v => v.trim())
+            .filter(Boolean) ?? [];
+    }
+
+    /**
+     * METHOD A: Get allowed attributes from JSON in single attribute.
+     * 
+     * HTML:
+     * ```html
+     * <textarea
+     *   data-allowed-tags="p,strong,em,a,img"
+     *   data-allowed-html-attributes='{
+     *     "a": ["href", "title", "target"],
+     *     "img": ["src", "alt", "width", "height"],
+     *     "p": [],
+     *     "strong": [],
+     *     "em": [],
+     *     "*": []
+     *   }'
+     * ></textarea>
+     * ```
+     * 
+     * Output: {
+     *   "a": ["href", "title", "target"],
+     *   "img": ["src", "alt", "width", "height"],
+     *   "p": [],
+     *   "strong": [],
+     *   "em": [],
+     *   "*": []
+     * }
+     */
+    protected get allowedAttributesFromJson(): Record<string, string[]> |undefined {
+        const jsonString = this.getAttrChildren('data-allowed-html-attributes');
+
+        if (!jsonString) {
+            return undefined;
+        }
+
+        try {
+            const parsed = JSON.parse(jsonString);
+
+            // Validate that it's an object with string[] values
+            if (typeof parsed === 'object' && parsed !== null) {
+                return parsed as Record<string, string[]>;
+            }
+
+            console.warn('[FieldInputController] Invalid JSON in data-allowed-html-attributes');
+            return undefined;
+        } catch (error) {
+            console.error('[FieldInputController] Failed to parse data-allowed-html-attributes JSON:', error);
+            return undefined;
+        }
+    }
+
+    /**
+     * Get sanitization preference from textarea.
+     * 
+     * HTML:
+     * ```html
+     * <textarea data-sanitize-instead-of-reject="true"></textarea>
+     * ```
+     * 
+     * @returns: true | false
+     */
+    protected get sanitizeInsteadOfReject(): boolean {
+        return this.parseBooleanAttr('data-sanitize-instead-of-reject',false);
+    }
+
+    /**
+     * Get security mode from textarea.
+     * 
+     * HTML:
+     * ```html
+     * <textarea data-security-mode="rich-text"></textarea>
+     * ```
+     * 
+     * @returns: 'strict' | 'safe-html' | 'rich-text'
+     */
+    protected get securityMode(): SecurityModeType{
+        const mode = this.getAttrChildren('data-security-mode') || 'strict';
+        return mode as SecurityModeType;
+    }
+
+    /**
+     Get allowed attributes using separate data-allowed-attrs-for-* attributes.
+     * 
+     * HTML:
+     * ```html
+     * <textarea
+     *   data-allowed-tags="a,img,p,strong,em"
+     *   data-allowed-attrs-for-a="href,title,target"
+     *   data-allowed-attrs-for-img="src,alt,width,height"
+     *   data-allowed-attrs-for-p=""
+     *   data-allowed-attrs-for-strong=""
+     *   data-allowed-attrs-for-em=""
+     * ></textarea>
+     * ```
+     * 
+     * Output: {
+     *   "a": ["href", "title", "target"],
+     *   "img": ["src", "alt", "width", "height"],
+     *   "p": [],
+     *   "strong": [],
+     *   "em": []
+     * }
+     */
+    protected get allowedAttributesFromGranularAttributes(): Record<string, string[]> {
+        const allowedTags = this.allowedTags;
+        const allowedAttributes: Record<string, string[]> = {};
+
+        // For each allowed tag, look for a corresponding data-allowed-attrs-for-* attribute
+        allowedTags.forEach(tag => {
+            const attrKey = `data-allowed-attrs-for-${tag.trim()}`;
+            const attrs = this.getAttrChildren(attrKey);
+
+            // Parse comma-separated attribute names
+            allowedAttributes[tag.trim()] = attrs
+                ? attrs
+                    .split(',')
+                    .map(a => a.trim())
+                    .filter(a => a.length > 0)
+                : [];
+        });
+
+        return allowedAttributes;
+    }
+
+    /**
+     * Get allowed attributes from global configuration object.
+     * HTML:
+     * ```html
+     * <textarea
+     *   data-allowed-tags="p,strong,em,a,img"
+     *   data-allowed-attributes-key="blog-post"
+     * ></textarea>
+     * ```
+     * JavaScript (at app startup):
+     * ```typescript
+     * window.TEXTAREA_CONFIGS = {
+     *   'blog-post': {
+     *     a: ['href', 'title', 'target'],
+     *     img: ['src', 'alt', 'width', 'height'],
+     *     p: [],
+     *     strong: [],
+     *     em: [],
+     *     '*': []
+     *   },
+     *   'forum-post': {
+     *     strong: [],
+     *     em: [],
+     *     '*': []
+     *   }
+     * };
+     * ```
+     * 
+     * Output: (depends on the key in TEXTAREA_CONFIGS)
+     */
+    protected get allowedAttributesFromGlobalConfig(): Record<string, string[]> | undefined{
+        const configKey = this.getAttrChildren('data-allowed-attributes-key');
+
+        if (!configKey) {
+            return undefined;
+        }
+
+        // Access global configuration (must be defined in window)
+        const globalConfig = (window as any).TEXTAREA_CONFIGS;
+
+        if (!globalConfig) {
+            console.warn('[FieldInputController] window.TEXTAREA_CONFIGS not found');
+            return undefined;
+        }
+
+        const config = globalConfig[configKey];
+
+        if (!config) {
+            console.warn(`[FieldInputController] Configuration key "${configKey}" not found in TEXTAREA_CONFIGS`);
+            return undefined;
+        }
+
+        return config as Record<string, string[]>;
+    }
+
+
+    /**
+     *Get allowed attributes from escaped JSON in attribute.
+     * 
+     * Useful for cases where single quotes cause issues.
+     * 
+     * HTML:
+     * ```html
+     * <textarea
+     *   data-allowed-tags="p,strong,em,a,img"
+     *   data-allowed-html-attributes="{&quot;a&quot;:[&quot;href&quot;,&quot;title&quot;],&quot;img&quot;:[&quot;src&quot;,&quot;alt&quot;]}"
+     * ></textarea>
+     * ```
+     * 
+     * Output: {
+     *   "a": ["href", "title"],
+     *   "img": ["src", "alt"]
+     * }
+     */
+    protected get allowedAttributesFromEscapedJson(): Record<string, string[]> |undefined {
+        const escapedJson = this.getAttrChildren('data-allowed-html-attributes');
+
+        if (!escapedJson) {
+            return undefined;
+        }
+
+        try {
+            // Decode HTML entities
+            const parser = new DOMParser();
+            const decoded = parser.parseFromString(
+                `<!doctype html><body>${escapedJson}`,
+                'text/html'
+            ).body.textContent || escapedJson;
+
+            const parsed = JSON.parse(decoded);
+            return parsed as Record<string, string[]>;
+        } catch (error) {
+            console.error('[FieldInputController] Failed to parse escaped JSON:', error);
+            return undefined;
+        }
+    }
+
+    /**
+     *Hybrid approach - try JSON first, fallback to granular attributes.
+     * Priority:
+     * 1. Try data-allowed-html-attributes (JSON)
+     * 2. Fallback to data-allowed-attrs-for-* (granular)
+     * 3. Return empty object if neither found
+     */
+    protected get allowedAttributesHybrid(): Record<string, string[]>|undefined {
+        // Try JSON first
+        const fromJson = this.allowedAttributesFromJson || 
+                        this.allowedAttributesFromGlobalConfig ||
+                        this.allowedAttributesFromEscapedJson
+                            ; 
+        if (fromJson) {
+            return fromJson;
+        }
+
+        // Fallback to granular
+        const fromGranular = this.allowedAttributesFromGranularAttributes;
+        if (Object.keys(fromGranular).length > 0) {
+            return fromGranular;
+        }
+
+        // Return empty object if neither found
+        return undefined;
     }
 }
 

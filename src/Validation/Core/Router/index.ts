@@ -39,7 +39,9 @@ import {
     radioValidator,
     selectValidator,
     odtValidator,
-    fqdnInputValidator
+    fqdnInputValidator,
+    isbnValidator,
+    cardSchemeValidator
 } from "../../Rules";
 
 import type {
@@ -62,7 +64,9 @@ import type {
     FQDNOptions,
     TextInputOptions,
     DateInputOptions,
-    OptionsValidate
+    OptionsValidate,
+    IsbnOptions,
+    CardSchemeOptions
 } from "../../types"
 
 /**
@@ -162,20 +166,23 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
                 break;
 
             case 'date':
-                dateInputValidator.validate(datainput as string, targetInputname, options_validator as DateInputOptions);
+                dateInputValidator.validate(datainput as string|Date, targetInputname, options_validator as DateInputOptions);
                 this.setValidator(targetInputname, dateInputValidator)
                 break;
 
             case 'tel':
-                telInputValidator.validate(datainput as string, targetInputname, options_validator as TelInputOptions);
+                telInputValidator.validate(datainput as string | undefined, targetInputname, options_validator as TelInputOptions);
                 this.setValidator(targetInputname, telInputValidator)
                 break;
 
             case 'textarea':
-                textareaInputValidator.validate(datainput as string, targetInputname, options_validator as TextInputOptions);
+                textareaInputValidator.validate(datainput as string | undefined, targetInputname, options_validator as TextInputOptions);
                 this.setValidator(targetInputname, textareaInputValidator);
                 break;
-
+            case 'isbn':
+                isbnValidator.validate(datainput as string | undefined, targetInputname, options_validator as IsbnOptions);
+                this.setValidator(targetInputname, isbnValidator);
+                break;
             case 'select':
                 selectValidator.validate(datainput as string | string[], targetInputname, options_validator as SelectOptions);
                 this.setValidator(targetInputname, selectValidator);
@@ -197,6 +204,11 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
                 break;
             case 'fqdn':
                 fqdnInputValidator.validate(datainput as string, targetInputname, options_validator as FQDNOptions);
+                this.setValidator(targetInputname, fqdnInputValidator);
+                break;
+            case 'card':
+                cardSchemeValidator.validate(datainput as string, targetInputname,  options_validator as CardSchemeOptions);
+                this.setValidator(targetInputname, cardSchemeValidator);
                 break;
             default:
                 console.error(`The validation function for ${type_field} is not implemented.`);

@@ -10,7 +10,10 @@
  * For more information, please feel free to contact the author.
  */
 
-import { FetchResponseInterface } from "@wlindabla/http_client";
+import type {
+    FetchResponseInterface,
+    FetchRequestInterface
+} from "@wlindabla/http_client/contracts";
 import { FormSubmissionInterface } from "../contracts";
 import { BaseEvent } from "@wlindabla/event_dispatcher";
 
@@ -30,7 +33,7 @@ export class FormSubmitRequestEvents {
 
 export class PrepareRequestFormSubmitEvent extends BaseEvent{
     constructor(
-        public readonly currentRequest:Request,
+        public readonly currentRequest:Request|FetchRequestInterface,
         public readonly formElement: HTMLFormElement
     ) { 
         super();
@@ -77,7 +80,7 @@ export class FormSubmitEndEvent extends BaseEvent {
 
 export class FormSubmitFailedEvent extends BaseEvent {
     constructor(
-        public readonly request: Request,
+        public readonly request: Request|FetchRequestInterface,
         public readonly response: FetchResponseInterface,
         public readonly formElement: HTMLFormElement
     ) { super(); }

@@ -124,7 +124,7 @@ export function unescapeHtmlBalise(
             .replace(/&#x2F;/g, '/')
             .replace(/&#x5C;/g, '\\')
             .replace(/&#96;/g, '`')
-            .replace(/&amp;/g, '&'); // Important : doit rester le dernier
+            .replace(/&amp;/g, '&'); 
     };
 
     if (content === undefined || content === null) {

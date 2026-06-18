@@ -282,7 +282,7 @@ Enabled by default (`true`).
 submission.withHandleErrorsManyForm(false);
 ```
 
-> See [handleErrorsManyForm documentation](https://github.com/Agbokoudjo/form_validator/docs/_Utils/form.md) for more details.
+> See [handleErrorsManyForm documentation](https://github.com/Agbokoudjo/form_validator/blob/master/docs/_Utils/form.md#handleerrorsmanyform) for more details.
 
 ---
 
@@ -306,7 +306,7 @@ submission.confirmMethodRequest = async (message, form, submitter) => {
 
 ---
 
-### `prepareRequest(request: Request): void`
+### `prepareRequest(request: FetchRequestInterface): void`
 
 Called internally just before the request is sent. Dispatches `PrepareRequestFormSubmitEvent`. Listen to this event to mutate request headers dynamically.
 
@@ -595,7 +595,7 @@ eventDispatcherBrowser.addListener(
 ---
 
 > 📖 For the full API of `BrowserEventDispatcher` (addListener, removeListener, subscribers, etc.), refer to the dedicated documentation:
-> **[`@wlindabla/event_dispatcher` — Documentation](https://github.com/Agbokoudjo/event_dispatcher/README.md)**
+> **[`@wlindabla/event_dispatcher` — Documentation](https://github.com/Agbokoudjo/event_dispatcher)**
 
 ---
 
@@ -820,4 +820,4 @@ Yes. All classes, events, and interfaces are fully typed and compatible with `"s
 
 **Q: Where can I find the `handleErrorsManyForm` documentation?**  
 See the dedicated documentation at:  
-[https://github.com/Agbokoudjo/form_validator/docs/_Utils/form.md](https://github.com/Agbokoudjo/form_validator/docs/_Utils/form.md)
+[https://github.com/Agbokoudjo/form_validator/blob/master/docs/_Utils/form.md#handleerrorsmanyform](https://github.com/Agbokoudjo/form_validator/blob/master/docs/_Utils/form.md#handleerrorsmanyform)

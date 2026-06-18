@@ -9,9 +9,9 @@
  * For more information, please feel free to contact the author.
  */
 
-import { DataInput } from "../../_Utils";
+import { DataInput, FormInputType } from "../../_Utils";
 import type { FieldValidatorInterface, FormErrorStoreInterface } from "../Contracts";
-import type { FieldStateValidating } from "../types";
+import type { FieldStateValidating,BaseInputOptions } from "../types";
 import { formErrorStore} from "../Store";
 
 /**
@@ -30,13 +30,9 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 
 	public setValidationState = (isValid: boolean, errorMessage: string | string[], fieldName: string): this => {
 		formErrorStore.setFieldValid(fieldName, isValid);
-
-		// Ajouter le message d'erreur (la logique d'ajout est dans le Store)
 		if (!isValid) {
 			formErrorStore.addFieldError(fieldName, errorMessage);
-		} else {
-			// Si le champ est marqué valide, on s'assure qu'il n'y a pas d'erreurs résiduelles.
-		}
+		} 
 
 		return this; 
 	};
@@ -54,12 +50,15 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 	public abstract validate(value: DataInput, fieldName: string, optionsValidate: any, ...otherArgs: any): Promise<this> | this;
 
 	protected getRawStringValue(value?: string): string {
-
 		const rawValue = (typeof value === 'string' || value === undefined || value === null)
-			? (value || '') // Utilise une chaîne vide si null/undefined
+			? (value || '') 
 			: String(value);
 
 		return rawValue
+	}
+
+	protected normalizeValue(value?: string): string{
+		return this.getRawStringValue(value);
 	}
 
 	/**
@@ -67,8 +66,7 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
    */
 	protected requiredValidator(value: string | undefined, fieldName: string, required?: boolean): this {
 		if (required === true && (!value || value.trim() === '')) {
-			// Utilise la méthode du parent pour enregistrer l'erreur
-			this.setValidationState(false, "This input field is mandatory.", fieldName);
+			this.setValidationState(false, "This field is required and cannot be empty", fieldName);
 		}
 		return this;
 	}
@@ -90,5 +88,62 @@ export abstract class AbstractFieldValidator implements FieldValidatorInterface 
 		}
 
 		return this;
+	}
+
+	/**
+	 * Regex pattern validation with clear true/false logic.
+	 */
+	protected validateRegexPattern(
+		value: string,
+		fieldName: string,
+		options: BaseInputOptions
+	): void {
+		const regex = options.regexValidator;
+
+		if (!regex) {
+			return; // No regex validation needed
+		}
+
+		const shouldMatch = options.match !== false; // Default to true
+		const regexPassed = regex.test(value);
+		const validationFailed = shouldMatch ? !regexPassed : regexPassed;
+
+		if (validationFailed) {
+			const errorMessage = this.buildErrorMessage(
+				options.typeInput || "text",
+				options.errorMessageInput,
+				options.egAwait);
+			this.setValidationState(false, errorMessage, fieldName);
+		}
+	}
+
+	/**
+	 * Build error message for regex validation failure.
+	 */
+	protected buildErrorMessage(
+		typeInput:FormInputType,
+		errorMessageInput?: string,
+		egAwait?: string): string {
+		let message = errorMessageInput || "Format is invalid";
+
+		if (
+			typeInput !== "textarea" &&
+			egAwait
+		) {
+			message += ` e.g.: ${egAwait}`;
+		}
+
+		return message;
+	}
+
+	protected setValue(newValue: string, targetInputname: string): void{
+		if (typeof window !== "undefined" && typeof document !== "undefined") {
+			const targetInput = document.querySelector<HTMLInputElement|HTMLTextAreaElement>(`[name="${targetInputname}"]`);
+
+			if (targetInput) {
+				targetInput.value = newValue;
+				targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+			}
+		}
 	}
 }
