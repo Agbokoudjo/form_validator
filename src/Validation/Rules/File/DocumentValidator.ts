@@ -26,7 +26,7 @@ export class PdfValidator extends AbstractMediaValidator implements MediaValidat
     private constructor() {
         super();
         pdfjsLib.GlobalWorkerOptions.workerSrc =
-            'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
+            'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.0.227/build/pdf.worker.min.mjs';
     }
 
     public static getInstance(): PdfValidator {
