@@ -1318,7 +1318,7 @@ export class IconValidator extends AbstractFieldValidator {
         if (!this.matchesPattern(rawValue, options)) {
             return {
                 isValid: false,
-                errorCode: 'invalid_format_error',
+                errorCode: 'invalid_format_error' as IconErrorCode,
                 errorMessage: `Invalid icon format. Expected: ${options.mode}`
             };
         }
@@ -1329,7 +1329,7 @@ export class IconValidator extends AbstractFieldValidator {
         if (options.minCount !== undefined && emojiCount < options.minCount) {
             return {
                 isValid: false,
-                errorCode: 'too_few_error',
+                errorCode: 'too_few_error' as IconErrorCode,
                 errorMessage: `Please provide at least ${options.minCount} emoji(s).`
             };
         }
@@ -1337,7 +1337,7 @@ export class IconValidator extends AbstractFieldValidator {
         if (options.maxCount !== undefined && emojiCount > options.maxCount) {
             return {
                 isValid: false,
-                errorCode: 'too_many_error',
+                errorCode: 'too_many_error' as IconErrorCode,
                 errorMessage: `Please provide at most ${options.maxCount} emoji(s).`
             };
         }
@@ -1346,7 +1346,7 @@ export class IconValidator extends AbstractFieldValidator {
         if (options.minLength !== undefined && rawValue.length < options.minLength) {
             return {
                 isValid: false,
-                errorCode: 'too_short_error',
+                errorCode: 'too_short_error' as IconErrorCode,
                 errorMessage: `Icon must be at least ${options.minLength} character(s) long.`
             };
         }
@@ -1354,7 +1354,7 @@ export class IconValidator extends AbstractFieldValidator {
         if (options.maxLength !== undefined && rawValue.length > options.maxLength) {
             return {
                 isValid: false,
-                errorCode: 'too_long_error',
+                errorCode: 'too_long_error' as IconErrorCode,
                 errorMessage: `Icon must not exceed ${options.maxLength} character(s).`
             };
         }
@@ -1365,7 +1365,7 @@ export class IconValidator extends AbstractFieldValidator {
             if (!customResult && options.match !== false) {
                 return {
                     isValid: false,
-                    errorCode: 'custom_pattern_error',
+                    errorCode: 'custom_pattern_error' as IconErrorCode,
                     errorMessage: options.customErrorMessage || 'Icon does not match the required pattern.'
                 };
             }
