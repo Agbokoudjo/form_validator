@@ -650,6 +650,101 @@ export interface MediaMetadataProperty {
     mediaFileThumbnailUrl?: string; // URL d'une miniature générée
 }
 
+/**
+ * Icon/Emoji validation options
+ */
+export type IconMode = 'emoji' | 'emojiBasic' | 'emojiSingle' | 'iconClassName';
+
+export type IconErrorCode = 
+  | 'invalid_format_error'
+  | 'too_few_error'
+  | 'too_many_error'
+  | 'too_short_error'
+  | 'too_long_error'
+  | 'custom_pattern_error';
+
+export interface IconOptions {
+  /**
+   * Icon validation mode
+   * - 'emoji': Full emoji support (default) - includes ZWJ, skin tones, etc.
+   * - 'emojiBasic': Basic emoji only (1F300-1FAFF range)
+   * - 'emojiSingle': Only a single emoji allowed
+   * - 'iconClassName': Icon class name format (fa-heart, mdi-star, ri-home-line)
+   * @default 'emoji'
+   */
+  mode?: IconMode;
+
+  /**
+   * Field is required
+   * @default true
+   */
+  requiredInput?: boolean;
+
+  /**
+   * Minimum number of emojis in the string
+   * Only applies to emoji modes
+   */
+  minCount?: number;
+
+  /**
+   * Maximum number of emojis in the string
+   * @default 3
+   */
+  maxCount?: number;
+
+  /**
+   * Minimum character length
+   */
+  minLength?: number;
+
+  /**
+   * Maximum character length
+   * @default 10
+   */
+  maxLength?: number;
+
+  /**
+   * Custom regex pattern to test against
+   * Overrides the default pattern for the selected mode
+   * @example /^[\p{Emoji}]+$/u
+   */
+  pattern?: RegExp;
+
+  /**
+   * Custom regex override for additional validation
+   */
+  customRegex?: RegExp;
+
+  /**
+   * Should value match the pattern (true) or NOT match (false)
+   * @default true
+   */
+  match?: boolean;
+
+  /**
+   * Custom error message for regex validation
+   */
+  customErrorMessage?: string;
+
+  /**
+   * Custom error message
+   */
+  errorMessageInput?: string;
+
+  /**
+   * Example value shown in error message
+   * @example '📖'
+   */
+  egAwait?: string;
+}
+
+export interface IconValidationResult {
+  isValid: boolean;
+  errorCode?: IconErrorCode;
+  errorMessage?: string;
+  cleanedValue?: string;
+}
+
 export type OptionsValidate = TextInputOptions
     | EmailInputOptions
     | DateInputOptions
@@ -664,6 +759,7 @@ export type OptionsValidate = TextInputOptions
     | OptionsValidateTypeFile
     | IsbnOptions
     | CardSchemeOptions
+    | IconOptions
     ;
 export interface FieldStateValidating {
     errors: string[];

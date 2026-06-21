@@ -1159,3 +1159,314 @@ export class CardSchemeValidator extends AbstractFieldValidator {
  * ```
  */
 export const cardSchemeValidator = CardSchemeValidator.getInstance();
+
+
+import type { IconOptions, IconValidationResult, IconErrorCode } from '../../types';
+
+/**
+ * Default regex patterns for emoji/icon validation
+ * Supports emoji ranges from Unicode 1F300 to 1FAFF (+ many subranges)
+ */
+const DEFAULT_ICON_PATTERNS = {
+    /**
+     * Comprehensive emoji support: emoji symbols, emoticons, decorative symbols
+     * Includes: Zero-Width Joiner sequences, skin tone modifiers, flags
+     */
+    emoji: /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FEFF}\u{1F1E0}-\u{1F1FF}\u{200D}\u{20E3}\u{FE0F}]+$/u,
+
+    /**
+     * Lightweight: Just basic emojis (1F300-1FAFF range)
+     */
+    emojiBasic: /^[\u{1F300}-\u{1FAFF}]+$/u,
+
+    /**
+     * Single emoji only (stricter)
+     */
+    emojiSingle: /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FEFF}](?:\u{200D}[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}])*$/u,
+
+    /**
+     * Font Awesome / Material Icon-like class names (optional)
+     * Matches: fa-heart, mdi-star, ri-home-line, etc.
+     */
+    iconClassName: /^[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)*$/i,
+};
+
+/**
+ * @author AGBOKOUDJO Franck <internationaleswebservices@gmail.com>
+ * @package <https://github.com/Agbokoudjo/form_validator>
+ * @class IconValidator
+ * @extends AbstractFieldValidator
+ * 
+ * Validates emoji and icon characters:
+ * - Unicode emoji ranges
+ * - Skin tone modifiers & ZWJ sequences
+ * - Icon class names (fa-*, mdi-*, ri-*)
+ * - Length constraints
+ * - Custom regex patterns
+ * 
+ * @example
+ * ```typescript
+ * import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+ * 
+ * // Simple emoji validation
+ * iconValidator.validate('📖', 'icon', { mode: 'emoji' });
+ * 
+ * // With length constraint
+ * iconValidator.validate('📖✍️🎭', 'icon', { 
+ *   mode: 'emoji',
+ *   maxCount: 3,
+ *   requiredInput: true 
+ * });
+ * 
+ * // Check result
+ * if (iconValidator.formErrorStore.isFieldValid('icon')) {
+ *   console.log('✅ Icon is valid!');
+ * } else {
+ *   console.log(iconValidator.formErrorStore.getFieldErrors('icon'));
+ * }
+ * ```
+ */
+export class IconValidator extends AbstractFieldValidator {
+    private static instance: IconValidator;
+
+    protected constructor() { super(); }
+
+    /**
+     * Get the singleton instance of IconValidator
+     * @returns {IconValidator} The unique instance
+     */
+    public static getInstance(): IconValidator {
+        if (!IconValidator.instance) {
+            IconValidator.instance = new IconValidator();
+        }
+        return IconValidator.instance;
+    }
+
+    /**
+     * Validates an icon/emoji input
+     * 
+     * Pipeline:
+     * 1. Clear previous state
+     * 2. Normalize & required check
+     * 3. XSS guard (escapeHtmlBalise)
+     * 4. Pattern matching (based on mode)
+     * 5. Length/count validation
+     * 6. Custom regex (optional)
+     * 
+     * @param value - The icon/emoji value to validate
+     * @param targetInputName - The field name/identifier
+     * @param options - Validation options
+     * @returns {this} For method chaining
+     */
+    public validate(
+        value: string | undefined,
+        targetInputName: string,
+        options: IconOptions = {}
+    ): this {
+
+        const mergedOptions = this.mergeOptions(options);
+
+        // Clear previous state
+        this.formErrorStore.clearFieldState(targetInputName);
+
+        // Normalize raw value
+        let rawValue = this.getRawStringValue(value);
+
+        // Required field check
+        if (!rawValue || rawValue.trim() === '') {
+            this.requiredValidator(rawValue, targetInputName, mergedOptions.requiredInput);
+
+            // Short-circuit if required and empty
+            if (!this.formErrorStore.isFieldValid(targetInputName)) {
+                return this;
+            }
+        }
+
+        // Empty value is valid if not required
+        if (!rawValue || rawValue.trim() === '') {
+            return this;
+        }
+
+        // XSS guard
+        rawValue = escapeHtmlBalise(rawValue) as string;
+
+        // Pattern validation (based on mode)
+        const result = this.validateIcon(rawValue, mergedOptions);
+
+        if (!result.isValid) {
+            const errorMessage = result.errorMessage || mergedOptions.errorMessageInput ||
+                this.getDefaultErrorMessage(mergedOptions.mode || 'emoji');
+
+            return this.setValidationState(false, errorMessage, targetInputName);
+        }
+
+        // Success
+        this.formErrorStore.setFieldValid(targetInputName, true);
+        return this;
+    }
+
+    /**
+     * Core icon validation logic
+     * @private
+     */
+    private validateIcon(
+        rawValue: string,
+        options: IconOptions
+    ): IconValidationResult {
+
+        // Pattern validation
+        if (!this.matchesPattern(rawValue, options)) {
+            return {
+                isValid: false,
+                errorCode: 'invalid_format_error',
+                errorMessage: `Invalid icon format. Expected: ${options.mode}`
+            };
+        }
+
+        // Count/Length validation
+        const emojiCount = this.countEmojis(rawValue);
+
+        if (options.minCount !== undefined && emojiCount < options.minCount) {
+            return {
+                isValid: false,
+                errorCode: 'too_few_error',
+                errorMessage: `Please provide at least ${options.minCount} emoji(s).`
+            };
+        }
+
+        if (options.maxCount !== undefined && emojiCount > options.maxCount) {
+            return {
+                isValid: false,
+                errorCode: 'too_many_error',
+                errorMessage: `Please provide at most ${options.maxCount} emoji(s).`
+            };
+        }
+
+        // Length constraint (character length)
+        if (options.minLength !== undefined && rawValue.length < options.minLength) {
+            return {
+                isValid: false,
+                errorCode: 'too_short_error',
+                errorMessage: `Icon must be at least ${options.minLength} character(s) long.`
+            };
+        }
+
+        if (options.maxLength !== undefined && rawValue.length > options.maxLength) {
+            return {
+                isValid: false,
+                errorCode: 'too_long_error',
+                errorMessage: `Icon must not exceed ${options.maxLength} character(s).`
+            };
+        }
+
+        // Custom regex (optional override)
+        if (options.customRegex) {
+            const customResult = options.customRegex.test(rawValue);
+            if (!customResult && options.match !== false) {
+                return {
+                    isValid: false,
+                    errorCode: 'custom_pattern_error',
+                    errorMessage: options.customErrorMessage || 'Icon does not match the required pattern.'
+                };
+            }
+        }
+
+        return { isValid: true };
+    }
+
+    /**
+     * Check if value matches the pattern for the given mode
+     * @private
+     */
+    private matchesPattern(value: string, options: IconOptions): boolean {
+        const mode = options.mode || 'emoji';
+        const pattern = options.pattern || DEFAULT_ICON_PATTERNS[mode as keyof typeof DEFAULT_ICON_PATTERNS];
+
+        if (!pattern) {
+            // Unknown mode - default to emoji
+            return DEFAULT_ICON_PATTERNS.emoji.test(value);
+        }
+
+        return pattern.test(value);
+    }
+
+    /**
+     * Count individual emojis in a string (accounts for ZWJ sequences & modifiers)
+     * 
+     * This is a simplified counter. For production, consider:
+     * - graphemer library for perfect grapheme cluster counting
+     * @private
+     */
+    private countEmojis(value: string): number {
+        if (!value) return 0;
+
+        // Use Array.from to count Unicode code points properly
+        const chars = Array.from(value);
+
+        // Very simplified emoji counter
+        // In reality, ZWJ sequences might count as 1 or multiple depending on logic
+        // For most use cases, this is sufficient:
+        return chars.filter(char => {
+            const code = char.codePointAt(0) || 0;
+            return (
+                (code >= 0x1f300 && code <= 0x1faff) || // Emoji ranges
+                (code >= 0x2600 && code <= 0x27bf) ||
+                (code >= 0xfe00 && code <= 0xfeff)
+            );
+        }).length;
+    }
+
+    /**
+     * Get default error message based on mode
+     * @private
+     */
+    private getDefaultErrorMessage(mode: string): string {
+        const messages: Record<string, string> = {
+            emoji: 'Please enter valid emoji(s).',
+            emojiBasic: 'Please enter valid emoji(s).',
+            emojiSingle: 'Please enter a single emoji.',
+            iconClassName: 'Please enter a valid icon class name (e.g., fa-heart, mdi-star).'
+        };
+
+        return messages[mode] || 'Please enter a valid icon.';
+    }
+
+    /**
+     * Merge user options with defaults
+     * @private
+     */
+    private mergeOptions(userOptions: IconOptions): IconOptions {
+        return {
+            mode: userOptions.mode ?? 'emoji',
+            requiredInput: userOptions.requiredInput ?? true,
+            minCount: userOptions.minCount || undefined,
+            maxCount: userOptions.maxCount ?? 3, // Default max 3 emojis
+            minLength: userOptions.minLength || undefined,
+            maxLength: userOptions.maxLength ?? 10,
+            pattern: userOptions.pattern || undefined,
+            customRegex: userOptions.customRegex || undefined,
+            match: userOptions.match ?? true,
+            customErrorMessage: userOptions.customErrorMessage || undefined,
+            errorMessageInput: userOptions.errorMessageInput || undefined,
+            egAwait: userOptions.egAwait || '📖'
+        };
+    }
+
+    /**
+     * Expose default patterns for public use
+     */
+    public static get patterns() {
+        return DEFAULT_ICON_PATTERNS;
+    }
+}
+
+/**
+ * Singleton instance of IconValidator
+ * @example
+ * ```typescript
+ * import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+ * 
+ * iconValidator.validate('📖', 'icon', { mode: 'emoji' });
+ * ```
+ */
+export const iconValidator = IconValidator.getInstance();

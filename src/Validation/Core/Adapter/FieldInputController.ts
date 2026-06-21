@@ -55,7 +55,9 @@ import type {
     IsbnType,
     CardSchemeOptions,
     CardSchemeType,
-    OptionsPdf
+    OptionsPdf,
+    IconOptions,
+    IconMode
 } from "../../types"
 
 import type {FormChildrenValidateInterface } from "../../Contracts";
@@ -244,6 +246,9 @@ export class FieldInputController extends AbstractFieldController implements For
                 case 'card':
                     this.optionsValidate = this.optionsValidateCard;
                     break;
+                case 'icon':
+                    this.optionsValidate = this.optionsValidateIcon;
+                    break;
                 default:
                     this.optionsValidate = this.optionsValidateSimpleText;
                     break;
@@ -251,6 +256,21 @@ export class FieldInputController extends AbstractFieldController implements For
         }
 
         return this.optionsValidate;
+    }
+
+    private get optionsValidateIcon(): IconOptions {
+        return {
+            requiredInput: this.required,
+            mode: this.getAttrChildren('data-icon-mode') as IconMode,
+            minCount: this.parseIntAttr('data-icon-min-count'),
+            maxCount: this.parseIntAttr('data-icon-max-count', 3),
+            minLength: this.getMinLength(),
+            maxLength: this.getMaxLength(10),
+            errorMessageInput: this.errorMessage,
+            egAwait: this.egAwait,
+            // Support for custom patterns
+            customErrorMessage: this.getAttrChildren('data-icon-custom-error')
+        };
     }
 
     private get optionsValidateCard(): CardSchemeOptions {

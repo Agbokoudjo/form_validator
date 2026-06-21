@@ -41,7 +41,8 @@ import {
     odtValidator,
     fqdnInputValidator,
     isbnValidator,
-    cardSchemeValidator
+    cardSchemeValidator,
+    iconValidator
 } from "../../Rules";
 
 import type {
@@ -66,7 +67,8 @@ import type {
     OptionsValidate,
     IsbnOptions,
     CardSchemeOptions,
-    OptionsPdf
+    OptionsPdf,
+    IconOptions
 } from "../../types"
 
 /**
@@ -209,6 +211,10 @@ export class FormInputValidator implements FormInputValidatorInterface, Containe
             case 'card':
                 cardSchemeValidator.validate(datainput as string, targetInputname,  options_validator as CardSchemeOptions);
                 this.setValidator(targetInputname, cardSchemeValidator);
+                break;
+            case 'icon':
+                iconValidator.validate(datainput as string | undefined, targetInputname, options_validator as IconOptions);
+                this.setValidator(targetInputname, iconValidator);
                 break;
             default:
                 console.error(`The validation function for ${type_field} is not implemented.`);

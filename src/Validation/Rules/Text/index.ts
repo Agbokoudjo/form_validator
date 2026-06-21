@@ -7,7 +7,9 @@ export {
     textareaInputValidator,
     textInputValidator,
     isbnValidator,
-    cardSchemeValidator
+    cardSchemeValidator,
+    iconValidator,
+    IconValidator
 } from "./TextInputValidator";
 export {PasswordInputValidator,passwordInputValidator} from "./PasswordInputValidator";
 export {NumberInputValidator,numberInputValidator} from "./NumberInputValidator";

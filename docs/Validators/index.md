@@ -49,6 +49,15 @@ A comprehensive form validation library for HTML forms supporting `text`, `email
       - [With React](#with-react)
       - [With Symfony + Twig](#with-symfony--twig)
       - [Static utility](#static-utility)
+  - [IconValidator](#iconvalidator)
+    - [Simple Usage](#simple-usage-2)
+    - [Via the Central Router](#via-the-central-router-2)
+    - [Via FormValidateController (HTML-driven)](#via-formvalidatecontroller-html-driven-1)
+    - [With React](#with-react-1)
+    - [With Vue.js](#with-vuejs)
+    - [With Symfony + Twig](#with-symfony--twig-1)
+    - [Validation Pipeline](#validation-pipeline-1)
+    - [Exposed Patterns](#exposed-patterns)
     - [EmailInputValidator](#emailinputvalidator)
     - [PasswordInputValidator](#passwordinputvalidator)
     - [TelInputValidator](#telinputvalidator)
@@ -822,7 +831,1105 @@ console.log(Object.keys(allSchemes));
 // ['AMEX', 'CHINA_UNIONPAY', 'DINERS', ...]
 ```
 
+## IconValidator
 
+[#iconvalidator](#iconvalidator)
+
+Validates emoji and icon characters with automatic pattern matching. Supports Unicode emoji ranges, skin tone modifiers, ZWJ sequences, and icon class names (FontAwesome, Material Design, etc.).
+
+**Pre-defined patterns with default fallback:** If no pattern is provided, IconValidator uses sensible defaults based on the validation mode — no configuration needed for common cases.
+
+**Import:**
+
+```typescript
+import { iconValidator, IconValidator } from '@wlindabla/form_validator/validation/rules/text';
+import type { IconOptions, IconMode, IconValidationResult } from '@wlindabla/form_validator/validation/types';
+```
+
+**Options (`IconOptions`):**
+
+| Option                | Type           | Default        | Description                                                                  |
+| --------------------- | -------------- | -------------- | ---------------------------------------------------------------------------- |
+| `mode`                | `IconMode`     | `'emoji'`      | Validation mode: `'emoji'` \| `'emojiBasic'` \| `'emojiSingle'` \| `'iconClassName'` |
+| `requiredInput`       | `boolean`      | `true`         | Field is required                                                            |
+| `minCount`            | `number`       | —              | Minimum number of emojis (only in emoji modes)                              |
+| `maxCount`            | `number`       | `3`            | Maximum number of emojis (only in emoji modes)                              |
+| `minLength`           | `number`       | —              | Minimum character length                                                     |
+| `maxLength`           | `number`       | `10`           | Maximum character length                                                     |
+| `pattern`             | `RegExp`       | mode default   | Custom regex pattern (overrides mode default)                                |
+| `customRegex`         | `RegExp`       | —              | Additional regex validation                                                  |
+| `match`               | `boolean`      | `true`         | `true` = value must match; `false` = must not match                         |
+| `customErrorMessage`  | `string`       | —              | Custom error message for regex validation                                    |
+| `errorMessageInput`   | `string`       | —              | General error message                                                        |
+| `egAwait`             | `string`       | —              | Example value shown in error message                                         |
+
+
+**Supported modes:**
+
+| Mode               | Description                                                          | Pattern                                                  |
+| ------------------ | -------------------------------------------------------------------- | -------------------------------------------------------- |
+| `'emoji'`          | Full emoji support (default) — includes symbols, ranges               | `[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FEFF}]` |
+| `'emojiBasic'`     | Basic emoji only (1F300-1FAFF range) — no symbols                    | `[\u{1F300}-\u{1FAFF}]`                                  |
+| `'emojiSingle'`    | Single emoji only — strict validation                                 | `[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]` (count = 1)     |
+| `'iconClassName'`  | Icon class name format (e.g., `fa-heart`, `mdi-star`, `ri-home-line`) | `[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)*`                       |
+
+
+---
+
+### Simple Usage
+
+[#simple-usage-icon](#simple-usage-icon)
+
+```typescript
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+// Default emoji validation (no options needed)
+iconValidator.validate('📖', 'bookIcon', {
+  requiredInput: true
+});
+
+// With emoji count limit
+iconValidator.validate('📖✍️🎭', 'categoryIcons', {
+  mode: 'emoji',
+  maxCount: 3,
+  minCount: 1,
+  requiredInput: true
+});
+
+// Single emoji only
+iconValidator.validate('📚', 'singleIcon', {
+  mode: 'emojiSingle',
+  requiredInput: true
+});
+
+// Icon class name (FontAwesome, Material Design, etc.)
+iconValidator.validate('fa-heart', 'fontAwesomeIcon', {
+  mode: 'iconClassName',
+  requiredInput: true,
+  egAwait: 'fa-heart'
+});
+
+// Check result
+if (iconValidator.formErrorStore.isFieldValid('bookIcon')) {
+  console.log('✅ Icon is valid!');
+} else {
+  const errors = iconValidator.formErrorStore.getFieldErrors('bookIcon');
+  console.log('❌ Errors:', errors);
+}
+```
+
+---
+
+### Via the Central Router
+
+[#via-the-central-router-icon](#via-the-central-router-icon)
+
+```typescript
+import { formInputValidator } from '@wlindabla/form_validator/validation/core/router';
+
+// Standard emoji
+await formInputValidator.allTypesValidator(
+  '📖',
+  'icon',
+  'icon',
+  { mode: 'emoji', maxCount: 3, requiredInput: true }
+);
+
+// Icon class name
+await formInputValidator.allTypesValidator(
+  'fa-heart',
+  'icon',
+  'icon',
+  { mode: 'iconClassName', requiredInput: true }
+);
+
+const v = formInputValidator.getValidator('icon');
+console.log(v?.formErrorStore.isFieldValid('icon'));
+```
+
+---
+
+### Via FormValidateController (HTML-driven)
+
+[#via-formvalidatecontroller-icon](#via-formvalidatecontroller-icon)
+
+```html
+<form name="categoriesForm" class="form-validate" novalidate>
+  <!-- Simple emoji (uses default pattern) -->
+  <input
+    id="categoryIcon"
+    name="categoryIcon"
+    type="text"
+    data-type="icon"
+    required
+    placeholder="Ex: 📖 ✍️ 🎭"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="Please enter valid emoji(s)."
+  />
+
+  <!-- With mode and count limits -->
+  <input
+    id="tagIcon"
+    name="tagIcon"
+    type="text"
+    data-type="icon"
+    data-icon-mode="emoji"
+    data-icon-max-count="3"
+    data-icon-min-count="1"
+    maxlength="10"
+    placeholder="Ex: 📖✍️🎭"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="Select 1 to 3 emoji(s), max 10 characters."
+  />
+
+  <!-- Single emoji mode -->
+  <input
+    id="singleIcon"
+    name="singleIcon"
+    type="text"
+    data-type="icon"
+    data-icon-mode="emojiSingle"
+    maxlength="1"
+    placeholder="One emoji only"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+  />
+
+  <!-- Icon class name -->
+  <input
+    id="faIcon"
+    name="faIcon"
+    type="text"
+    data-type="icon"
+    data-icon-mode="iconClassName"
+    placeholder="Ex: fa-heart, mdi-star"
+    data-event-validate="blur"
+    data-event-validate-blur="blur"
+    data-error-message-input="Enter a valid icon class name (e.g., fa-heart)."
+    data-eg-await="fa-heart"
+  />
+
+  <button type="submit">Submit</button>
+</form>
+```
+
+**HTML Attributes for IconValidator:**
+
+| Attribute                    | Type     | Default | Description                                                   |
+| ---------------------------- | -------- | ------- | ------------------------------------------------------------- |
+| `data-type`                  | `string` | —       | Must be `"icon"`                                              |
+| `data-icon-mode`             | `string` | `emoji` | Mode: `emoji` \| `emojiBasic` \| `emojiSingle` \| `iconClassName` |
+| `data-icon-min-count`        | `number` | —       | Minimum number of emojis                                      |
+| `data-icon-max-count`        | `number` | `3`     | Maximum number of emojis                                      |
+| `data-eg-await`              | `string` | —       | Example value in error message                                |
+| `data-error-message-input`   | `string` | —       | Custom error message                                          |
+| `maxlength`                  | `number` | `10`    | Max character length (native HTML)                            |
+| `data-event-validate-blur`   | —        | —       | Validate on blur                                              |
+| `data-event-validate-input`  | —        | —       | Validate on input (real-time)                                 |
+| `required`                   | —        | —       | Field is required                                             |
+
+---
+
+### With React
+
+[#with-react-icon](#with-react-icon)
+
+```typescript
+import { useState } from 'react';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+function EmojiSelector() {
+  const [icon, setIcon] = useState('');
+  const [error, setError] = useState('');
+
+  const validateIcon = (value: string) => {
+    iconValidator.validate(value, 'icon', {
+      mode: 'emoji',
+      maxCount: 3,
+      requiredInput: true,
+      errorMessageInput: 'Please enter 1 to 3 emoji(s).'
+    });
+    const errors = iconValidator.formErrorStore.getFieldErrors('icon');
+    setError(errors[0] || '');
+  };
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={icon}
+        onChange={(e) => setIcon(e.target.value)}
+        onBlur={() => validateIcon(icon)}
+        placeholder="Ex: 📖 ✍️ 🎭"
+        maxLength={10}
+      />
+      {error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+```
+
+---
+
+### With Vue.js
+
+[#with-vuejs-icon](#with-vuejs-icon)
+
+```vue
+<template>
+  <div>
+    <input
+      v-model="icon"
+      type="text"
+      @blur="validateIcon"
+      placeholder="Ex: 📖 ✍️ 🎭"
+      maxlength="10"
+    />
+    <p v-if="error" class="error">{{ error }}</p>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+const icon = ref('');
+const error = ref('');
+
+const validateIcon = () => {
+  iconValidator.validate(icon.value, 'icon', {
+    mode: 'emoji',
+    maxCount: 3,
+    requiredInput: true
+  });
+  const errors = iconValidator.formErrorStore.getFieldErrors('icon');
+  error.value = errors[0] || '';
+};
+</script>
+```
+
+---
+
+### With Symfony + Twig
+
+[#with-symfony-icon](#with-symfony-icon)
+
+```php
+// In your FormType
+->add('text', TextType::class, [
+    'label'    => 'Emoji / Icon',
+    'required' => false,
+    'attr'     => [
+        'data-type'                   => 'icon',
+        'data-icon-mode'              => 'emoji',  // emoji | emojiBasic | emojiSingle | iconClassName
+        'data-icon-max-count'         => '3',
+        'data-icon-min-count'         => '1',
+        'maxlength'                   => '10',
+        'placeholder'                 => 'Ex: 📖 ✍️ 🎭',
+        'data-eg-await'               => '📖',
+        'data-escapestrip-html-and-php-tags' => 'true',
+        'data-event-validate'         => 'blur',
+        'data-event-validate-blur'    => 'blur',
+        'data-error-message-input'    => 'Please enter 1 to 3 valid emoji(s).',
+    ],
+    'help' => 'Copy-paste emoji to categorize.'
+])
+->end();
+```
+
+**Twig rendering:**
+
+```twig
+{{ form_row(form.icon, {
+    'attr': {
+        'data-type': 'icon',
+        'data-icon-mode': 'emoji',
+        'data-icon-max-count': '3',
+        'placeholder': 'Ex: 📖 ✍️ 🎭',
+        'data-event-validate-blur': 'blur'
+    }
+}) }}
+```
+
+---
+
+### Validation Pipeline
+
+[#validation-pipeline-icon](#validation-pipeline-icon)
+
+```
+Input value
+    │
+    ├─ 1. Clear previous state
+    ├─ 2. Required check                      → empty + required  → FAIL
+    ├─ 3. XSS guard                            → escapeHtmlBalise()
+    ├─ 4. Pattern matching (mode-based)        → regex test
+    │         no match                         → 'invalid_format_error'
+    ├─ 5. Emoji count validation (if mode = emoji*)
+    │         minCount exceeded                → 'too_few_error'
+    │         maxCount exceeded                → 'too_many_error'
+    ├─ 6. Character length validation
+    │         minLength exceeded               → 'too_short_error'
+    │         maxLength exceeded               → 'too_long_error'
+    └─ 7. Custom regex (optional)
+              no match (if match: true)        → 'custom_pattern_error'
+              → ✅ VALID
+```
+
+---
+
+### Exposed Patterns
+
+[#exposed-patterns-icon](#exposed-patterns-icon)
+
+Access pre-defined patterns directly:
+
+```typescript
+import { IconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+const patterns = IconValidator.patterns;
+console.log(patterns.emoji);           // /^[\u{1F300}-\u{1FAFF}...]+$/u
+console.log(patterns.emojiBasic);      // /^[\u{1F300}-\u{1FAFF}]+$/u
+console.log(patterns.emojiSingle);     // Single emoji pattern
+console.log(patterns.iconClassName);   // Icon class name pattern
+
+// Use with TextInputValidator as fallback
+import { textInputValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+textInputValidator.validate('fa-heart', 'icon', {
+  pattern: IconValidator.patterns.iconClassName,
+  requiredInput: true
+});
+```
+
+/* ═════════════════════════════════════════════════════════════════════
+ * 1️⃣ NODE.JS / BACKEND
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Express.js Validation Middleware
+ */
+```typescript
+// 📄 routes/categories.ts
+import express, { Request, Response } from 'express';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+const router = express.Router();
+
+// POST /categories
+router.post('/categories', async (req: Request, res: Response) => {
+  const { name, icon } = req.body;
+
+  // Validate the icon with IconValidator
+  iconValidator.validate(icon, 'categoryIcon', {
+    mode: 'emoji',
+    maxCount: 3,
+    minCount: 1,
+    requiredInput: true,
+    errorMessageInput: 'Please provide 1 to 3 valid emoji(s).'
+  });
+
+  // Check errors
+  if (!iconValidator.formErrorStore.isFieldValid('categoryIcon')) {
+    const errors = iconValidator.formErrorStore.getFieldErrors('categoryIcon');
+    return res.status(400).json({ errors: { icon: errors } });
+  }
+
+  // Proceed with the backup
+  try {
+    const category = await db.categories.create({
+      name,
+      icon: icon.trim()
+    });
+    res.json({ success: true, category });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;
+
+
+/**
+ * NestJS Validation Pipe Custom
+ */
+
+// 📄 pipes/icon-validation.pipe.ts
+import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+import type { IconOptions } from '@wlindabla/form_validator/validation/types';
+
+@Injectable()
+export class IconValidationPipe implements PipeTransform {
+  constructor(private options: IconOptions = {}) {}
+
+  async transform(value: any) {
+    iconValidator.validate(value, 'icon', {
+      mode: 'emoji',
+      maxCount: 3,
+      requiredInput: true,
+      ...this.options
+    });
+
+    if (!iconValidator.formErrorStore.isFieldValid('icon')) {
+      const errors = iconValidator.formErrorStore.getFieldErrors('icon');
+      throw new BadRequestException({
+        message: 'Icon validation failed',
+        errors
+      });
+    }
+
+    return value;
+  }
+}
+
+// 📄 controller/categories.controller.ts
+import { Controller, Post, Body, UsePipes } from '@nestjs/common';
+import { IconValidationPipe } from '../pipes/icon-validation.pipe';
+
+@Controller('categories')
+export class CategoriesController {
+  @Post()
+  @UsePipes(new IconValidationPipe({ maxCount: 3 }))
+  async createCategory(@Body('icon') icon: string) {
+    // 'icon' est ici garantie valide
+    return { success: true, icon };
+  }
+}
+```
+
+```php
+/**
+ * Symfony API Endpoint (Use backend side for validation before backup)
+ */
+
+// 📄 src/Controller/CategoryController.php
+namespace App\Controller;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class CategoryController extends AbstractController
+{
+    #[Route('/api/categories', methods: ['POST'])]
+    public function create(Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $icon = $data['icon'] ?? null;
+
+        // Note: JS side validation via IconValidator is RECOMMENDED 
+       // But you can also validate on the PHP side:
+        
+        if (!$icon || strlen($icon) > 10) {
+            return $this->json(
+                ['error' => 'Invalid icon'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+       // Continue with creation... 
+       // ...
+        
+        return $this->json(['success' => true]);
+    }
+}
+```
+
+
+```typescript
+/* ═════════════════════════════════════════════════════════════════════
+ * 2️⃣ BROWSER / FRONTEND - Vanilla JS
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Vanilla JS - Manual Validation
+ */
+
+// 📄 assets/js/category-form.ts
+import { FormValidateController } from '@wlindabla/form_validator';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form[name="categoryForm"]');
+  if (!form) return;
+
+  const controller = new FormValidateController(form);
+  const iconInput = document.getElementById('categoryIcon') as HTMLInputElement;
+
+ // Validation in blur
+  iconInput?.addEventListener('blur', async (e) => {
+    const value = (e.target as HTMLInputElement).value;
+
+    iconValidator.validate(value, 'categoryIcon', {
+      mode: 'emoji',
+      maxCount: 3,
+      requiredInput: true,
+      errorMessageInput: 'Veuillez entrer 1 à 3 emoji(s).'
+    });
+
+    const errors = iconValidator.formErrorStore.getFieldErrors('categoryIcon');
+    
+    if (errors.length > 0) {
+      iconInput.classList.add('is-invalid');
+      const errorDiv = document.getElementById('iconError');
+      if (errorDiv) {
+        errorDiv.textContent = errors[0];
+        errorDiv.style.display = 'block';
+      }
+    } else {
+      iconInput.classList.remove('is-invalid');
+      iconInput.classList.add('is-valid');
+      const errorDiv = document.getElementById('iconError');
+      if (errorDiv) errorDiv.style.display = 'none';
+    }
+  });
+
+  // Clear errors on input
+  iconInput?.addEventListener('input', () => {
+    iconInput.classList.remove('is-invalid', 'is-valid');
+    const errorDiv = document.getElementById('iconError');
+    if (errorDiv) errorDiv.style.display = 'none';
+  });
+
+  // Submit
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const isValid = await controller.isFormValid();
+    
+    if (isValid) {
+      console.log('✅ Form is valid, submitting...');
+      // Envoyer au serveur
+      const formData = new FormData(form);
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        alert('Category created successfully!');
+        form.reset();
+      }
+    } else {
+      console.log('❌ Form has errors');
+    }
+  });
+});
+```
+
+
+```html
+/**
+ * HTML-driven validation (attribute-based, le + simple)
+ */
+
+// 📄 templates/category-form.html
+<form name="categoryForm" class="form-validate" novalidate>
+  
+  <!-- Simple emoji field (with defaults) -->
+  <div class="form-group">
+    <label for="categoryIcon">Category Icon</label>
+    <input
+      id="categoryIcon"
+      name="categoryIcon"
+      type="text"
+      data-type="icon"
+      required
+      maxlength="10"
+      placeholder="Ex: 📖 ✍️ 🎭"
+      data-event-validate="blur"
+      data-event-validate-blur="blur"
+      data-event-validate-input="input"
+      data-error-message-input="Please enter 1 to 3 emoji(s)."
+      data-eg-await="📖"
+    />
+    <div id="iconError" class="invalid-feedback"></div>
+  </div>
+
+  <!-- Icon class name field -->
+  <div class="form-group">
+    <label for="faIcon">FontAwesome Icon</label>
+    <input
+      id="faIcon"
+      name="faIcon"
+      type="text"
+      data-type="icon"
+      data-icon-mode="iconClassName"
+      placeholder="Ex: fa-heart, mdi-star"
+      data-event-validate="blur"
+      data-event-validate-blur="blur"
+      data-error-message-input="Invalid icon class name."
+      data-eg-await="fa-heart"
+    />
+    <div id="faIconError" class="invalid-feedback"></div>
+  </div>
+
+  <!-- Single emoji field -->
+  <div class="form-group">
+    <label for="singleIcon">Single Emoji Only</label>
+    <input
+      id="singleIcon"
+      name="singleIcon"
+      type="text"
+      data-type="icon"
+      data-icon-mode="emojiSingle"
+      maxlength="1"
+      placeholder="Pick one emoji"
+      data-event-validate="blur"
+      data-event-validate-blur="blur"
+    />
+  </div>
+
+  <button type="submit" class="btn btn-primary">Create Category</button>
+</form>
+
+<script>
+  // Initialization script (simple)
+  import { FormValidateController } from '@wlindabla/form_validator';
+
+  const form = document.querySelector('.form-validate');
+  const controller = new FormValidateController(form);
+
+  form.addEventListener('field:validation:failed', (e) => {
+    const { targetChildrenForm, message } = e.detail;
+    const errorDiv = targetChildrenForm.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+      errorDiv.textContent = message[0] || 'Invalid input';
+      errorDiv.style.display = 'block';
+    }
+    targetChildrenForm.classList.add('is-invalid');
+  });
+
+  form.addEventListener('field:validation:success', (e) => {
+    const { targetChildrenForm } = e.detail;
+    const errorDiv = targetChildrenForm.nextElementSibling;
+    if (errorDiv && errorDiv.classList.contains('invalid-feedback')) {
+      errorDiv.style.display = 'none';
+    }
+    targetChildrenForm.classList.remove('is-invalid');
+    targetChildrenForm.classList.add('is-valid');
+  });
+</script>
+```
+
+
+```typescript
+/* ═════════════════════════════════════════════════════════════════════
+ * 3️⃣ REACT / NEXT.JS
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * React Hook Custom
+ */
+
+// 📄 hooks/useIconValidator.ts
+import { useState, useCallback } from 'react';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+import type { IconOptions } from '@wlindabla/form_validator/validation/types';
+
+export function useIconValidator(options: IconOptions = {}) {
+  const [error, setError] = useState<string>('');
+  const [isValid, setIsValid] = useState<boolean>(false);
+
+  const validate = useCallback(
+    (value: string, fieldName: string = 'icon') => {
+      const opts = {
+        mode: 'emoji' as const,
+        maxCount: 3,
+        requiredInput: true,
+        ...options
+      };
+
+      iconValidator.validate(value, fieldName, opts);
+      
+      const errors = iconValidator.formErrorStore.getFieldErrors(fieldName);
+      const valid = errors.length === 0;
+
+      setError(errors[0] || '');
+      setIsValid(valid);
+      
+      return valid;
+    },
+    [options]
+  );
+
+  return { validate, error, isValid };
+}
+
+/**
+ * React Component
+ */
+
+// 📄 components/CategoryForm.tsx
+import React, { useState } from 'react';
+import { useIconValidator } from '../hooks/useIconValidator';
+
+export function CategoryForm() {
+  const [icon, setIcon] = useState('');
+  const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { validate, error, isValid } = useIconValidator({
+    maxCount: 3,
+    requiredInput: true
+  });
+
+  const handleIconBlur = () => {
+    validate(icon, 'categoryIcon');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Valider avant submit
+    if (!validate(icon, 'categoryIcon')) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, icon })
+      });
+
+      if (response.ok) {
+        alert('✅ Category created!');
+        setName('');
+        setIcon('');
+      } else {
+        alert('❌ Failed to create category');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} noValidate>
+      <div className="form-group">
+        <label>Category Name</label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label>Icon (Emoji)</label>
+        <input
+          type="text"
+          value={icon}
+          onChange={(e) => setIcon(e.target.value)}
+          onBlur={handleIconBlur}
+          placeholder="📖 ✍️ 🎭"
+          maxLength={10}
+          className={`form-control ${error ? 'is-invalid' : isValid ? 'is-valid' : ''}`}
+        />
+        {error && <div className="invalid-feedback">{error}</div>}
+      </div>
+
+      <button type="submit" disabled={isSubmitting || !!error}>
+        {isSubmitting ? 'Creating...' : 'Create Category'}
+      </button>
+    </form>
+  );
+}
+```
+
+```vue
+/* ═════════════════════════════════════════════════════════════════════
+ * 4️⃣ VUE.JS
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+// 📄 components/CategoryForm.vue
+<template>
+  <form @submit.prevent="handleSubmit" novalidate>
+    
+    <div class="form-group">
+      <label for="icon">Category Icon</label>
+      <input
+        id="icon"
+        v-model="form.icon"
+        type="text"
+        maxlength="10"
+        placeholder="📖 ✍️ 🎭"
+        @blur="validateIcon"
+        @input="clearError"
+        :class="{ 'is-invalid': error, 'is-valid': isValid && !error }"
+      />
+      <div v-if="error" class="invalid-feedback">{{ error }}</div>
+    </div>
+
+    <button type="submit" :disabled="isSubmitting || !!error">
+      {{ isSubmitting ? 'Creating...' : 'Create' }}
+    </button>
+  </form>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import { iconValidator } from '@wlindabla/form_validator/validation/rules/text';
+
+const form = reactive({ icon: '' });
+const error = ref('');
+const isValid = ref(false);
+const isSubmitting = ref(false);
+
+const validateIcon = () => {
+  iconValidator.validate(form.icon, 'icon', {
+    mode: 'emoji',
+    maxCount: 3,
+    requiredInput: true
+  });
+  
+  const errors = iconValidator.formErrorStore.getFieldErrors('icon');
+  error.value = errors[0] || '';
+  isValid.value = errors.length === 0;
+};
+
+const clearError = () => {
+  if (error.value) {
+    error.value = '';
+    isValid.value = false;
+  }
+};
+
+const handleSubmit = async () => {
+  validateIcon();
+  
+  if (error.value) return;
+
+  isSubmitting.value = true;
+  try {
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    });
+
+    if (res.ok) {
+      alert('✅ Category created!');
+      form.icon = '';
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+</script>
+```
+
+```css
+<style scoped>
+.form-group {
+  margin-bottom: 1rem;
+}
+
+input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input.is-invalid {
+  border-color: #dc3545;
+}
+
+input.is-valid {
+  border-color: #28a745;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+</style>
+```
+
+```php
+/* ═════════════════════════════════════════════════════════════════════
+ * 5️⃣ SYMFONY + TWIG
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * Symfony FormType
+ */
+
+// 📄 src/Form/CategoryType.php
+namespace App\Form;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class CategoryType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('name', TextType::class, [
+                'label' => 'Category Name',
+                'required' => true,
+                'attr' => [
+                    'minlength' => 3,
+                    'maxlength' => 100
+                ]
+            ])
+            ->add('text', TextType::class, [
+                'label' => 'Emoji / Icon',
+                'required' => false,
+                'attr' => [
+                    'data-type'                    => 'icon',
+                    'data-icon-mode'               => 'emoji',
+                    'data-icon-max-count'          => '3',
+                    'data-icon-min-count'          => '1',
+                    'maxlength'                    => '10',
+                    'placeholder'                  => 'Ex: 📖 ✍️ 🎭',
+                    'data-eg-await'                => '📖',
+                    'data-event-validate'          => 'blur',
+                    'data-event-validate-blur'     => 'blur',
+                    'data-event-validate-input'    => 'input',
+                    'data-error-message-input'     => 'Please enter 1 to 3 emoji(s).',
+                ],
+                'help' => 'Copy-paste emoji to categorize this item.'
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Category::class,
+        ]);
+    }
+}
+```
+
+
+```twig
+/**
+ * Twig Template
+ */
+
+// 📄 templates/category/create.html.twig
+{% extends "base.html.twig" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1>Create Category</h1>
+
+    {{ form_start(form, {
+        'attr': {
+            'name': 'categoryForm',
+            'class': 'form-validate',
+            'novalidate': true
+        }
+    }) }}
+
+      <div class="mb-3">
+        {{ form_label(form.name, 'Category Name') }}
+        {{ form_widget(form.name, {
+            'attr': {
+                'class': 'form-control',
+                'data-event-validate': 'blur',
+                'data-event-validate-blur': 'blur'
+            }
+        }) }}
+      </div>
+
+      <div class="mb-3">
+        {{ form_label(form.icon, 'Icon') }}
+        {{ form_widget(form.icon, {
+            'attr': {
+                'class': 'form-control',
+            }
+        }) }}
+        <small class="form-text text-muted">{{ form.icon.vars.help }}</small>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Create Category</button>
+    {{ form_end(form) }}
+  </div>
+
+  <script>
+    import { FormValidateController } from '@wlindabla/form_validator';
+
+    const form = document.querySelector('.form-validate');
+    const controller = new FormValidateController(form);
+
+    form.addEventListener('field:validation:failed', (e) => {
+      const { targetChildrenForm, message } = e.detail;
+      targetChildrenForm.classList.add('is-invalid');
+      // Display error near field
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'invalid-feedback d-block';
+      errorDiv.textContent = message[0];
+      targetChildrenForm.parentElement?.appendChild(errorDiv);
+    });
+
+    form.addEventListener('field:validation:success', (e) => {
+      const { targetChildrenForm } = e.detail;
+      targetChildrenForm.classList.remove('is-invalid');
+      targetChildrenForm.classList.add('is-valid');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isValid = await controller.isFormValid();
+      if (isValid) {
+        e.target.submit(); // Submit to Symfony
+      }
+    });
+  </script>
+{% endblock %}
+```
+
+```typescript
+/* ═════════════════════════════════════════════════════════════════════
+ *SUMMARY: COMMON USE CASES
+ * ═════════════════════════════════════════════════════════════════════
+ */
+
+// ✅ CAS 1: Catégories avec emojis
+iconValidator.validate(icon, 'categoryIcon', {
+  mode: 'emoji',           // Full emoji support
+  maxCount: 3,             // Max 3 emojis
+  requiredInput: true
+});
+
+// ✅ CAS 2: Icon classe FontAwesome
+iconValidator.validate(faIcon, 'faIcon', {
+  mode: 'iconClassName',   // fa-heart, mdi-star format
+  requiredInput: true
+});
+
+// ✅ CAS 3: A single emoji (avatar)
+iconValidator.validate(avatar, 'avatarIcon', {
+  mode: 'emojiSingle',    // Exactly 1 emoji
+  requiredInput: true
+});
+
+// ✅ CAS 4: HTML-driven (le + simple!)
+<input 
+  data-type="icon"                  // ← Use IconValidator
+  data-icon-mode="emoji"
+  data-event-validate-blur="blur"
+/>
+
+```
+---
 
 ### EmailInputValidator
 

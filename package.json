@@ -19,7 +19,7 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "keywords": [
     "jquery",
     "typescript",
@@ -390,11 +390,11 @@
     "vite": "^8.0.16"
   },
   "dependencies": {
-    "@wlindabla/event_dispatcher": "^1.2.2",
-    "@wlindabla/http_client": "^1.2.3",
+    "@wlindabla/event_dispatcher": "^1.2.3",
+    "@wlindabla/http_client": "^1.2.4",
     "jszip": "^3.10.1",
-    "libphonenumber-js": "^1.13.6",
-    "papaparse": "^5.5.3",
+    "libphonenumber-js": "^1.13.7",
+    "papaparse": "^5.5.4",
     "pdfjs-dist": "^6.0.227",
     "sweetalert2": "^11.26.25",
     "xlsx": "^0.18.5"

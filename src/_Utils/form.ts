@@ -423,7 +423,7 @@ export type MediaType = "video" | "document" | "image";
 export type MediaRequiredType = "pdf" | "excel" | "word" | "odf" | "csv";
 export type FormInputType ="isbn" | "fqdn" | "file" | "radio" | "checkbox" | 
                 "number" | "text" | "email" | "password" | "url" |
-                "select" | "textarea" | "date" | "tel" | 'card';
+    "select" | "textarea" | "date" | "tel" | 'card' | 'icon';
 export type HTMLFormChildrenElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 export type DataInput = string | string[] | number | null | undefined | File | FileList | Date;
 

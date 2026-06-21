@@ -2303,15 +2303,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wlindabla/event_dispatcher@npm:^1.2.2":
-  version: 1.2.2
-  resolution: "@wlindabla/event_dispatcher@npm:1.2.2"
+"@wlindabla/event_dispatcher@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "@wlindabla/event_dispatcher@npm:1.2.3"
   peerDependencies:
     "@types/node": ">=18.0.0"
   peerDependenciesMeta:
     "@types/node":
       optional: true
-  checksum: 10c0/06420196da39b6988f3ca97e58eaac30539efb5dc1a03c9b181cdef91f4c3cbcb2dd266a5703d28f491ebdbcd184cefd6fda1f07b45ed5706648c8fb796ce127
+  checksum: 10c0/f2d419ba7157f30b815c1930fe2c851838cfd9fa6f99891ccfefb32ad8f23186b3c7d5f5d4fcc77ff1dc9ce7a443bb2174d73a28ef7f837209cdd6c01335f2b4
   languageName: node
   linkType: hard
 
@@ -2325,12 +2325,12 @@ __metadata:
     "@types/pdfjs-dist": "npm:^2.10.378"
     "@types/xlsx": "npm:^0.0.36"
     "@vitejs/plugin-legacy": "npm:^8.0.2"
-    "@wlindabla/event_dispatcher": "npm:^1.2.2"
-    "@wlindabla/http_client": "npm:^1.2.3"
+    "@wlindabla/event_dispatcher": "npm:^1.2.3"
+    "@wlindabla/http_client": "npm:^1.2.4"
     jquery: "npm:^4.0.0"
     jszip: "npm:^3.10.1"
-    libphonenumber-js: "npm:^1.13.6"
-    papaparse: "npm:^5.5.3"
+    libphonenumber-js: "npm:^1.13.7"
+    papaparse: "npm:^5.5.4"
     pdfjs-dist: "npm:^6.0.227"
     sweetalert2: "npm:^11.26.25"
     tsup: "npm:^8.5.1"
@@ -2340,12 +2340,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wlindabla/http_client@npm:^1.2.3":
-  version: 1.2.3
-  resolution: "@wlindabla/http_client@npm:1.2.3"
+"@wlindabla/http_client@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "@wlindabla/http_client@npm:1.2.4"
   dependencies:
-    "@wlindabla/event_dispatcher": "npm:^1.2.2"
-  checksum: 10c0/8dcf334101bd537df61c0a238e69ce4d654f22341ee8c22f55223dde5099715892a970049f7e74377a2282b629743cbb8d845d9af0a1f636eb49534b1038818b
+    "@wlindabla/event_dispatcher": "npm:^1.2.3"
+  checksum: 10c0/63afa2cfd11c09a9e0c7f357e3d952140ef86713a70fe67e56b460a59df087d01cd88d455d69007fd034b30be77af208004eb001bce32dd918cf97afedd981a2
   languageName: node
   linkType: hard
 
@@ -3238,10 +3238,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libphonenumber-js@npm:^1.13.6":
-  version: 1.13.6
-  resolution: "libphonenumber-js@npm:1.13.6"
-  checksum: 10c0/fcd6eef6a3c105da0e5674b1caa11983829b8ad6f71fee18147ae09a82e9d139d948a5e283cd2459ba9e07ebe85efd5523773fdbef997352105f2dc821a1b5fe
+"libphonenumber-js@npm:^1.13.7":
+  version: 1.13.7
+  resolution: "libphonenumber-js@npm:1.13.7"
+  checksum: 10c0/2064257e26b4a98b098f3d316e92956f0dd06a4e812e7b8b11bce036e01a987a0078a8b3e6aaba639dc98e5eef1fc8c43cf81781f208e9b84bc163cccc72c89a
   languageName: node
   linkType: hard
 
@@ -3674,10 +3674,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"papaparse@npm:^5.5.3":
-  version: 5.5.3
-  resolution: "papaparse@npm:5.5.3"
-  checksum: 10c0/623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
+"papaparse@npm:^5.5.4":
+  version: 5.5.4
+  resolution: "papaparse@npm:5.5.4"
+  checksum: 10c0/8942ae45dcc171b720fd67953f825a544fdeeeadb85cf28a239d016fd6cff0c59650e667b3158a9a0153c6e1d7674c199603bcf360d854ce7edce822eb7f7bb6
   languageName: node
   linkType: hard
 
